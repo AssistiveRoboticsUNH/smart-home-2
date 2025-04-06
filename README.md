@@ -57,7 +57,7 @@ colcon build --symlink-install --cmake-args -DCMAKE_EXPORT_COMPILE_COMMANDS=1
 
 # Setup planner to start and shutdown
 
-Step 1:
+#### Step 1:
 add a  cron job to clear out the intersection.txt file that include the predicates that need to be set true in the knowledge
 
 run ''' crontab -e '''
@@ -69,11 +69,11 @@ because reboot requires priviledges then you need to run crontab with sudo
 run '''sudo crontab -e '''
 0 21 * * * /sbin/reboot
 
-Step2: 
+#### Step2: 
 in The keyword.txt add all the predicates that indicate that a low level protocol is successful
 for example Medicine protolc is sucessful if either predicates  (already_took_medicine) (already_reminded_medicine) are true so they should be added to the keyword.txt
 
-Step3:
+#### Step3:
 
 you need to set the two dictionaries protocol_type_ and keyword_protocol_ in action.hpp in the high_level_domain_Shutdown function.
 
@@ -118,7 +118,7 @@ Use Blender to view and edit mesh files. When exporting .obj files, make sure th
 The values can be chosen from the export options.  
 
 
-#### NOTICE
+## NOTICE
 if not using colcon build --symlink-install when building you will need to create a symbolic link
 ln -s /home/hello-robot/smarthome_ws/install/shr_plan/share/shr_plan/include/shr_plan/intersection.txt /home/hello-robot/smarthome_ws/src/smart-home/shr_plan/include/shr_plan/intersection.txt
 
