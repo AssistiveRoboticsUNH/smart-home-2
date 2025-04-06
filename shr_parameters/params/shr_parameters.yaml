@@ -1,0 +1,121 @@
+shr_parameters:
+  pddl:
+    instances:
+      Persons: {
+        type: string_array,
+        default_value: [ "nathan" ],
+        description: "all people in protocols",
+      }
+    MedicineProtocols:
+      instances: {
+        type: string_array,
+        default_value: [ "am_meds" , "pm_meds" ],
+        description: "medicine protocols",
+      }
+      take_medication_times: {
+        type: string_array,
+        default_value: [ "Everyday 09h00m0s/10h00m0s", "Everyday 18h00m0s/19h00m0s" ],
+        description: "time that each protocol is triggered",
+      }
+    GymReminderProtocols:
+      instances: {
+        type: string_array,
+        default_value: [ "gym_reminder" ],
+        description: "gym reminder protocols",
+      }
+      gym_reminder_times: {
+        type: string_array,
+        default_value: [ "Monday,Wednesday,Friday 06h30m0s/07h00m0s"],
+        description: "time that each protocol is triggered",
+      }
+      # default_value: [ "Monday,Wednesday,Friday 06h30m0s/07h00m0s"],
+    MedicineRefillReminderProtocols:
+      instances: {
+        type: string_array,
+        default_value: [ "medicine_refill_reminder" ],
+        description: "medicine refill protocols",
+      }
+      medicine_refill_reminder_times: {
+        type: string_array,
+        default_value: [ "Monday 14h00m0s/15h00m0s" ],
+        description: "time that each protocol is triggered",
+      }
+    MedicineRefillPharmacyReminderProtocols:
+      instances: {
+        type: string_array,
+        default_value: [ "medicine_pharmacy_reminder" ],
+        description: "medicine pharmacy refill phramacy protocols",
+      }
+      medicine_refill_pharmacy_reminder_times: {
+        type: string_array,
+        default_value: [ "Tuesday 10h00m0s/11h00m0s" ],
+        description: "time that each protocol is triggered",
+      }
+      # default_value: [ "Tuesday 09h30m0s/10h00m0s" ],
+
+    WalkingProtocols:
+      instances: {
+        type: string_array,
+        default_value: [ "walking_reminder" ],
+        description: "gym reminder protocols",
+      }
+      walking_reminder_times: {
+        type: string_array,
+        default_value: [ "Everyday 13h00m0s/14h00m0s"],
+        description: "time that each protocol is triggered",
+      }
+  topics:
+    time: {
+      type: string,
+      default_value: "/protocol_time",
+      description: "topic for protocol clock time",
+    }
+    person_taking_medicine: {
+      type: string,
+      default_value: "/person_taking_medicine",
+      description: "topic for sensor that detect if medication is taken",
+    }
+    person_eating: {
+      type: string,
+      default_value: "/person_eating",
+      description: "topic for sensor that detect if patient is eating",
+    }
+    robot_charging: {
+      type: string,
+      default_value: "/charging",
+      description: "topic for smart plug that detect if robot is charging",
+    }
+
+    good_weather: {
+      type: string,
+      default_value: "/good_weather",
+      description: "topic for checking good weather",
+    }
+
+    display: {
+      type: string,
+      default_value: "/display",
+      description: "topic for changing status for display",
+    }
+
+  person_tf: {
+    type: string,
+    default_value: "nathan",
+    description: "person tf frame id",
+  }
+  robot_tf: {
+    type: string,
+    default_value: "base_link",
+    description: "robot tf frame id",
+  }
+
+
+
+
+
+
+
+
+
+
+
