@@ -45,9 +45,9 @@ elderly occupant and the safety of the home.
 
 **Pull and build SHR**
 ```bash
-mkdir -p ~/smart-home/src
+mkdir -p ~/smart-home-2/src
 cd ~/smart-home/src
-git clone git@github.com:AssistiveRoboticsUNH/smart-home.git
+git clone git@github.com:AssistiveRoboticsUNH/smart-home-2.git
 cd ~/smart-home 
 colcon build --symlink-install
 
