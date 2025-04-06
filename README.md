@@ -1,4 +1,4 @@
-# smart-home-2
+# smart-home-robot
 
 ## Managing source package dependencies 
 A source package must be build in order to use it. It is recommended to manage these packages using a .repos file. In this file, git repositories are listed in a .yaml file format and can be downloaded using vcs. To install vcs you can run: 
