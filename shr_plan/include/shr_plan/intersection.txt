@@ -1,1 +1,0 @@
-/home/hello-robot/smarthome_ws/install/shr_plan/share/shr_plan/include/shr_plan/intersection.txt
