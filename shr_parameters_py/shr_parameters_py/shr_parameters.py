@@ -10,6 +10,7 @@ from rclpy.exceptions import InvalidParameterValueException
 from rclpy.time import Time
 import copy
 import rclpy
+import rclpy.parameter
 from generate_parameter_library_py.python_validators import ParameterValidators
 
 
@@ -28,19 +29,19 @@ class shr_parameters:
             instances = __Instances()
             class __Medicineprotocols:
                 instances = ["am_meds", "pm_meds"]
-                take_medication_times = ["Everyday 09h00m0s/09h30m0s", "Everyday 18h00m0s/18h30m0s"]
+                take_medication_times = ["Everyday 09h00m0s/10h00m0s", "Everyday 18h00m0s/19h00m0s"]
             MedicineProtocols = __Medicineprotocols()
             class __Gymreminderprotocols:
                 instances = ["gym_reminder"]
-                gym_reminder_times = ["Monday,Wednesday,Thursday,Friday 06h30m0s/07h00m0s"]
+                gym_reminder_times = ["Everday 06h30m0s/07h00m0s"]
             GymReminderProtocols = __Gymreminderprotocols()
             class __Medicinerefillreminderprotocols:
                 instances = ["medicine_refill_reminder"]
-                medicine_refill_reminder_times = ["Everyday 17h00m0s/17h30m0s"]
+                medicine_refill_reminder_times = ["Monday 14h00m0s/15h00m0s"]
             MedicineRefillReminderProtocols = __Medicinerefillreminderprotocols()
             class __Medicinerefillpharmacyreminderprotocols:
                 instances = ["medicine_pharmacy_reminder"]
-                medicine_refill_pharmacy_reminder_times = ["Tuesday,Wednesday,Thursday 09h30m0s/10h00m0s"]
+                medicine_refill_pharmacy_reminder_times = ["Tuesday 10h00m0s/11h00m0s"]
             MedicineRefillPharmacyReminderProtocols = __Medicinerefillpharmacyreminderprotocols()
             class __Walkingprotocols:
                 instances = ["walking_reminder"]
@@ -80,6 +81,31 @@ class shr_parameters:
 
         def is_old(self, other_param):
             return self.params_.stamp_ != other_param.stamp_
+
+        def unpack_parameter_dict(self, namespace: str, parameter_dict: dict):
+            """
+            Flatten a parameter dictionary recursively.
+
+            :param namespace: The namespace to prepend to the parameter names.
+            :param parameter_dict: A dictionary of parameters keyed by the parameter names
+            :return: A list of rclpy Parameter objects
+            """
+            parameters = []
+            for param_name, param_value in parameter_dict.items():
+                full_param_name = namespace + param_name
+                # Unroll nested parameters
+                if isinstance(param_value, dict):
+                    nested_params = self.unpack_parameter_dict(
+                            namespace=full_param_name + rclpy.parameter.PARAMETER_SEPARATOR_STRING,
+                            parameter_dict=param_value)
+                    parameters.extend(nested_params)
+                else:
+                    parameters.append(rclpy.parameter.Parameter(full_param_name, value=param_value))
+            return parameters
+
+        def set_params_from_dict(self, param_dict):
+            params_to_set = self.unpack_parameter_dict('', param_dict)
+            self.update(params_to_set)
 
         def refresh_dynamic_parameters(self):
             updated_params = self.get_params()

@@ -10,33 +10,10 @@ def generate_launch_description():
     ld = LaunchDescription()
 
     pkg_path = get_package_share_directory('yaml_tf_broadcaster') + "/config/"
-    #
-    aptags_file = DeclareLaunchArgument(
-        "aptags",
-        default_value=pkg_path + "aptags_location.yaml",
-        description="aptags location"
-    )
-    ld.add_action(aptags_file)
-    aptags = Node(
-        package="yaml_tf_broadcaster",
-        executable="yaml_broadcaster_node",
-        name="aptags_launch",
-        parameters=[
-            {"yaml_file_name": LaunchConfiguration("aptags")}
-        ]
-    )
-
-    #ld.add_action(aptags)
-
-    # room_file = DeclareLaunchArgument(
-    #     "rooms_location",
-    #     default_value=pkg_path + "exeter_loc.yaml",
-    #     description="rooms location"
-    # )
 
     room_file = DeclareLaunchArgument(
         "rooms_location",
-        default_value=pkg_path + "howie_final.yaml",
+        default_value=pkg_path + "olson_rooms.yaml",
         description="rooms location"
     )
 

@@ -134,7 +134,7 @@ def generate_launch_description():
     ld.add_action(tf_broadcast)
     # ld.add_action(homeseer_node)
     ld.add_action(smartthings_node_plug)
-    ld.add_action(protocol_time_node)
+    # ld.add_action(protocol_time_node)
     ld.add_action(smartthings_weather)
     ld.add_action(docking_data_manager)
     ld.add_action(discord_logger)

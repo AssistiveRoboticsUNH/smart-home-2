@@ -31,3 +31,7 @@ repositories:
     type: git
     url: https://github.com/AssistiveRoboticsUNH/robot_state_publisher.git
     version: ros2
+  external/convROS_agent:
+    type: git
+    url: https://github.com/MnAkash/convROS_agent.git
+    version: main
