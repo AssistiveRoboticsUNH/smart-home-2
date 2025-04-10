@@ -77,8 +77,7 @@ namespace pddl_lib {
             return get_inst_index((MedicineProtocol) inst.name, params);
         } else if (inst.type == "GymReminderProtocol") {
             return get_inst_index((GymReminderProtocol) inst.name, params);
-        }
-        else if (inst.type == "MedicineRefillReminderProtocol") {
+        }else if (inst.type == "MedicineRefillReminderProtocol") {
             return get_inst_index((MedicineRefillReminderProtocol) inst.name, params);
         }else if (inst.type == "MedicineRefillPharmacyReminderProtocol") {
             return get_inst_index((MedicineRefillPharmacyReminderProtocol) inst.name, params);
