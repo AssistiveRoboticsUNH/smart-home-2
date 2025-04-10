@@ -50,12 +50,12 @@ namespace pddl_lib {
         wait_times = {
                 {{"am_meds",                           "MedicineProtocol"},                       {{"reminder_1_msg", {0, 1}},
                                                                                                           {"reminder_2_msg", {0, 1}},
-                                                                                                          {"wait", {900, 0}},
+                                                                                                          {"wait", {9, 0}},
                                                                                                         //   {"wait", {900, 0}},
                                                                                                   }},
                 {{"pm_meds",                           "MedicineProtocol"},                       {{"reminder_1_msg", {0, 1}},
                                                                                                           {"reminder_2_msg", {0, 1}},
-                                                                                                          {"wait", {900, 0}},
+                                                                                                          {"wait", {9, 0}},
                                                                                                         //   {"wait", {900, 0}},
                                                                                                   }},
                 {{"gym_reminder",                      "GymReminderProtocol"},                    {{"voice_msg", {0, 1}},
@@ -321,6 +321,7 @@ namespace pddl_lib {
     int send_goal_blocking(const shr_msgs::action::DockingRequest::Goal &goal, const InstantiatedAction &action,
                            ProtocolState &ps) {
 
+        std::cout << " Send docking blocked request  " << std::endl;
         auto &kb = KnowledgeBase::getInstance();
         auto success = std::make_shared < std::atomic < int >> (-1);
         auto send_goal_options = rclcpp_action::Client<shr_msgs::action::DockingRequest>::SendGoalOptions();
@@ -648,8 +649,10 @@ namespace pddl_lib {
                     RCLCPP_INFO(rclcpp::get_logger("########## STARTT #################"), "Your message here");
 
                     const char* homeDir = std::getenv("HOME");
-                    std::string cmd_startros = std::string(homeDir);
-                    cmd_startros += "/start_nav.sh";
+                    // std::string cmd_startros = std::string(homeDir);
+                    // cmd_startros += "/start_nav.sh";
+
+                    std::string cmd_startros = "/home/hello-robot/smarthome_ws/src/smart-home-robot/helper_scripts/start_nav.sh";
                     std::system(cmd_startros.c_str());
 
 
@@ -1158,8 +1161,10 @@ namespace pddl_lib {
 
 
             const char* homeDir = std::getenv("HOME");
-            std::string cmd_startros = std::string(homeDir);
-            cmd_startros += "/start_nav.sh";
+            // std::string cmd_startros = std::string(homeDir);
+            // cmd_startros += "/start_nav.sh";
+
+            std::string cmd_startros = "/home/hello-robot/smarthome_ws/src/smart-home-robot/helper_scripts/start_nav.sh";
             std::system(cmd_startros.c_str());
 
             rclcpp::sleep_for(std::chrono::seconds(10));

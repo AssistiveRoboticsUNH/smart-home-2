@@ -4,7 +4,7 @@ MAX_RETRIES=3
 RETRY_COUNT=0
 DELAY_BETWEEN_RETRIES=10  # seconds
 FAILURE_MSG="Failed to bring up all requested nodes. Aborting bringup."
-MAP_FILE="/home/hello-robot/stretch_user/maps/howie_m_final_modified.yaml"
+MAP_FILE="/home/hello-robot/stretch_user/maps/map_olson.yaml"
 LOG_DIR="/home/hello-robot/nav2_monitor_logs"
 mkdir -p "$LOG_DIR"
 

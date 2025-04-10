@@ -26,5 +26,4 @@ devel_isolated/
 COLCON_IGNORE
 .docker_nsojib
 
-helper_scripts/*
-
+helper_scripts/

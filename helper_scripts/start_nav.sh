@@ -2,9 +2,8 @@
 
 timestamp=$(date +"%d-%m_%H-%M")
 #ros2 launch stretch_nav2 navigation.launch.py map:=/home/hello-robot/stretch_user/maps/howie_m_final_modified.yaml > /home/hello-robot/bad_nav2/navigation_$timestamp.txt 2>&1 &
-/home/hello-robot/nav2_monitor_ola.sh > /home/hello-robot/nav2_monitor_logs/nav2_monitor_$timestamp.txt  2>&1 &
+/home/hello-robot/smarthome_ws/src/smart-home-robot/helper_scripts/nav2_failure_monitor.sh > /home/hello-robot/nav2_monitor_logs/nav2_monitor_$timestamp.txt  2>&1 &
 
-#bash monitor_launch.sh &
 sleep 25s
 
 ros2 service call /runstop std_srvs/srv/SetBool data:\ false\ &
