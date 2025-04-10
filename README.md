@@ -114,9 +114,24 @@ the keyword_protocol will look like this:
 
 
 ## Managing meshes
-Use Blender to view and edit mesh files. When exporting .obj files, make sure that Z is "up" and Y is "negative x". 
+Meshes are used to detect in which room the 3d position in unity frame is in. This is used to be able to tell where both hte robot and person are at.
+Every room that is referred to in the landmark has to be in the mesh.
+to do that:
+1) get a polyscan of the house and export it in glb format
+2) import the glb mesh of the house
+3) create planes to represent every room in the house
+4) extrude the plan in the z direction to cover the full height of the house
+5) TRIANGULATE all the planes
+6) Exp as .obj files, **make sure that Z is "up" and Y is "negative x". **
 The values can be chosen from the export options.  
 
+Some Blender Keyborad shortcuts:  
+         e extrude 
+         g move to selected vertices 
+         f connect vertices if only two are selected and fill objects if more than 2 vertices are selected 
+         P to separate 
+         
+#### todo: create a video
 
 ## NOTICE
 if not using colcon build --symlink-install when building you will need to create a symbolic link
