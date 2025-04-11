@@ -15,10 +15,10 @@ class Docking_IR(Node):
 
     def __init__(self):
         super().__init__('Docking_ir')
+
+        # This is to keep this node alive so that it keeps listenning to the topics
         self.tf_buffer = Buffer()
         self.tf_listenser = TransformListener(self.tf_buffer, self, spin_thread=True)
-
-        self.rate = self.create_rate(10)
 
         # class variables
         self.vel = Twist()
@@ -27,15 +27,16 @@ class Docking_IR(Node):
         self.is_charging = False
         self.voltage = None
         self.voltage_prev = None
+        self.charging_current = None
         self.ir_sensor_weight = None
         self.obstacle_back = 10 #considering no obstacle initially
         self.isLidarActive = False
 
         # Subscribers
         self.bump_subscriber = self.create_subscription(Int64, 'bump', self.bump_callback, 10)
-        self.charger_subscriber = self.create_subscription(Float32, 'charging_voltage', self.charger_callback, 10)
+        self.charger_subscriber = self.create_subscription(Float32, 'charging_voltage', self.charging_voltage_callback, 10)
         self.ir_sensor_subscriber = self.create_subscription(Float32, 'docking/ir_weight', self.ir_sensor_callback, 10)
-
+        self.charging_current_subscriber = self.create_subscription(Float32, 'charging_current', self.charging_current_callback, 10)
         self.subscription = self.create_subscription(LaserScan, '/scan_filtered', self.scan_callback, 10)
         
         # Publishers
@@ -50,7 +51,7 @@ class Docking_IR(Node):
         self.sensor_oriented = False # Check if sensor is oriented to docking station once
         self.close_counter = 0
         self.mode = 'far'
-        self.centre_ir_weight = 3.5
+        self.centre_ir_weight = 4.0
         self.centre_ir_set = False
 
     def bump_callback(self, msg):
@@ -58,26 +59,22 @@ class Docking_IR(Node):
         self.bump = msg.data
         #print(self.bump)
 
-    def charger_callback(self, msg):
-        # For first call initialize both voltage and previous voltage 
-        if self.voltage == None or self.voltage == 0:
-            self.voltage = msg.data
-            self.voltage_prev = msg.data
-        
-        # Else check charging status
-        else:
-            self.voltage = msg.data
-            spike_ratio = (self.voltage - self.voltage_prev) / self.voltage_prev
-            if spike_ratio >  0.03 and self.voltage > 12:
+    def charging_voltage_callback(self, msg):
+        self.voltage = msg.data
+
+    def charging_current_callback(self, msg):
+        # self.get_logger().info(f'Charging Current: {msg.data}')
+        if self.charging_current != None:
+            if self.charging_current > 0.0:
+                if self.is_charging == False: self.get_logger().info(f'Charger Connected!')
                 self.is_charging = True
-                self.get_logger().info(f'Charger Connected!')
-            # elif spike_ratio <  0:
-            #     self.is_charging = False
-            #     self.get_logger().info(f'Charger not connected and discharging.')
-            # else:
-            #     self.is_charging = False
-            self.voltage_prev = self.voltage
-    
+
+            else:
+                if self.is_charging: self.get_logger().info(f'Charger disconnected.')
+                self.is_charging = False
+
+        self.charging_current = msg.data
+
     def ir_sensor_callback(self, msg):
         # self.get_logger().info(f'Received IR sensor: {msg.data}')
         self.ir_sensor_weight = msg.data
@@ -118,12 +115,6 @@ class Docking_IR(Node):
             return 1
             
         if not self.isLidarActive: self.get_logger().info(f'Lidar: Not Active')
-        # if not self.sensor_oriented and not self.centre_ir_set:
-        #     if self.ir_sensor_weight > 4:
-        #         self.centre_ir_weight = 4
-        #     else:
-        #         self.centre_ir_weight = 4.5
-        #     self.centre_ir_set = True
 
         if self.isLidarActive:
             # Move robot by limit swithc bump and charging condition check
@@ -155,7 +146,7 @@ class Docking_IR(Node):
                                 # First roation for self orienting to station should be fast
                                 # self.get_logger().info("Rotating Fast")
                                 self.move_robot(0, 0.3)
-                            elif self.mode == 'close': self.move_robot(forward_speed, 0.01) #slow rotation
+                            elif self.mode == 'close': self.move_robot(self.forward_speed, 0.01) #slow rotation
                             else:
                                 self.rotation_speed += 0.005
                                 self.rotation_speed = min(max(self.rotation_speed, -0.16), 0.16) # clip between [-0.16, 0.16]
@@ -166,7 +157,7 @@ class Docking_IR(Node):
                                 # First roation for self orienting to station should be fast
                                 # self.get_logger().info("Rotating Fast")
                                 self.move_robot(0, -0.3)
-                            elif self.mode == 'close' :self.move_robot(forward_speed, -0.01)
+                            elif self.mode == 'close' :self.move_robot(self.forward_speed, -0.01)
                             else:
                                 self.rotation_speed -= 0.005
                                 self.rotation_speed = min(max(self.rotation_speed, -0.16), 0.16) # clip between [-0.16, 0.16]

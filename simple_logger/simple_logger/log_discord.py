@@ -26,7 +26,7 @@ with open(discord_secrect_file, "r") as file:
     config = json.load(file)
 
 TOKEN = config["TOKEN"]
-CHANNEL_ID = config["CHANNEL_ID_test"]
+CHANNEL_ID = config["CHANNEL_ID"]
 
 class LogSubscriber(Node):
 

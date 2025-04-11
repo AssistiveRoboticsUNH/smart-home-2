@@ -102,37 +102,54 @@ class DockingMainActionServer(Node):
         self.get_logger().info(f'Bumped from IR: {self.docking_ir.bumped}')
         if (self.docking_camera.bumped or self.docking_ir.bumped):
             print("Bumped!!")
-            self.vel.linear.x = 0.0
-            self.vel.angular.z =0.0
-            self.pub.publish(self.vel)
+            self.docking_ir.move_robot(0.0, 0.0)
             print(self.docking_camera.charger_status)
-            time.sleep(15)
-            if(self.docking_camera.charger_status is not None and (self.docking_camera.charger_status ==1)):
-                goal_handle.succeed()
-                result = DockingRequest.Result()
-                result.result = True
-                self.docking_camera.bumped = False
-                self.docking_ir.bumped = False
-                self.docking_ir.is_charging = False
-                self.vel.linear.x = 0.0
-                self.vel.angular.z =0.0
-                self.pub.publish(self.vel)
-                self.rate.sleep()
-                self.get_logger().info("weblog="+' docked and charging!')
-                return result
-            else:
-                goal_handle.abort()
-                result = DockingRequest.Result()
-                result.result = False
-                self.docking_camera.bumped = False
-                self.docking_ir.bumped = False
-                
-                self.vel.linear.x = 0.0
-                self.vel.angular.z =0.0
-                self.pub.publish(self.vel)
-                self.rate.sleep()
-                self.get_logger().info("weblog="+' docking aborted for not charging!')
-                return result
+            
+            # wait for charger status
+            while True:
+                start_time = time.time()
+
+                if self.docking_camera.charger_status ==1 or self.docking_ir.is_charging:
+                    if self.docking_ir.bumped:
+                        self.get_logger().info("weblog="+' Docked with IR and charging!')
+                    else:
+                        self.get_logger().info("weblog="+' Docked and charging!')
+                    goal_handle.succeed()
+                    result = DockingRequest.Result()
+                    result.result = True
+                    self.docking_camera.bumped = False
+                    self.docking_ir.bumped = False
+                    self.docking_ir.is_charging = False
+                    self.docking_ir.move_robot(0.0, 0.0)
+                    self.rate.sleep()
+                    return result
+                    
+                else:
+                    self.get_logger().info(f'Waiting for charging Status')
+                    self.docking_ir.move_robot(0.0, 0.0)
+                    time.sleep(1)
+
+                # if 15 seconds passed and no charger status, abort
+                if time.time() - start_time > 15:
+                    goal_handle.abort()
+                    result = DockingRequest.Result()
+                    result.result = False
+                    self.docking_camera.bumped = False
+                    self.docking_ir.bumped = False
+                    
+                    self.vel.linear.x = 0.0
+                    self.vel.angular.z =0.0
+                    self.pub.publish(self.vel)
+                    self.rate.sleep()
+                    
+                    if self.docking_camera.charger_status == None or self.docking_camera.charger_status == 0:
+                        self.get_logger().info("weblog="+' docking aborted for no update on IoT plug!')
+                    elif self.docking_ir.charging_current == None:
+                        self.get_logger().info("weblog="+' docking aborted for no charging current status from sensor!')
+                    else:
+                        self.get_logger().info("weblog="+' docking aborted for not charging!')
+
+                    return result
             
         else:
             goal_handle.abort()
@@ -141,7 +158,7 @@ class DockingMainActionServer(Node):
             self.pub.publish(self.vel)
             
             result = DockingRequest.Result()
-            self.get_logger().info("weblog="+' docking aborted!')
+            self.get_logger().info("weblog="+' Docking aborted!')
             result.result = False
             return result
 
