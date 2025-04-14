@@ -779,8 +779,7 @@ namespace pddl_lib {
 
                 std::string log_message_navigate = std::string("weblog= Robot successfully navigated to home position");
                 RCLCPP_INFO(ps.world_state_converter->get_logger(), log_message_navigate.c_str());
-
-
+                
                 std::cout << "dock " << std::endl;
                 // comment in sim
                 shr_msgs::action::DockingRequest::Goal goal_msg_dock;
@@ -1296,7 +1295,6 @@ namespace pddl_lib {
 
             write_to_intersection(outputFile.c_str(), keyword_protocol_list);
 
-            
             // KILING ROS2 
 
             std::system("python3 /home/hello-robot/kill_ros.py");
