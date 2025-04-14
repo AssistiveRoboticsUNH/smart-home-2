@@ -17,52 +17,10 @@ namespace pddl_lib {
         return std::stoi(hour) * 60 * 60 + std::stoi(minute) * 60 + std::stoi(seconds);
     }
 
-    std::optional<long> get_inst_index(MedicineProtocol m, const shr_parameters::Params &params) {
-        const auto &instances = params.pddl.MedicineProtocols.instances;
-        auto it = std::find(instances.begin(), instances.end(), m);
-        if (it != instances.end()) {
-            auto index = std::distance(instances.begin(), it);
-            return index;
-        } else {
-            return {};
-        }
-    }
+    
 
-    std::optional<long> get_inst_index(GymReminderProtocol m, const shr_parameters::Params &params) {
-        const auto &instances = params.pddl.GymReminderProtocols.instances;
-        auto it = std::find(instances.begin(), instances.end(), m);
-        if (it != instances.end()) {
-            auto index = std::distance(instances.begin(), it);
-            return index;
-        } else {
-            return {};
-        }
-    }
-
-    std::optional<long> get_inst_index(MedicineRefillReminderProtocol m, const shr_parameters::Params &params) {
-        const auto &instances = params.pddl.MedicineRefillReminderProtocols.instances;
-        auto it = std::find(instances.begin(), instances.end(), m);
-        if (it != instances.end()) {
-            auto index = std::distance(instances.begin(), it);
-            return index;
-        } else {
-            return {};
-        }
-    }
-
-    std::optional<long> get_inst_index(MedicineRefillPharmacyReminderProtocol m, const shr_parameters::Params &params) {
-        const auto &instances = params.pddl.MedicineRefillPharmacyReminderProtocols.instances;
-        auto it = std::find(instances.begin(), instances.end(), m);
-        if (it != instances.end()) {
-            auto index = std::distance(instances.begin(), it);
-            return index;
-        } else {
-            return {};
-        }
-    }
-
-    std::optional<long> get_inst_index(WalkingProtocol m, const shr_parameters::Params &params) {
-        const auto &instances = params.pddl.WalkingProtocols.instances;
+    std::optional<long> get_inst_index(DrinkingProtocol m, const shr_parameters::Params &params) {
+        const auto &instances = params.pddl.DrinkingProtocols.instances;
         auto it = std::find(instances.begin(), instances.end(), m);
         if (it != instances.end()) {
             auto index = std::distance(instances.begin(), it);
@@ -73,16 +31,8 @@ namespace pddl_lib {
     }
 
     std::optional<long> get_inst_index(InstantiatedParameter inst, const shr_parameters::Params &params) {
-        if (inst.type == "MedicineProtocol") {
-            return get_inst_index((MedicineProtocol) inst.name, params);
-        } else if (inst.type == "GymReminderProtocol") {
-            return get_inst_index((GymReminderProtocol) inst.name, params);
-        }else if (inst.type == "MedicineRefillReminderProtocol") {
-            return get_inst_index((MedicineRefillReminderProtocol) inst.name, params);
-        }else if (inst.type == "MedicineRefillPharmacyReminderProtocol") {
-            return get_inst_index((MedicineRefillPharmacyReminderProtocol) inst.name, params);
-        }else if (inst.type == "WalkingProtocol") {
-            return get_inst_index((WalkingProtocol) inst.name, params);
+        if (inst.type == "DrinkingProtocol") {
+            return get_inst_index((DrinkingProtocol) inst.name, params);
         }
         return {};
     }

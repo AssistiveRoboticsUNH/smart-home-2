@@ -1,4 +1,4 @@
-(define (domain high_level_domain)
+time_to_take_medicine(define (domain high_level_domain)
 
 (:requirements
   :strips
@@ -45,8 +45,6 @@
   (priority_3)
   (priority_4)
   (priority_5)
-  (priority_6)
- 
 
   (dont_use_shutdown)
   (success)
@@ -102,24 +100,14 @@
 	:effect (and (priority_5) (not (priority_4)))
 )
 
-(:action ChangePriority_5_6
-	:parameters ()
-	:precondition (and
-	    (priority_5)
-		)
-	:effect (and (priority_6) (not (priority_5)))
-)
-
 ;; to start ros and navigation before the protocol
 (:action StartROS
 	:parameters ()
 	:precondition (;;and
-        ;;(priority_2)
-	    ;; will be triggered before it starts a protocol
+	       ;; will be triggered before it starts a protocol
 		)
 	:effect (and
                 (started)
-                ;;(not (priority_2))
           )
 )
 
@@ -131,7 +119,7 @@
       (time_for_drinking_reminder ?d)
 
       (visible_location ?dest)
-      ;;(visible_location ?cur)
+      (visible_location ?cur)
 
       (person_currently_at ?p ?cur)
       (robot_at ?cur)
@@ -167,10 +155,10 @@
 (:action Idle
 	:parameters ()
 	:precondition (and
-	    (priority_6)
+	    (priority_5)
 		)
 	:effect (and (success)
-	             (not (priority_6))
+	             (not (priority_5))
 	             (not (low_level_failed))
 
 	             ;; for every protocol in types it has to have a forall to disable other protocols before starting this one
@@ -214,7 +202,7 @@
             ;;;)
 
             ;;; 1
-            (forall (?dr - DrinkingProtocol)
+            (forall (?dr - GymReminderProtocol)
                 (not
                     (and
                         (time_for_drinking_reminder ?dr)
@@ -233,3 +221,4 @@
 
 
 )
+

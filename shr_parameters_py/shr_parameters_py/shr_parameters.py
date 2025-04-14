@@ -27,26 +27,10 @@ class shr_parameters:
             class __Instances:
                 Persons = ["nathan"]
             instances = __Instances()
-            class __Medicineprotocols:
-                instances = ["am_meds", "pm_meds"]
-                take_medication_times = ["Everyday 09h00m0s/10h00m0s", "Everyday 18h00m0s/19h00m0s"]
-            MedicineProtocols = __Medicineprotocols()
-            class __Gymreminderprotocols:
-                instances = ["gym_reminder"]
-                gym_reminder_times = ["Everday 06h30m0s/07h00m0s"]
-            GymReminderProtocols = __Gymreminderprotocols()
-            class __Medicinerefillreminderprotocols:
-                instances = ["medicine_refill_reminder"]
-                medicine_refill_reminder_times = ["Monday 14h00m0s/15h00m0s"]
-            MedicineRefillReminderProtocols = __Medicinerefillreminderprotocols()
-            class __Medicinerefillpharmacyreminderprotocols:
-                instances = ["medicine_pharmacy_reminder"]
-                medicine_refill_pharmacy_reminder_times = ["Tuesday 10h00m0s/11h00m0s"]
-            MedicineRefillPharmacyReminderProtocols = __Medicinerefillpharmacyreminderprotocols()
-            class __Walkingprotocols:
-                instances = ["walking_reminder"]
-                walking_reminder_times = ["Everyday 13h00m0s/14h00m0s"]
-            WalkingProtocols = __Walkingprotocols()
+            class __Drinkingprotocols:
+                instances = ["drinking"]
+                drinking_reminder_times = ["Everyday 13h00m0s/14h00m0s"]
+            DrinkingProtocols = __Drinkingprotocols()
         pddl = __Pddl()
         class __Topics:
             time = "/protocol_time"
@@ -122,44 +106,12 @@ class shr_parameters:
                     updated_params.pddl.instances.Persons = param.value
                     self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
 
-                if param.name == self.prefix_ + "pddl.MedicineProtocols.instances":
-                    updated_params.pddl.MedicineProtocols.instances = param.value
+                if param.name == self.prefix_ + "pddl.DrinkingProtocols.instances":
+                    updated_params.pddl.DrinkingProtocols.instances = param.value
                     self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
 
-                if param.name == self.prefix_ + "pddl.MedicineProtocols.take_medication_times":
-                    updated_params.pddl.MedicineProtocols.take_medication_times = param.value
-                    self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
-
-                if param.name == self.prefix_ + "pddl.GymReminderProtocols.instances":
-                    updated_params.pddl.GymReminderProtocols.instances = param.value
-                    self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
-
-                if param.name == self.prefix_ + "pddl.GymReminderProtocols.gym_reminder_times":
-                    updated_params.pddl.GymReminderProtocols.gym_reminder_times = param.value
-                    self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
-
-                if param.name == self.prefix_ + "pddl.MedicineRefillReminderProtocols.instances":
-                    updated_params.pddl.MedicineRefillReminderProtocols.instances = param.value
-                    self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
-
-                if param.name == self.prefix_ + "pddl.MedicineRefillReminderProtocols.medicine_refill_reminder_times":
-                    updated_params.pddl.MedicineRefillReminderProtocols.medicine_refill_reminder_times = param.value
-                    self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
-
-                if param.name == self.prefix_ + "pddl.MedicineRefillPharmacyReminderProtocols.instances":
-                    updated_params.pddl.MedicineRefillPharmacyReminderProtocols.instances = param.value
-                    self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
-
-                if param.name == self.prefix_ + "pddl.MedicineRefillPharmacyReminderProtocols.medicine_refill_pharmacy_reminder_times":
-                    updated_params.pddl.MedicineRefillPharmacyReminderProtocols.medicine_refill_pharmacy_reminder_times = param.value
-                    self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
-
-                if param.name == self.prefix_ + "pddl.WalkingProtocols.instances":
-                    updated_params.pddl.WalkingProtocols.instances = param.value
-                    self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
-
-                if param.name == self.prefix_ + "pddl.WalkingProtocols.walking_reminder_times":
-                    updated_params.pddl.WalkingProtocols.walking_reminder_times = param.value
+                if param.name == self.prefix_ + "pddl.DrinkingProtocols.drinking_reminder_times":
+                    updated_params.pddl.DrinkingProtocols.drinking_reminder_times = param.value
                     self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
 
                 if param.name == self.prefix_ + "topics.time":
@@ -211,55 +163,15 @@ class shr_parameters:
                 parameter = updated_params.pddl.instances.Persons
                 self.node_.declare_parameter(self.prefix_ + "pddl.instances.Persons", parameter, descriptor)
 
-            if not self.node_.has_parameter(self.prefix_ + "pddl.MedicineProtocols.instances"):
-                descriptor = ParameterDescriptor(description="medicine protocols", read_only = False)
-                parameter = updated_params.pddl.MedicineProtocols.instances
-                self.node_.declare_parameter(self.prefix_ + "pddl.MedicineProtocols.instances", parameter, descriptor)
-
-            if not self.node_.has_parameter(self.prefix_ + "pddl.MedicineProtocols.take_medication_times"):
-                descriptor = ParameterDescriptor(description="time that each protocol is triggered", read_only = False)
-                parameter = updated_params.pddl.MedicineProtocols.take_medication_times
-                self.node_.declare_parameter(self.prefix_ + "pddl.MedicineProtocols.take_medication_times", parameter, descriptor)
-
-            if not self.node_.has_parameter(self.prefix_ + "pddl.GymReminderProtocols.instances"):
+            if not self.node_.has_parameter(self.prefix_ + "pddl.DrinkingProtocols.instances"):
                 descriptor = ParameterDescriptor(description="gym reminder protocols", read_only = False)
-                parameter = updated_params.pddl.GymReminderProtocols.instances
-                self.node_.declare_parameter(self.prefix_ + "pddl.GymReminderProtocols.instances", parameter, descriptor)
+                parameter = updated_params.pddl.DrinkingProtocols.instances
+                self.node_.declare_parameter(self.prefix_ + "pddl.DrinkingProtocols.instances", parameter, descriptor)
 
-            if not self.node_.has_parameter(self.prefix_ + "pddl.GymReminderProtocols.gym_reminder_times"):
+            if not self.node_.has_parameter(self.prefix_ + "pddl.DrinkingProtocols.drinking_reminder_times"):
                 descriptor = ParameterDescriptor(description="time that each protocol is triggered", read_only = False)
-                parameter = updated_params.pddl.GymReminderProtocols.gym_reminder_times
-                self.node_.declare_parameter(self.prefix_ + "pddl.GymReminderProtocols.gym_reminder_times", parameter, descriptor)
-
-            if not self.node_.has_parameter(self.prefix_ + "pddl.MedicineRefillReminderProtocols.instances"):
-                descriptor = ParameterDescriptor(description="medicine refill protocols", read_only = False)
-                parameter = updated_params.pddl.MedicineRefillReminderProtocols.instances
-                self.node_.declare_parameter(self.prefix_ + "pddl.MedicineRefillReminderProtocols.instances", parameter, descriptor)
-
-            if not self.node_.has_parameter(self.prefix_ + "pddl.MedicineRefillReminderProtocols.medicine_refill_reminder_times"):
-                descriptor = ParameterDescriptor(description="time that each protocol is triggered", read_only = False)
-                parameter = updated_params.pddl.MedicineRefillReminderProtocols.medicine_refill_reminder_times
-                self.node_.declare_parameter(self.prefix_ + "pddl.MedicineRefillReminderProtocols.medicine_refill_reminder_times", parameter, descriptor)
-
-            if not self.node_.has_parameter(self.prefix_ + "pddl.MedicineRefillPharmacyReminderProtocols.instances"):
-                descriptor = ParameterDescriptor(description="medicine pharmacy refill phramacy protocols", read_only = False)
-                parameter = updated_params.pddl.MedicineRefillPharmacyReminderProtocols.instances
-                self.node_.declare_parameter(self.prefix_ + "pddl.MedicineRefillPharmacyReminderProtocols.instances", parameter, descriptor)
-
-            if not self.node_.has_parameter(self.prefix_ + "pddl.MedicineRefillPharmacyReminderProtocols.medicine_refill_pharmacy_reminder_times"):
-                descriptor = ParameterDescriptor(description="time that each protocol is triggered", read_only = False)
-                parameter = updated_params.pddl.MedicineRefillPharmacyReminderProtocols.medicine_refill_pharmacy_reminder_times
-                self.node_.declare_parameter(self.prefix_ + "pddl.MedicineRefillPharmacyReminderProtocols.medicine_refill_pharmacy_reminder_times", parameter, descriptor)
-
-            if not self.node_.has_parameter(self.prefix_ + "pddl.WalkingProtocols.instances"):
-                descriptor = ParameterDescriptor(description="gym reminder protocols", read_only = False)
-                parameter = updated_params.pddl.WalkingProtocols.instances
-                self.node_.declare_parameter(self.prefix_ + "pddl.WalkingProtocols.instances", parameter, descriptor)
-
-            if not self.node_.has_parameter(self.prefix_ + "pddl.WalkingProtocols.walking_reminder_times"):
-                descriptor = ParameterDescriptor(description="time that each protocol is triggered", read_only = False)
-                parameter = updated_params.pddl.WalkingProtocols.walking_reminder_times
-                self.node_.declare_parameter(self.prefix_ + "pddl.WalkingProtocols.walking_reminder_times", parameter, descriptor)
+                parameter = updated_params.pddl.DrinkingProtocols.drinking_reminder_times
+                self.node_.declare_parameter(self.prefix_ + "pddl.DrinkingProtocols.drinking_reminder_times", parameter, descriptor)
 
             if not self.node_.has_parameter(self.prefix_ + "topics.time"):
                 descriptor = ParameterDescriptor(description="topic for protocol clock time", read_only = False)
@@ -306,36 +218,12 @@ class shr_parameters:
             param = self.node_.get_parameter(self.prefix_ + "pddl.instances.Persons")
             self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
             updated_params.pddl.instances.Persons = param.value
-            param = self.node_.get_parameter(self.prefix_ + "pddl.MedicineProtocols.instances")
+            param = self.node_.get_parameter(self.prefix_ + "pddl.DrinkingProtocols.instances")
             self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
-            updated_params.pddl.MedicineProtocols.instances = param.value
-            param = self.node_.get_parameter(self.prefix_ + "pddl.MedicineProtocols.take_medication_times")
+            updated_params.pddl.DrinkingProtocols.instances = param.value
+            param = self.node_.get_parameter(self.prefix_ + "pddl.DrinkingProtocols.drinking_reminder_times")
             self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
-            updated_params.pddl.MedicineProtocols.take_medication_times = param.value
-            param = self.node_.get_parameter(self.prefix_ + "pddl.GymReminderProtocols.instances")
-            self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
-            updated_params.pddl.GymReminderProtocols.instances = param.value
-            param = self.node_.get_parameter(self.prefix_ + "pddl.GymReminderProtocols.gym_reminder_times")
-            self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
-            updated_params.pddl.GymReminderProtocols.gym_reminder_times = param.value
-            param = self.node_.get_parameter(self.prefix_ + "pddl.MedicineRefillReminderProtocols.instances")
-            self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
-            updated_params.pddl.MedicineRefillReminderProtocols.instances = param.value
-            param = self.node_.get_parameter(self.prefix_ + "pddl.MedicineRefillReminderProtocols.medicine_refill_reminder_times")
-            self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
-            updated_params.pddl.MedicineRefillReminderProtocols.medicine_refill_reminder_times = param.value
-            param = self.node_.get_parameter(self.prefix_ + "pddl.MedicineRefillPharmacyReminderProtocols.instances")
-            self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
-            updated_params.pddl.MedicineRefillPharmacyReminderProtocols.instances = param.value
-            param = self.node_.get_parameter(self.prefix_ + "pddl.MedicineRefillPharmacyReminderProtocols.medicine_refill_pharmacy_reminder_times")
-            self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
-            updated_params.pddl.MedicineRefillPharmacyReminderProtocols.medicine_refill_pharmacy_reminder_times = param.value
-            param = self.node_.get_parameter(self.prefix_ + "pddl.WalkingProtocols.instances")
-            self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
-            updated_params.pddl.WalkingProtocols.instances = param.value
-            param = self.node_.get_parameter(self.prefix_ + "pddl.WalkingProtocols.walking_reminder_times")
-            self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
-            updated_params.pddl.WalkingProtocols.walking_reminder_times = param.value
+            updated_params.pddl.DrinkingProtocols.drinking_reminder_times = param.value
             param = self.node_.get_parameter(self.prefix_ + "topics.time")
             self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
             updated_params.topics.time = param.value

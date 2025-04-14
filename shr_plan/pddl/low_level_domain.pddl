@@ -19,10 +19,12 @@
     (robot_at ?lmr - Landmark)
     (robot_at_time ?t - Time ?lmr - Landmark)
     (person_at ?t - Time ?p - Person ?lmp - Landmark)
+
     ;;(person_currently_at ?p - Person ?lmp - Landmark)
+
     (person_at_success ?p - Person ?lmp - Landmark)
+
     (same_location ?l1 ?l2 - Landmark)
-    (home_location ?l - Landmark)
     (same_location_check ?l1 - Landmark ?l2 - Landmark)
 
     (person_taking_medicine ?t - Time)
@@ -62,8 +64,6 @@
     (reminder_blocks_reminder ?a1 ?a2 - ReminderAction)
     (voice_blocks_voice ?v1 ?v2 - VoiceAction)
     (voice_blocks_reminder ?a1 - VoiceAction ?r - ReminderAction)
-
-
 
     (executed_reminder ?a - ReminderAction)
     (executed_call ?c - CallAction)
