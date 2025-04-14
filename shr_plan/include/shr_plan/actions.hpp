@@ -853,20 +853,11 @@ namespace pddl_lib {
                     RCLCPP_INFO(rclcpp::get_logger("########## STARTT #################"), "Your message here");
 
                     const char* homeDir = std::getenv("HOME");
-<<<<<<< Updated upstream
                     // std::string cmd_startros = std::string(homeDir);
                     // cmd_startros += "/start_nav.sh";
 
                     std::string cmd_startros = "/home/hello-robot/smarthome_ws/src/smart-home-robot/helper_scripts/start_nav.sh";
-=======
-//                    std::string cmd_startros = std::string(homeDir);
-//                    cmd_startros += "/start_nav.sh";
-                    std::string cmd_startros = "/home/hello-robot/smarthome_ws/src/smart-home-robot/helper_scripts/start_nav.sh";
                     std::system(cmd_startros.c_str());
->>>>>>> Stashed changes
-                    std::system(cmd_startros.c_str());
-
-
         
                     std::cout << " ------ finish start ----" << std::endl;
                     kb.insert_predicate({"started", {}});
@@ -1344,17 +1335,11 @@ namespace pddl_lib {
 
 
             const char* homeDir = std::getenv("HOME");
-<<<<<<< Updated upstream
             // std::string cmd_startros = std::string(homeDir);
             // cmd_startros += "/start_nav.sh";
 
             std::string cmd_startros = "/home/hello-robot/smarthome_ws/src/smart-home-robot/helper_scripts/start_nav.sh";
-=======
-//            std::string cmd_startros = std::string(homeDir);
-//            cmd_startros += "/start_nav.sh";
-            std::string cmd_startros = "/home/hello-robot/smarthome_ws/src/smart-home-robot/helper_scripts/start_nav.sh";
-            std::system(cmd_startros.c_str());
->>>>>>> Stashed changes
+
             std::system(cmd_startros.c_str());
 
             rclcpp::sleep_for(std::chrono::seconds(10));
