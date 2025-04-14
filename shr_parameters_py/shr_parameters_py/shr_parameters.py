@@ -33,7 +33,11 @@ class shr_parameters:
             MedicineProtocols = __Medicineprotocols()
             class __Gymreminderprotocols:
                 instances = ["gym_reminder"]
+<<<<<<< Updated upstream
                 gym_reminder_times = ["Everday 06h30m0s/07h00m0s"]
+=======
+                gym_reminder_times = ["Monday,Wednesday,Friday 06h30m0s/07h00m0s"]
+>>>>>>> Stashed changes
             GymReminderProtocols = __Gymreminderprotocols()
             class __Medicinerefillreminderprotocols:
                 instances = ["medicine_refill_reminder"]
