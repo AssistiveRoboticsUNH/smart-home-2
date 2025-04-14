@@ -12,6 +12,7 @@
 
 class WorldStateListener : public rclcpp::Node {
 private:
+    rclcpp::Subscription<std_msgs::msg::Int32>::SharedPtr person_intervened_;
     rclcpp::Subscription<std_msgs::msg::Int32>::SharedPtr eating_sub_;
     rclcpp::Subscription<std_msgs::msg::Int32>::SharedPtr charging_sub_;
     rclcpp::Subscription<builtin_interfaces::msg::Time>::SharedPtr time_sub_;
@@ -42,6 +43,12 @@ public:
 
         tf_buffer_ = std::make_unique<tf2_ros::Buffer>(get_clock());
         tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_, true);
+
+        person_intervened_ = create_subscription<std_msgs::msg::Int32>(
+                params.topics.person_intervene, 10, [this](const std_msgs::msg::Int32::SharedPtr msg) {
+                    std::lock_guard<std::mutex> lock(world_state_mtx);
+                    world_state_->person_intervene = msg->data;
+                });
 
         eating_sub_ = create_subscription<std_msgs::msg::Int32>(
                 params.topics.person_eating, 10, [this](const std_msgs::msg::Int32::SharedPtr msg) {

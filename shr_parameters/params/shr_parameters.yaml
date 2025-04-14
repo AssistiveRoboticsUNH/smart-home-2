@@ -85,7 +85,11 @@ shr_parameters:
       default_value: "/charging",
       description: "topic for smart plug that detect if robot is charging",
     }
-
+    person_intervene: {
+      type: string,
+      default_value: "/person_intervene",
+      description: "topic for checking good weather",
+    }
     good_weather: {
       type: string,
       default_value: "/good_weather",
