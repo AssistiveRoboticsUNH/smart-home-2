@@ -576,6 +576,7 @@ namespace pddl_lib {
                 if (ps.world_state_converter->get_world_state_msg()->person_intervene){
                     //  reset
                     ps.already_called == 0;
+                    ps.docking_try = 0;
                 }else{
                     // already called for failure and waiting for intervention
                     return BT::NodeStatus::FAILURE;
@@ -642,7 +643,7 @@ namespace pddl_lib {
             RCLCPP_INFO(rclcpp::get_logger(std::string("weblog=") + "high_level_domain_Idle" + "docking started"),
                         "user...");
 
-            auto status_dock = send_goal_blocking(goal_msg_dock, action, ps);
+            auto status_dock = send_goal_blocking(goal_msg_dock, action, ps, 1);
             // if failed to do try for two time then call person
             if (!status_dock){
                 ps.docking_try++;
@@ -702,35 +703,10 @@ namespace pddl_lib {
                 // undock goal is empty and same as docking
                 shr_msgs::action::DockingRequest::Goal goal_msg;
 
-                auto success_undock = std::make_shared < std::atomic < int >> (-1);
-                auto send_goal_options_dock = rclcpp_action::Client<shr_msgs::action::DockingRequest>::SendGoalOptions();
-                send_goal_options_dock.result_callback = [&success_undock](
-                        const rclcpp_action::ClientGoalHandle<shr_msgs::action::DockingRequest>::WrappedResult result) {
-                    *success_undock = result.code == rclcpp_action::ResultCode::SUCCEEDED;
-                    if (*success_undock == 1) {
-                        RCLCPP_INFO(rclcpp::get_logger(std::string("weblog=") + "low_level_domain_MoveToLandmark" +
-                                                       "UnDocking goal Succeeded."), "user...");
-
-                    } else {
-                        RCLCPP_INFO(rclcpp::get_logger(std::string("weblog=") + "low_level_domain_MoveToLandmark" +
-                                                       "UnDocking goal aborted!."), "user...");
-
-                    }
-                };
-                ps.undocking_->async_send_goal(goal_msg, send_goal_options_dock);
-                auto tmp_dock = ps.active_protocol;
-
-                while (*success_undock == -1) {
-                    if (!(tmp_dock == ps.active_protocol)) {
-                        ps.undocking_->async_cancel_all_goals();
-                        std::cout << " Failed " << std::endl;
-                        RCLCPP_INFO(rclcpp::get_logger(std::string("weblog=") + "high_level_domain_MoveToLandmark" +
-                                                       "UnDocking failed for protocol mismatched."), "user...");
-
-                    }
-                    rclcpp::sleep_for(std::chrono::seconds(1));
-                }
-                ps.undocking_->async_cancel_all_goals();
+                RCLCPP_INFO(rclcpp::get_logger(std::string("weblog=") + "high_level_domain_Idle" + "undocking started"),
+                           "user...");
+               auto success_undock = send_goal_blocking(goal_msg, action, ps, 0);
+               ps.undocking_->async_cancel_all_goals();
 
                 // indicating that robot didnt charge itself and needs to start again
                 return BT::NodeStatus::FAILURE;
