@@ -4,4 +4,5 @@ int32 person_taking_medicine
 int32 robot_charging
 int32 person_eating
 int32 good_weather
+int32 person_intervene
 builtin_interfaces/Time time

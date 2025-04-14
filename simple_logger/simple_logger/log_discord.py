@@ -46,7 +46,7 @@ class LogSubscriber(Node):
         # self.ir_sensor_subscriber = self.create_subscription(Float32, 'docking/ir_weight', self.ir_sensor_callback, 10)
         self.charger_subscriber = self.create_subscription(Int32, 'charging', self.iot_charger_callback, 10)
         self.current_subscriber = self.create_subscription(Float32, 'charging_current', self.current_callback, 10)
-        
+        self.person_intervention_publisher = self.publisher(Int32, 'person_intervene', 10)
         self.charger_status = None
         self.bump = None
         self.voltage = None
@@ -83,9 +83,21 @@ class LogSubscriber(Node):
         date_str = datetime.now().strftime("Y%y_M%m_D%d")
         self.simple_log_file = f"{path}/log_{date_str}.txt"
 
-        
         with open(self.simple_log_file, 'a+') as f:
             f.write(info)
+
+    def publish_multiple_times(self):
+        msg = Int32()
+        for i in range(5):
+            msg.data = 1
+            self.person_intervention_publisher.publish(msg)
+            self.get_logger().info(f'Published message: {msg.data}')
+            time.sleep(0.1)  # wait 0.1 seconds between messages
+        for j in range(3):
+            msg.data = 0
+            self.person_intervention_publisher.publish(msg)
+            self.get_logger().info(f'Published message: {msg.data}')
+            time.sleep(0.1)  # wait 0.1 seconds between messages
 
 
     async  def on_message_callback(self, msg):
@@ -121,11 +133,12 @@ class LogSubscriber(Node):
             result = subprocess.run(command, shell=True, text=True, capture_output=True)
             await self.notifier.send_message(f'{result}')
 
-
+        elif msg == "intervened":
+            self.publish_multiple_times()
+            await self.notifier.send_message(f'publish intervened')
 
 
     async def listener_callback(self, msg):
-        
         # print('info:', msg) 
         stamp=msg.stamp
         name=msg.name
@@ -139,7 +152,6 @@ class LogSubscriber(Node):
             self.log_offline(f'\n{td} >> **Robot Started**\n')
             self.notified_start = True
 
-        
         # print(f'\ntime={td}')
         # print(f'name={name}')
         # print(f'file={file}')
@@ -177,7 +189,6 @@ class LogSubscriber(Node):
             # Log offline as well
             self.log_offline(info)
 
-            
             self.prev_info = cleaned_text
             
 
