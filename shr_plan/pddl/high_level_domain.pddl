@@ -7,6 +7,7 @@
 
 (:types
   DrinkingProtocol
+  MedicineProtocol
   Landmark
   Time
   Person
@@ -35,6 +36,15 @@
   (drinking_protocol_enabled ?dr - DrinkingProtocol)
   (time_for_drinking_reminder ?dr - DrinkingProtocol)
   (already_reminded_drinking ?dr - DrinkingProtocol)
+
+  ;; medicine
+  (medicine_protocol_enabled ?med - MedicineProtocol)
+  (time_to_take_medicine ?med - MedicineProtocol)
+  (already_took_medicine ?m - MedicineProtocol)
+  (already_reminded_medicine ?m - MedicineProtocol)
+  (already_called_about_medicine ?m - MedicineProtocol)
+
+
 
   (low_level_failed)
 
@@ -127,7 +137,7 @@
 	:parameters (?d - DrinkingProtocol ?p - Person ?cur - Landmark ?dest - Landmark)
 	:precondition (and
 	  ;; all protocols should have a priority higher than that of idle
-	  (priority_3)
+	  (priority_2)
       (time_for_drinking_reminder ?d)
 
       (visible_location ?dest)
@@ -143,26 +153,68 @@
 		)
 	:effect (and
 	        (success)
-            (not (priority_3))
+            (not (priority_2))
             (drinking_protocol_enabled ?d)
             (not (low_level_failed))
             ;; for every protocol in types it has to have a forall to disable other protocols before starting this one
-            ;;(forall (?medicine_pharmacy - MedicineRefillPharmacyReminderProtocol) (not (medicine_pharmacy_reminder_enabled ?medicine_pharmacy)) )
+            (forall (?medicine_protocol - MedicineProtocol) (not (medicine_protocol_enabled ?medicine_protocol)) )
           )
 )
 
 (:action ContinueDrinkingProtocol
 	:parameters (?d - DrinkingProtocol)
 	:precondition (and
-	    (priority_3)
+	    (priority_2)
 	    (not (low_level_failed))
       (time_for_drinking_reminder ?d)
       (not (already_reminded_drinking ?d))
       (drinking_protocol_enabled ?d)
 		)
-	:effect (and (success) (not (priority_3)) )
+	:effect (and (success) (not (priority_2)) )
 )
 
+(:action StartMedicineProtocol
+	:parameters (?m - MedicineProtocol ?p - Person ?cur - Landmark ?dest - Landmark)
+	:precondition (and
+	    (priority_2)
+      (time_to_take_medicine ?m)
+      (visible_location ?dest)
+      (not (not_visible_location ?dest))
+      (visible_location ?cur)
+      (not (not_visible_location ?cur))
+      (person_currently_at ?p ?cur)
+      (robot_at ?cur)
+
+      ;;(medicine_location ?dest)
+      
+      (not (already_took_medicine ?m))
+      (not (already_reminded_medicine ?m))
+      (forall (?med - MedicineProtocol) (not (medicine_protocol_enabled ?med)) )
+      (started)
+		)
+	:effect (and
+	          (success)
+            (not (priority_2))
+            (medicine_protocol_enabled ?m)
+            (not (low_level_failed))
+            (forall (?drinking_protocol - DrinkingProtocol) (not (drinking_protocol_enabled ?drinking_protocol)) )
+           
+          )
+)
+
+(:action ContinueMedicineProtocol
+	:parameters (?m - MedicineProtocol)
+	:precondition (and
+	    (priority_2)
+	    (not (low_level_failed))
+      (time_to_take_medicine ?m)
+      (not (already_took_medicine ?m))
+      (not (already_reminded_medicine ?m))
+      (not (already_called_about_medicine ?m))
+      (medicine_protocol_enabled ?m)
+		)
+	:effect (and (success) (not (priority_2)) )
+)
 
 (:action Idle
 	:parameters ()
@@ -190,7 +242,7 @@
 	    (and
 	        (started)
 	        ;; has to be higher priority than idle
-            (priority_4)
+            (priority_5)
 
             ;; CANT SHUTDOWN IF time to do something is true and
             ;; all predicates indicating that they it is done are false
@@ -225,7 +277,7 @@
 
 	    )
 	:effect (and (success)
-	            (not (priority_4))
+	            (not (priority_5))
                 (not (low_level_failed))
                 (not started)
           )

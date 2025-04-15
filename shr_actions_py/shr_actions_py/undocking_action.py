@@ -73,10 +73,10 @@ class UnDockingActionServer(Node):
         msg = Twist()
 
         while time.time() - start_time < self.time_out:
-            print("&&&&&&&&& self.min_range in while #################")
+            # print("&&&&&&&&& self.min_range in while #################")
             msg.linear.x = speed # Go forward to undock
             self.vel_pub.publish(msg)
-            print(self.min_range)
+            # print(self.min_range)
 
             # if self.min_range is not None and self.min_range > 0.7:
             #     print("&&&&&&&&& self.min_range > 0.7 move ######")

@@ -3,6 +3,7 @@
   (:objects
      living_room home outside bedroom - Landmark
      drinking - DrinkingProtocol
+     am_meds pm_meds - MedicineProtocol
      nathan - Person
      t1 - Time  ;;t2 t3 t4 t5
 
@@ -15,7 +16,6 @@
   )
   (:init
       (priority_1)
-      ;;(started)
       (visible_location home)
       (visible_location living_room)
       (visible_location bedroom)
@@ -25,12 +25,10 @@
       ;; add when you need to test the protocl 
       ;;(person_at t1 nathan living_room)
       
-      (time_for_drinking_reminder drinking)
-      (person_currently_at nathan living_room)
-      (robot_at home)
+      ;;(time_for_drinking_reminder drinking)
+      ;;(person_currently_at nathan living_room)
+      ;;(robot_at home)
       
-      
-    
 
       ;;(medicine_location living_room)
       ;;(gym_location living_room)

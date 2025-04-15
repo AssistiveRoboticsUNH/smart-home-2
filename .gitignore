@@ -27,4 +27,5 @@ COLCON_IGNORE
 .docker_nsojib
 
 helper_scripts/
+helper_scripts/startup_planner.sh
 helper_scripts/sh_startup_script.sh

@@ -7,17 +7,30 @@ shr_parameters:
         description: "all people in protocols",
       }
   
-    DrinkingProtocols:
+    DrinkingProtocol:
       instances: {
         type: string_array,
         default_value: [ "drinking" ],
-        description: "gym reminder protocols",
+        description: "drinking reminder protocols",
       }
       drinking_reminder_times: {
         type: string_array,
-        default_value: [ "Everyday 13h00m0s/14h00m0s"],
+        default_value: [ "Everyday 14h00m0s/16h00m0s"],
         description: "time that each protocol is triggered",
       }
+    
+    MedicineProtocol:
+      instances: {
+        type: string_array,
+        default_value: [ "am_meds" , "pm_meds" ],
+        description: "medicine protocols",
+      }
+      take_medication_times: {
+        type: string_array,
+        default_value: [ "Everyday 09h15m0s/10h15m0s", "Everyday 21h00m0s/22h00m0s" ],
+        description: "time that each protocol is triggered",
+      }
+
   topics:
     time: {
       type: string,

@@ -17,10 +17,21 @@ namespace pddl_lib {
         return std::stoi(hour) * 60 * 60 + std::stoi(minute) * 60 + std::stoi(seconds);
     }
 
-    
 
-    std::optional<long> get_inst_index(DrinkingProtocol m, const shr_parameters::Params &params) {
-        const auto &instances = params.pddl.DrinkingProtocols.instances;
+    std::optional<long> get_inst_index(DrinkingProtocol d, const shr_parameters::Params &params) {
+        const auto &instances = params.pddl.DrinkingProtocol.instances;
+        auto it = std::find(instances.begin(), instances.end(), d);
+        if (it != instances.end()) {
+            auto index = std::distance(instances.begin(), it);
+            return index;
+        } else {
+            return {};
+        }
+    }
+
+
+    std::optional<long> get_inst_index(MedicineProtocol m, const shr_parameters::Params &params) {
+        const auto &instances = params.pddl.MedicineProtocol.instances;
         auto it = std::find(instances.begin(), instances.end(), m);
         if (it != instances.end()) {
             auto index = std::distance(instances.begin(), it);
@@ -34,8 +45,13 @@ namespace pddl_lib {
         if (inst.type == "DrinkingProtocol") {
             return get_inst_index((DrinkingProtocol) inst.name, params);
         }
+        else if (inst.type == "MedicineProtocol") {
+            return get_inst_index((MedicineProtocol) inst.name, params);
+        }
         return {};
     }
+
+
 
     std::string replace_token(const std::string &protocol_content, const std::string &token, const std::string &new_token) {
         if (token == new_token) {
