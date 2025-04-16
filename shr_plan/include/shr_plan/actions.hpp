@@ -644,7 +644,7 @@ namespace pddl_lib {
                     // cmd_startros += "/start_nav.sh";
                     // std::system(cmd_startros.c_str());
                     
-                    std::string cmd_startros = "/home/hello-robot/smarthome_ws/src/smart-home-robot/helper_scripts/start_nav.sh";
+                    std::string cmd_startros = "/home/hello-robot/smarthome_ws/src/smart-home-robot/external/helper_script/start_nav.sh";
                     std::system(cmd_startros.c_str());
 
         
@@ -1004,8 +1004,8 @@ namespace pddl_lib {
             // std::string cmd_startros = std::string(homeDir);
             // cmd_startros += "/start_nav.sh";
             // std::system(cmd_startros.c_str());
-
-            std::string cmd_startros = "/home/hello-robot/smarthome_ws/src/smart-home-robot/helper_scripts/start_nav.sh";
+            
+            std::string cmd_startros = "/home/hello-robot/smarthome_ws/src/smart-home-robot/external/helper_script/start_nav.sh";
             std::system(cmd_startros.c_str());
 
             rclcpp::sleep_for(std::chrono::seconds(10));
