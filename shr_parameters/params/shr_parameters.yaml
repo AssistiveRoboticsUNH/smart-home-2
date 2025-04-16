@@ -59,10 +59,10 @@ shr_parameters:
       description: "topic for checking good weather",
     }
 
-    display: {
+    display_ack: {
       type: string,
-      default_value: "/display",
-      description: "topic for changing status for display",
+      default_value: "/screen_ack",
+      description: "topic for display ack",
     }
 
   person_tf: {
@@ -75,6 +75,7 @@ shr_parameters:
     default_value: "base_link",
     description: "robot tf frame id",
   }
+  
 
 
 

@@ -5,6 +5,8 @@
 #include <shr_parameters.hpp>
 #include <std_msgs/msg/int32.hpp>
 #include <tf2_ros/transform_listener.h>
+#include "std_msgs/msg/string.hpp"
+
 
 #pragma once
 
@@ -15,6 +17,8 @@ private:
     rclcpp::Subscription<builtin_interfaces::msg::Time>::SharedPtr time_sub_;
     rclcpp::Subscription<std_msgs::msg::Int32>::SharedPtr taking_medicine_sub_;
     rclcpp::Subscription<std_msgs::msg::Int32>::SharedPtr good_weather_sub_;
+    rclcpp::Subscription<std_msgs::msg::String>::SharedPtr screen_ack_sub_;
+
     std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
     std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
     std::shared_ptr<shr_msgs::msg::WorldState> world_state_;
@@ -69,6 +73,14 @@ public:
                     std::lock_guard<std::mutex> lock(world_state_mtx);
                     world_state_->good_weather = msg->data;
                 });
+
+        screen_ack_sub_ = create_subscription<std_msgs::msg::String>(
+                params.topics.display_ack, 10, [this](const std_msgs::msg::String::SharedPtr msg) {
+                    std::lock_guard<std::mutex> lock(world_state_mtx);
+                    world_state_->screen_ack = msg->data;
+                });
+
+
 
         std::filesystem::path pkg_dir = ament_index_cpp::get_package_share_directory("shr_resources");
         auto mesh_file_robot = (pkg_dir / "resources" / "olson_robot.obj").string();
@@ -171,4 +183,14 @@ public:
         std::lock_guard<std::mutex> lock(world_state_mtx);
         return world_state_;
     }
+    bool is_screen_ack_turn_on() {
+        std::lock_guard<std::mutex> lock(world_state_mtx);
+        return world_state_->screen_ack == "TURN_ON";
+    }
+    void reset_screen_ack() {
+        std::lock_guard<std::mutex> lock(world_state_mtx);
+        world_state_->screen_ack = "";
+    }
+    
+    
 };

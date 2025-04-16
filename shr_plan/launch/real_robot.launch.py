@@ -57,6 +57,12 @@ def generate_launch_description():
         output='screen'
     )
 
+    display_ack_node = Node(
+        package='smartthings_ros',
+        executable='display_ack',
+        output='screen'
+    )
+
     discord_logger = Node(
         package='simple_logger',
         executable='simple_logger_discord',
@@ -138,5 +144,6 @@ def generate_launch_description():
     ld.add_action(smartthings_weather)
     ld.add_action(docking_data_manager)
     ld.add_action(discord_logger)
+    ld.add_action(display_ack_node)
 
     return ld

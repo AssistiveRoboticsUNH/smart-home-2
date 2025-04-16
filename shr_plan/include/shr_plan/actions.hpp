@@ -1023,15 +1023,21 @@ namespace pddl_lib {
             RCLCPP_INFO(ps.world_state_converter->get_logger(), "weblog=----before TURN_ON web----");
 
 
-            // for (int i = 0; i < 200; i++) {
-            //     auto message = std_msgs::msg::String();
-            //     message.data = "TURN_ON";
-            //     ps.getDisplayPublisher()->publish(message);
-            //     RCLCPP_INFO(rclcpp::get_logger("StartROS"), "Published: %s (Iteration %d)", message.data.c_str(), i + 1);
-            //     RCLCPP_INFO(ps.world_state_converter->get_logger(), "weblog=----publishing TURN_ON web----");
-                
-            //     rclcpp::sleep_for(std::chrono::seconds(1)); // 1-second delay between messages
-            // }
+            ps.world_state_converter->reset_screen_ack();  // Optional: reset at the start
+
+            for (int i = 0; i < 200; ++i) {
+                if (ps.world_state_converter->is_screen_ack_turn_on()) {
+                    RCLCPP_INFO(rclcpp::get_logger("StartROS"), "✅ Received TURN_ON via screen_ack. Breaking loop.");
+                    break;
+                }
+
+                auto message = std_msgs::msg::String();
+                message.data = "TURN_ON";
+                ps.getDisplayPublisher()->publish(message);
+                RCLCPP_INFO(rclcpp::get_logger("StartROS"), "📤 Published TURN_ON (%d/200)", i + 1);
+                rclcpp::sleep_for(std::chrono::seconds(1));
+            }
+
 
             lock.UnLock();
             

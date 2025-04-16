@@ -42,7 +42,7 @@ class shr_parameters:
             person_eating = "/person_eating"
             robot_charging = "/charging"
             good_weather = "/good_weather"
-            display = "/display"
+            display_ack = "/screen_ack"
         topics = __Topics()
 
 
@@ -146,8 +146,8 @@ class shr_parameters:
                     updated_params.topics.good_weather = param.value
                     self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
 
-                if param.name == self.prefix_ + "topics.display":
-                    updated_params.topics.display = param.value
+                if param.name == self.prefix_ + "topics.display_ack":
+                    updated_params.topics.display_ack = param.value
                     self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
 
                 if param.name == self.prefix_ + "person_tf":
@@ -220,10 +220,10 @@ class shr_parameters:
                 parameter = updated_params.topics.good_weather
                 self.node_.declare_parameter(self.prefix_ + "topics.good_weather", parameter, descriptor)
 
-            if not self.node_.has_parameter(self.prefix_ + "topics.display"):
-                descriptor = ParameterDescriptor(description="topic for changing status for display", read_only = False)
-                parameter = updated_params.topics.display
-                self.node_.declare_parameter(self.prefix_ + "topics.display", parameter, descriptor)
+            if not self.node_.has_parameter(self.prefix_ + "topics.display_ack"):
+                descriptor = ParameterDescriptor(description="topic for display ack", read_only = False)
+                parameter = updated_params.topics.display_ack
+                self.node_.declare_parameter(self.prefix_ + "topics.display_ack", parameter, descriptor)
 
             if not self.node_.has_parameter(self.prefix_ + "person_tf"):
                 descriptor = ParameterDescriptor(description="person tf frame id", read_only = False)
@@ -267,9 +267,9 @@ class shr_parameters:
             param = self.node_.get_parameter(self.prefix_ + "topics.good_weather")
             self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
             updated_params.topics.good_weather = param.value
-            param = self.node_.get_parameter(self.prefix_ + "topics.display")
+            param = self.node_.get_parameter(self.prefix_ + "topics.display_ack")
             self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
-            updated_params.topics.display = param.value
+            updated_params.topics.display_ack = param.value
             param = self.node_.get_parameter(self.prefix_ + "person_tf")
             self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
             updated_params.person_tf = param.value
