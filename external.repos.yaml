@@ -35,3 +35,8 @@ repositories:
     type: git
     url: https://github.com/MnAkash/convROS_agent.git
     version: main
+  
+  external/helper_script:
+    type: git
+    url: https://github.com/AssistiveRoboticsUNH/helper_scripts.git
+    version: main
