@@ -8,6 +8,8 @@
 (:types
   DrinkingProtocol
   MedicineProtocol
+  EmptyDishwasherProtocol
+  EmptyTrashProtocol
   Landmark
   Time
   Person
@@ -45,6 +47,15 @@
   (already_called_about_medicine ?m - MedicineProtocol)
 
 
+;; empty trash reminder
+  (empty_trash_protocol_enabled ?etr - EmptyTrashProtocol)
+  (time_for_empty_trash_reminder ?etr - EmptyTrashProtocol)
+  (already_reminded_empty_trash ?etr - EmptyTrashProtocol)
+
+;; empty dishwasher reminder
+  (empty_dishwasher_protocol_enabled ?etd - EmptyDishwasherProtocol)
+  (time_for_empty_dishwasher_reminder ?etd - EmptyDishwasherProtocol)
+  (already_reminded_empty_dishwasher ?etd - EmptyDishwasherProtocol)
 
   (low_level_failed)
 
@@ -158,6 +169,8 @@
             (not (low_level_failed))
             ;; for every protocol in types it has to have a forall to disable other protocols before starting this one
             (forall (?medicine_protocol - MedicineProtocol) (not (medicine_protocol_enabled ?medicine_protocol)) )
+            (forall (?empty_trash_protocol - EmptyTrashProtocol) (not (empty_trash_protocol_enabled ?empty_trash_protocol)) )
+            (forall (?empty_dishwasher_protocol - EmptyDishwasherProtocol) (not (empty_dishwasher_protocol_enabled ?empty_dishwasher_protocol)) )
           )
 )
 
@@ -198,7 +211,9 @@
             (medicine_protocol_enabled ?m)
             (not (low_level_failed))
             (forall (?drinking_protocol - DrinkingProtocol) (not (drinking_protocol_enabled ?drinking_protocol)) )
-           
+            (forall (?empty_trash_protocol - EmptyTrashProtocol) (not (empty_trash_protocol_enabled ?empty_trash_protocol)) )
+            (forall (?empty_dishwasher_protocol - EmptyDishwasherProtocol) (not (empty_dishwasher_protocol_enabled ?empty_dishwasher_protocol)) )
+
           )
 )
 
@@ -212,6 +227,84 @@
       (not (already_reminded_medicine ?m))
       (not (already_called_about_medicine ?m))
       (medicine_protocol_enabled ?m)
+		)
+	:effect (and (success) (not (priority_2)) )
+)
+
+(:action StartEmptyTrashProtocol
+	:parameters (?e - EmptyTrashProtocol ?p - Person ?cur - Landmark ?dest - Landmark)
+	:precondition (and
+	    (priority_2)
+      (time_for_empty_trash_reminder ?e)
+      (visible_location ?dest)
+      (not (not_visible_location ?dest))
+      (visible_location ?cur)
+      (not (not_visible_location ?cur))
+      (person_currently_at ?p ?cur)
+      (robot_at ?cur)
+
+      (not (already_reminded_empty_trash ?e))
+      (forall (?etr - EmptyTrashProtocol) (not (empty_trash_protocol_enabled ?etr)) )
+      (started)
+		)
+	:effect (and
+	          (success)
+            (not (priority_2))
+            (empty_trash_protocol_enabled ?e)
+            (not (low_level_failed))
+            (forall (?drinking_protocol - DrinkingProtocol) (not (drinking_protocol_enabled ?drinking_protocol)) )
+            (forall (?medicine_protocol - MedicineProtocol) (not (medicine_protocol_enabled ?medicine_protocol)) )
+            (forall (?empty_dishwasher_protocol - EmptyDishwasherProtocol) (not (empty_dishwasher_protocol_enabled ?empty_dishwasher_protocol)) )
+          )
+)
+
+(:action ContinueEmptyTrashProtocol
+	:parameters (?e - EmptyTrashProtocol)
+	:precondition (and
+	    (priority_2)
+	    (not (low_level_failed))
+      (time_for_empty_trash_reminder ?e)
+      (not (already_reminded_empty_trash ?e))
+      (empty_trash_protocol_enabled ?e)
+		)
+	:effect (and (success) (not (priority_2)) )
+)
+
+(:action StartEmptyDishwaserProtocol
+	:parameters (?e - EmptyDishwasherProtocol ?p - Person ?cur - Landmark ?dest - Landmark)
+	:precondition (and
+	    (priority_2)
+      (time_for_empty_dishwasher_reminder ?e)
+      (visible_location ?dest)
+      (not (not_visible_location ?dest))
+      (visible_location ?cur)
+      (not (not_visible_location ?cur))
+      (person_currently_at ?p ?cur)
+      (robot_at ?cur)
+
+      (not (already_reminded_empty_dishwasher ?e))
+      (forall (?etr - EmptyDishwasherProtocol) (not (empty_dishwasher_protocol_enabled ?etr)) )
+      (started)
+		)
+	:effect (and
+	          (success)
+            (not (priority_2))
+            (empty_dishwasher_protocol_enabled ?e)
+            (not (low_level_failed))
+            (forall (?drinking_protocol - DrinkingProtocol) (not (drinking_protocol_enabled ?drinking_protocol)) )
+            (forall (?medicine_protocol - MedicineProtocol) (not (medicine_protocol_enabled ?medicine_protocol)) )
+            (forall (?empty_trash_protocol - EmptyTrashProtocol) (not (empty_trash_protocol_enabled ?empty_trash_protocol)) )
+          )
+)
+
+(:action ContinueEmptyDishWasherProtocol
+	:parameters (?e - EmptyDishwasherProtocol)
+	:precondition (and
+	    (priority_2)
+	    (not (low_level_failed))
+      (time_for_empty_dishwasher_reminder ?e)
+      (not (already_reminded_empty_dishwasher ?e))
+      (empty_dishwasher_protocol_enabled ?e)
 		)
 	:effect (and (success) (not (priority_2)) )
 )
