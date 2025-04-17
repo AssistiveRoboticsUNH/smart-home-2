@@ -324,11 +324,8 @@
                 (forall (?med - MedicineProtocol) (not (medicine_protocol_enabled ?med)) )
                 (forall (?etr - EmptyTrashProtocol) (not (empty_trash_protocol_enabled ?etr)) )
                 (forall (?etd - EmptyDishwasherProtocol) (not (empty_dishwasher_protocol_enabled ?etd)) )
-
-
           )
 )
-
 
 ;; shutdown is supposed to stop ros2 processes
 ;; it should try to dock if it is not docked
@@ -351,24 +348,38 @@
             ;;; forall would give false if one is F
 
             ;; ADD CHANGES HERE
-            ;; for all has to be done for all protocol types
-            ;;;(forall (?med - MedicineProtocol)
-            ;;;    (not
-            ;;;        (and
-            ;;;            (time_to_take_medicine ?med)
-            ;;;            (not (already_took_medicine ?med))
-            ;;;            (not (already_reminded_medicine ?med))
-            ;;;            (not (already_called_about_medicine ?med))
-            ;;;        )
-            ;;;    )
-            ;;;)
-
-            ;;; 1
             (forall (?dr - DrinkingProtocol)
                 (not
                     (and
                         (time_for_drinking_reminder ?dr)
                         (not (already_reminded_drinking ?dr))
+                    )
+                )
+            )
+
+            (forall (?med - MedicineProtocol)
+                (not
+                    (and
+                        (time_to_take_medicine ?med)
+                        (not (already_reminded_medicine ?med))
+                    )
+                )
+            )
+
+            (forall (?emt - EmptyTrashProtocol)
+                (not
+                    (and
+                        (time_for_empty_trash_reminder ?emt)
+                        (not (already_reminded_empty_trash ?emt))
+                    )
+                )
+            )
+
+            (forall (?etd - EmptyDishwasherProtocol)
+                (not
+                    (and
+                        (time_for_empty_dishwasher_reminder ?etd)
+                        (not (already_reminded_empty_dishwasher ?etd))
                     )
                 )
             )
@@ -380,6 +391,4 @@
                 (not started)
           )
 )
-
-
 )
