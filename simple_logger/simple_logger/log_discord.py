@@ -46,7 +46,7 @@ class LogSubscriber(Node):
         # self.ir_sensor_subscriber = self.create_subscription(Float32, 'docking/ir_weight', self.ir_sensor_callback, 10)
         self.charger_subscriber = self.create_subscription(Int32, 'charging', self.iot_charger_callback, 10)
         self.current_subscriber = self.create_subscription(Float32, 'charging_current', self.current_callback, 10)
-        self.person_intervention_publisher = self.publisher(Int32, 'person_intervene', 10)
+        self.person_intervention_publisher = self.create_publisher(Int32, 'person_intervene', 10)
         self.charger_status = None
         self.bump = None
         self.voltage = None
@@ -105,7 +105,7 @@ class LogSubscriber(Node):
         self.get_logger().info(f'Received :{msg}')
         time_str = datetime.now().strftime('%m/%d/%Y  %H:%M:%S')
         if msg == "help":
-            available_commands = "**Available Commands:**\nstatus \nrunstop\nrun\n"
+            available_commands = "**Available Commands:**\nstatus \nrunstop\nrun\nintervened\n"
             await self.notifier.send_message(f'{available_commands}')
         elif msg == "status":
             status = f"Charging: {self.charger_status},\nBump: {self.bump},\nVoltage: {self.voltage}V, \nCurrent: {self.current}Amps"
