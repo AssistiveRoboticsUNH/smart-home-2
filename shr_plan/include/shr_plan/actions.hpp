@@ -42,65 +42,33 @@ namespace pddl_lib {
         int docking_try = 0;
 
         // change first to change time (x  before y after)
-        const std::unordered_map <InstantiatedParameter, std::unordered_map<std::string, std::pair < int, int>>>
         // Msg in PDDL
         // name field should be the same as the name of the protocol in the high_level_problem
         // mak sure the txt files and mp3 are in shr_resources
-        wait_times = {
-                {{"am_meds",                           "MedicineProtocol"},                       {{"reminder_1_msg", {0, 1}},
-                                                                                                          {"reminder_2_msg", {0, 1}},
-                                                                                                          {"wait", {60, 0}},
-                                                                                                        //   {"wait", {900, 0}},
-                                                                                                  }},
-                {{"pm_meds",                           "MedicineProtocol"},                       {{"reminder_1_msg", {0, 1}},
-                                                                                                          {"reminder_2_msg", {0, 1}},
-                                                                                                          {"wait", {60, 0}},
-                                                                                                        //   {"wait", {900, 0}},
-                                                                                                  }},
-                {{"gym_reminder",                      "GymReminderProtocol"},                    {{"voice_msg", {0, 1}},
-                                                                                                          {"wait",           {0, 0}},
-
-                                                                                                  }},
-                {{"medicine_refill_reminder",          "MedicineRefillReminderProtocol"},         {{"reminder_1_msg", {0, 1}},
-                                                                                                          {"wait",           {0, 0}},
-                                                                                                        }},
-                {{"drinking",                           "DrinkingProtocol"},                      {{"reminder_1_msg", {0, 1}},
-                                                                                                            {"wait",           {0, 0}},
-                                                                                                  }},
-                {{"medicine_pharmacy_reminder", "MedicineRefillPharmacyReminderProtocol"}, {{"reminder_1_msg", {0, 1}},
-                                                                                                          {"wait",           {0, 0}},
-
-                                                                                                  }},
-
-                {{"walking_reminder",                   "WalkingProtocol"}, {{"reminder_1_msg", {0, 1}},
-                                                                                    {"wait",           {0, 0}},
-
-                                                                            }},
-
+        const std::unordered_map <InstantiatedParameter, std::unordered_map<std::string, std::pair < int, int>>> wait_times = {
+            {{"am_meds","MedicineProtocol"},{{"reminder_1_msg", {0, 1}},{"reminder_2_msg", {0, 1}},{"wait", {60, 0}},}},
+            {{"pm_meds","MedicineProtocol"},{{"reminder_1_msg", {0, 1}},{"reminder_2_msg", {0, 1}},{"wait", {60, 0}},}},
+            {{"gym_reminder","GymReminderProtocol"},{{"voice_msg", {0, 1}},{"wait",{0, 0}},}},
+            {{"drinking","DrinkingProtocol"},{{"reminder_1_msg", {0, 1}},{"wait",{0, 0}},}},
         };
 
         const std::unordered_map <InstantiatedParameter, std::unordered_map<std::string, std::string>> automated_reminder_msgs = {
-                {{"am_meds","MedicineProtocol"},{{"reminder_1_msg", "am_med_reminder.txt"},{"reminder_2_msg", "am_med_reminder_2.txt"},}},
-                {{"pm_meds","MedicineProtocol"},{{"reminder_1_msg", "pm_med_reminder.txt"},{"reminder_2_msg", "pm_med_reminder_2.txt"},}},
-                {{"drinking","DrinkingProtocol"},{{"reminder_1_msg", "drinking_reminder.txt"},}},
-                {{"gym_reminder","GymReminderProtocol"},{{"reminder_1_msg", "gym_reminder1.txt"},}},
-                {{"medicine_refill_reminder","MedicineRefillReminderProtocol"},{{"reminder_1_msg", "medicine_refill.txt"},}},
-                {{"medicine_pharmacy_reminder","MedicineRefillPharmacyReminderProtocol"},{{"reminder_1_msg", "pharmacy_refill.txt"},}},
-                {{"walking_reminder","WalkingProtocol"},{{"reminder_1_msg", "walking_reminder.txt"},}},
+            {{"am_meds","MedicineProtocol"},{{"reminder_1_msg", "am_med_reminder.txt"},{"reminder_2_msg", "am_med_reminder_2.txt"},}},
+            {{"pm_meds","MedicineProtocol"},{{"reminder_1_msg", "pm_med_reminder.txt"},{"reminder_2_msg", "pm_med_reminder_2.txt"},}},
+            {{"drinking","DrinkingProtocol"},{{"reminder_1_msg", "drinking_reminder.txt"},}},
+            {{"gym_reminder","GymReminderProtocol"},{{"reminder_1_msg", "gym_reminder1.txt"},}},
         };
 
         const std::unordered_map <InstantiatedParameter, std::unordered_map<std::string, std::string>> recorded_reminder_msgs = {
-                {{"am_meds", "MedicineProtocol"}, {{"reminder_2_msg", "medicine_voice_reminder.mp4"},}},
-                {{"pm_meds", "MedicineProtocol"}, {{"reminder_2_msg", "medicine_voice_reminder.mp4"},}},
+            {{"am_meds", "MedicineProtocol"}, {{"reminder_2_msg", "medicine_voice_reminder.mp4"},}},
+            {{"pm_meds", "MedicineProtocol"}, {{"reminder_2_msg", "medicine_voice_reminder.mp4"},}},
         };
 
         const std::unordered_map<InstantiatedParameter, std::unordered_map<std::string, std::vector<std::string>>> voice_msgs = {
+            {{"gym_reminder", "GymReminderProtocol"},
                 {
-                        {"gym_reminder", "GymReminderProtocol"},
-                        {
-                                {"voice_msg", {"Good morning Howie, this is Florence, “would like to go to the gym, please say Yes or No ?", "if_true_text.txt", "if_false_text.txt"}}
-                        }
-                },
+                    {"voice_msg", {"Good morning Howie, this is Florence, “would like to go to the gym, please say Yes or No ?", "if_true_text.txt", "if_false_text.txt"}}
+                }},
         };
 
         // action servers
@@ -748,7 +716,6 @@ namespace pddl_lib {
             InstantiatedParameter cur = action.parameters[2];
             InstantiatedParameter dest = action.parameters[3];
 
-
             
             auto [ps, lock] = ProtocolState::getConcurrentInstance();
             lock.Lock();
@@ -827,6 +794,46 @@ namespace pddl_lib {
             return BT::NodeStatus::SUCCESS;
         }
 
+        BT::NodeStatus high_level_domain_StartEmptyTrashProtocol(const InstantiatedAction &action) override {
+            auto &kb = KnowledgeBase::getInstance();
+            InstantiatedParameter protocol = action.parameters[0];
+            InstantiatedParameter cur = action.parameters[2];
+            InstantiatedParameter dest = action.parameters[3];
+
+            auto [ps, lock] = ProtocolState::getConcurrentInstance();
+            lock.Lock();
+            std::string currentDateTime = getCurrentDateTime();
+            std::string log_message =
+                    std::string("weblog=") + currentDateTime + " high_level_domain_StartEmptyTrashProtocol" + " started";
+            RCLCPP_INFO(ps.world_state_converter->get_logger(), log_message.c_str());
+
+            instantiate_protocol("empty_trash_reminder.pddl", {{"current_loc", cur.name}, {"dest_loc", dest.name}});
+            
+            ps.active_protocol = protocol;
+            lock.UnLock();
+            return BT::NodeStatus::SUCCESS;
+        }
+
+        BT::NodeStatus high_level_domain_StartEmptyDishwaserProtocol(const InstantiatedAction &action) override {
+            auto &kb = KnowledgeBase::getInstance();
+            InstantiatedParameter protocol = action.parameters[0];
+            InstantiatedParameter cur = action.parameters[2];
+            InstantiatedParameter dest = action.parameters[3];
+
+            auto [ps, lock] = ProtocolState::getConcurrentInstance();
+            lock.Lock();
+            std::string currentDateTime = getCurrentDateTime();
+            std::string log_message =
+                    std::string("weblog=") + currentDateTime + " high_level_domain_StartEmptyDishwaserProtocol" + " started";
+            RCLCPP_INFO(ps.world_state_converter->get_logger(), log_message.c_str());
+
+            instantiate_protocol("empty_trash_reminder.pddl", {{"current_loc", cur.name}, {"dest_loc", dest.name}});
+            
+            ps.active_protocol = protocol;
+            lock.UnLock();
+            return BT::NodeStatus::SUCCESS;
+        }
+
         
         BT::NodeStatus high_level_domain_MoveToLandmark(const InstantiatedAction &action) override {
             std::cout << "high_level_domain_MoveToLandmark MoveToLandmark: " << std::endl;
@@ -891,22 +898,22 @@ namespace pddl_lib {
 
 
             const std::unordered_map<std::string, std::string> protocol_type_ = {
-                    {"am_meds", "MedicineProtocol"},
-                    {"pm_meds", "MedicineProtocol"},
-                    {"gym_reminder", "GymReminderProtocol"},
-                    {"medicine_refill_reminder", "MedicineRefillReminderProtocol"},
-                    {"medicine_pharmacy_reminder", "MedicineRefillPharmacyReminderProtocol"},
-                    {"walking_reminder", "WalkingProtocol"}
+                {"am_meds", "MedicineProtocol"},
+                {"pm_meds", "MedicineProtocol"},
+                {"gym_reminder", "GymReminderProtocol"},
+                {"drinking", "DrinkingProtocol"},
+                {"em_trash" , "EmptyTrashProtocol"},
+                {"em_dishwasher", "EmptyDishwasherProtocol"}
+
             };
 
             const std::unordered_map<std::string, std::vector<std::string>> keyword_protocol_ = {
-                    {"already_took_medicine", {"am_meds", "pm_meds"}},
-                    {"already_reminded_medicine", {"am_meds", "pm_meds"}},
-                    {"already_called_about_medicine", {"am_meds", "pm_meds"}},
-                    {"already_reminded_gym",{"gym_reminder"}},
-                    {"already_reminded_medicine_refill",{"medicine_refill_reminder"}},
-                    {"already_reminded_medicine_pharmacy",{"medicine_pharmacy_reminder"}},
-                    {"already_reminded_walking",{"walking_reminder"}}
+                {"already_reminded_medicine", {"am_meds", "pm_meds"}},
+                {"already_called_about_medicine", {"am_meds", "pm_meds"}},
+                {"already_reminded_gym",{"gym_reminder"}},
+                {"already_reminded_drinking",{"drinking"}},
+                {"already_reminded_empty_trash", {"em_trash"}},
+                {"already_reminded_empty_dishwasher", {"em_dishwasher"}},
             };
 
             std::ifstream ifs(keywordsFile);
@@ -961,7 +968,7 @@ namespace pddl_lib {
             
             // KILING ROS2 
 
-            std::system("python3 /home/hello-robot/kill_ros.py");
+            std::system("python3 /home/hello-robot/smarthome_ws/src/smart-home-robot/external/helper_script/kill_ros.py");
             
             rclcpp::sleep_for(std::chrono::seconds(120));
         
@@ -1127,8 +1134,14 @@ namespace pddl_lib {
             } else if (active_protocol.type == "DrinkingProtocol") {
                 kb.insert_predicate({"already_reminded_drinking", {active_protocol}});
                 kb.erase_predicate({"drinking_protocol_enabled", {active_protocol}});
+            } else if (active_protocol.type == "EmptyDishwasherProtocol") {
+                kb.insert_predicate({"already_reminded_empty_dishwasher", {active_protocol}});
+                kb.erase_predicate({"empty_dishwasher_protocol_enabled", {active_protocol}});
+            } else if (active_protocol.type == "EmptyTrashProtocol") {
+                kb.insert_predicate({"already_reminded_empty_trash", {active_protocol}});
+                kb.erase_predicate({"empty_trash_protocol_enabled", {active_protocol}});
             }
-
+            
             // RCLCPP_INFO(rclcpp::get_logger(std::string("weblog=")+"shr_domain_MessageGivenSuccess"+active_protocol.type), "user...");
             // RCLCPP_INFO(rclcpp::get_logger(currentDateTime +std::string("user=")+"Message is given for: "+active_protocol.type), "user...");
             std::string currentDateTime = getCurrentDateTime();
