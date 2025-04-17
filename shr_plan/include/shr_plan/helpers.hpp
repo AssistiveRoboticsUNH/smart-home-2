@@ -17,7 +17,6 @@ namespace pddl_lib {
         return std::stoi(hour) * 60 * 60 + std::stoi(minute) * 60 + std::stoi(seconds);
     }
 
-
     std::optional<long> get_inst_index(DrinkingProtocol d, const shr_parameters::Params &params) {
         const auto &instances = params.pddl.DrinkingProtocol.instances;
         auto it = std::find(instances.begin(), instances.end(), d);
@@ -29,9 +28,29 @@ namespace pddl_lib {
         }
     }
 
-
     std::optional<long> get_inst_index(MedicineProtocol m, const shr_parameters::Params &params) {
         const auto &instances = params.pddl.MedicineProtocol.instances;
+        auto it = std::find(instances.begin(), instances.end(), m);
+        if (it != instances.end()) {
+            auto index = std::distance(instances.begin(), it);
+            return index;
+        } else {
+            return {};
+        }
+    }
+
+    std::optional<long> get_inst_index(EmptyDishwasherProtocol m, const shr_parameters::Params &params) {
+        const auto &instances = params.pddl.EmptyDishwasherProtocol.instances;
+        auto it = std::find(instances.begin(), instances.end(), m);
+        if (it != instances.end()) {
+            auto index = std::distance(instances.begin(), it);
+            return index;
+        } else {
+            return {};
+        }
+    }
+    std::optional<long> get_inst_index(EmptyTrashProtocol m, const shr_parameters::Params &params) {
+        const auto &instances = params.pddl.EmptyTrashProtocol.instances;
         auto it = std::find(instances.begin(), instances.end(), m);
         if (it != instances.end()) {
             auto index = std::distance(instances.begin(), it);
@@ -47,6 +66,12 @@ namespace pddl_lib {
         }
         else if (inst.type == "MedicineProtocol") {
             return get_inst_index((MedicineProtocol) inst.name, params);
+        }
+        else if (inst.type == "EmptyDishwasherProtocol") {
+            return get_inst_index((EmptyDishwasherProtocol) inst.name, params);
+        }
+        else if (inst.type == "EmptyTrashProtocol") {
+            return get_inst_index((EmptyTrashProtocol) inst.name, params);
         }
         return {};
     }
@@ -80,5 +105,4 @@ namespace pddl_lib {
         return ss.str();
     }
 
-
-} // pddl_lib
+} 

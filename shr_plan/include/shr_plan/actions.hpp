@@ -50,6 +50,9 @@ namespace pddl_lib {
             {{"pm_meds","MedicineProtocol"},{{"reminder_1_msg", {0, 1}},{"reminder_2_msg", {0, 1}},{"wait", {60, 0}},}},
             {{"gym_reminder","GymReminderProtocol"},{{"voice_msg", {0, 1}},{"wait",{0, 0}},}},
             {{"drinking","DrinkingProtocol"},{{"reminder_1_msg", {0, 1}},{"wait",{0, 0}},}},
+            {{"em_trash","EmptyTrashProtocol"},{{"reminder_1_msg", {0, 1}},{"reminder_2_msg", {0, 1}},{"wait", {60, 0}},}},
+            {{"em_dishwasher","EmptyDishwasherProtocol"},{{"reminder_1_msg", {0, 1}},{"reminder_2_msg", {0, 1}},{"wait", {60, 0}},}},
+
         };
 
         const std::unordered_map <InstantiatedParameter, std::unordered_map<std::string, std::string>> automated_reminder_msgs = {
@@ -57,6 +60,8 @@ namespace pddl_lib {
             {{"pm_meds","MedicineProtocol"},{{"reminder_1_msg", "pm_med_reminder.txt"},{"reminder_2_msg", "pm_med_reminder_2.txt"},}},
             {{"drinking","DrinkingProtocol"},{{"reminder_1_msg", "drinking_reminder.txt"},}},
             {{"gym_reminder","GymReminderProtocol"},{{"reminder_1_msg", "gym_reminder1.txt"},}},
+            {{"em_trash","EmptyTrashProtocol"},{{"reminder_1_msg", "em_trash_reminder.txt"},{"reminder_2_msg", "em_trash_reminder_2.txt"},}},
+            {{"em_dishwasher","EmptyDishwasherProtocol"},{{"reminder_1_msg", "em_dishwasher_reminder.txt"},{"reminder_2_msg", "em_dishwasher_reminder_2.txt"},}},
         };
 
         const std::unordered_map <InstantiatedParameter, std::unordered_map<std::string, std::string>> recorded_reminder_msgs = {

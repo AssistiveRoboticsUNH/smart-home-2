@@ -30,6 +30,28 @@ shr_parameters:
         default_value: [ "Everyday 09h15m0s/10h15m0s", "Everyday 21h00m0s/22h00m0s" ],
         description: "time that each protocol is triggered",
       }
+    EmptyDishwasherProtocol:
+      instances: {
+        type: string_array,
+        default_value: [ "em_dishwasher"],
+        description: "Empty Dishwasher protocols",
+      }
+      empty_dishwasher_reminder_times: {
+        type: string_array,
+        default_value: [ "Monday 10h30m0s/11h30m0s"],
+        description: "time that each protocol is triggered",
+      }
+    EmptyTrashProtocol:
+      instances: {
+        type: string_array,
+        default_value: [ "em_trash"  ],
+        description: "Empty Trash protocols",
+      }
+      empty_trash_reminder_times: {
+        type: string_array,
+        default_value: [ "Fridays 09h30m0s/10h30m0s"],
+        description: "time that each protocol is triggered",
+      }
 
   topics:
     time: {
