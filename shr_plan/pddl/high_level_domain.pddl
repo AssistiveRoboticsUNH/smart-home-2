@@ -283,7 +283,7 @@
       (robot_at ?cur)
 
       (not (already_reminded_empty_dishwasher ?e))
-      (forall (?etr - EmptyDishwasherProtocol) (not (empty_dishwasher_protocol_enabled ?etr)) )
+      (forall (?etd - EmptyDishwasherProtocol) (not (empty_dishwasher_protocol_enabled ?etd)) )
       (started)
 		)
 	:effect (and
@@ -321,6 +321,11 @@
 	             ;; for every protocol in types it has to have a forall to disable other protocols before starting this one
                 (forall (?dr - DrinkingProtocol) (not (drinking_protocol_enabled ?dr)) )
                 ;; ADD CHANGES HERE
+                (forall (?med - MedicineProtocol) (not (medicine_protocol_enabled ?med)) )
+                (forall (?etr - EmptyTrashProtocol) (not (empty_trash_protocol_enabled ?etr)) )
+                (forall (?etd - EmptyDishwasherProtocol) (not (empty_dishwasher_protocol_enabled ?etd)) )
+
+
           )
 )
 
