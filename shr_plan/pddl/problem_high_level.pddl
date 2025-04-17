@@ -4,6 +4,8 @@
      living_room home outside bedroom - Landmark
      drinking - DrinkingProtocol
      am_meds pm_meds - MedicineProtocol
+     em_trash - EmptyTrashProtocol
+     em_dishwasher - EmptyDishwasherProtocol
      nathan - Person
      t1 - Time  ;;t2 t3 t4 t5
 
@@ -24,10 +26,13 @@
 
       ;; add when you need to test the protocl 
       ;;(person_at t1 nathan living_room)
+      (person_currently_at nathan living_room)
+      (robot_at home)
       
       ;;(time_for_drinking_reminder drinking)
-      ;;(person_currently_at nathan living_room)
-      ;;(robot_at home)
+      ;;(time_for_empty_trash_reminder em_trash)
+      (time_for_empty_dishwasher_reminder em_dishwasher)
+
       
 
       ;;(medicine_location living_room)
