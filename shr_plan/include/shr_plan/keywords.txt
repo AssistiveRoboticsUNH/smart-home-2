@@ -6,3 +6,5 @@ already_reminded_medicine_refill
 already_reminded_medicine_pharmacy
 already_reminded_walking
 already_reminded_drinking
+already_reminded_empty_trash
+already_reminded_empty_dishwasher

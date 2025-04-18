@@ -35,6 +35,14 @@ class shr_parameters:
                 instances = ["am_meds", "pm_meds"]
                 take_medication_times = ["Everyday 09h15m0s/10h15m0s", "Everyday 21h00m0s/22h00m0s"]
             MedicineProtocol = __Medicineprotocol()
+            class __Emptydishwasherprotocol:
+                instances = ["em_dishwasher"]
+                empty_dishwasher_reminder_times = ["Monday 10h30m0s/11h30m0s"]
+            EmptyDishwasherProtocol = __Emptydishwasherprotocol()
+            class __Emptytrashprotocol:
+                instances = ["em_trash"]
+                empty_trash_reminder_times = ["Fridays 09h30m0s/10h30m0s"]
+            EmptyTrashProtocol = __Emptytrashprotocol()
         pddl = __Pddl()
         class __Topics:
             time = "/protocol_time"
@@ -126,6 +134,22 @@ class shr_parameters:
                     updated_params.pddl.MedicineProtocol.take_medication_times = param.value
                     self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
 
+                if param.name == self.prefix_ + "pddl.EmptyDishwasherProtocol.instances":
+                    updated_params.pddl.EmptyDishwasherProtocol.instances = param.value
+                    self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
+
+                if param.name == self.prefix_ + "pddl.EmptyDishwasherProtocol.empty_dishwasher_reminder_times":
+                    updated_params.pddl.EmptyDishwasherProtocol.empty_dishwasher_reminder_times = param.value
+                    self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
+
+                if param.name == self.prefix_ + "pddl.EmptyTrashProtocol.instances":
+                    updated_params.pddl.EmptyTrashProtocol.instances = param.value
+                    self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
+
+                if param.name == self.prefix_ + "pddl.EmptyTrashProtocol.empty_trash_reminder_times":
+                    updated_params.pddl.EmptyTrashProtocol.empty_trash_reminder_times = param.value
+                    self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
+
                 if param.name == self.prefix_ + "topics.time":
                     updated_params.topics.time = param.value
                     self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
@@ -195,6 +219,26 @@ class shr_parameters:
                 parameter = updated_params.pddl.MedicineProtocol.take_medication_times
                 self.node_.declare_parameter(self.prefix_ + "pddl.MedicineProtocol.take_medication_times", parameter, descriptor)
 
+            if not self.node_.has_parameter(self.prefix_ + "pddl.EmptyDishwasherProtocol.instances"):
+                descriptor = ParameterDescriptor(description="Empty Dishwasher protocols", read_only = False)
+                parameter = updated_params.pddl.EmptyDishwasherProtocol.instances
+                self.node_.declare_parameter(self.prefix_ + "pddl.EmptyDishwasherProtocol.instances", parameter, descriptor)
+
+            if not self.node_.has_parameter(self.prefix_ + "pddl.EmptyDishwasherProtocol.empty_dishwasher_reminder_times"):
+                descriptor = ParameterDescriptor(description="time that each protocol is triggered", read_only = False)
+                parameter = updated_params.pddl.EmptyDishwasherProtocol.empty_dishwasher_reminder_times
+                self.node_.declare_parameter(self.prefix_ + "pddl.EmptyDishwasherProtocol.empty_dishwasher_reminder_times", parameter, descriptor)
+
+            if not self.node_.has_parameter(self.prefix_ + "pddl.EmptyTrashProtocol.instances"):
+                descriptor = ParameterDescriptor(description="Empty Trash protocols", read_only = False)
+                parameter = updated_params.pddl.EmptyTrashProtocol.instances
+                self.node_.declare_parameter(self.prefix_ + "pddl.EmptyTrashProtocol.instances", parameter, descriptor)
+
+            if not self.node_.has_parameter(self.prefix_ + "pddl.EmptyTrashProtocol.empty_trash_reminder_times"):
+                descriptor = ParameterDescriptor(description="time that each protocol is triggered", read_only = False)
+                parameter = updated_params.pddl.EmptyTrashProtocol.empty_trash_reminder_times
+                self.node_.declare_parameter(self.prefix_ + "pddl.EmptyTrashProtocol.empty_trash_reminder_times", parameter, descriptor)
+
             if not self.node_.has_parameter(self.prefix_ + "topics.time"):
                 descriptor = ParameterDescriptor(description="topic for protocol clock time", read_only = False)
                 parameter = updated_params.topics.time
@@ -252,6 +296,18 @@ class shr_parameters:
             param = self.node_.get_parameter(self.prefix_ + "pddl.MedicineProtocol.take_medication_times")
             self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
             updated_params.pddl.MedicineProtocol.take_medication_times = param.value
+            param = self.node_.get_parameter(self.prefix_ + "pddl.EmptyDishwasherProtocol.instances")
+            self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
+            updated_params.pddl.EmptyDishwasherProtocol.instances = param.value
+            param = self.node_.get_parameter(self.prefix_ + "pddl.EmptyDishwasherProtocol.empty_dishwasher_reminder_times")
+            self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
+            updated_params.pddl.EmptyDishwasherProtocol.empty_dishwasher_reminder_times = param.value
+            param = self.node_.get_parameter(self.prefix_ + "pddl.EmptyTrashProtocol.instances")
+            self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
+            updated_params.pddl.EmptyTrashProtocol.instances = param.value
+            param = self.node_.get_parameter(self.prefix_ + "pddl.EmptyTrashProtocol.empty_trash_reminder_times")
+            self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
+            updated_params.pddl.EmptyTrashProtocol.empty_trash_reminder_times = param.value
             param = self.node_.get_parameter(self.prefix_ + "topics.time")
             self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
             updated_params.topics.time = param.value

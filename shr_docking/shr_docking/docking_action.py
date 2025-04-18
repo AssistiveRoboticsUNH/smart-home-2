@@ -90,8 +90,10 @@ class DockingMainActionServer(Node):
                 self.docking_ir.bumped = False
                 self.docking_camera.get_transformation_from_aptag_to_port()
                 self.failed_count += self.docking_camera.move_towards_tag()
+                self.docking_mode = "camera"
             else:
                 self.failed_count += self.docking_ir.move_to_docking_station()
+                self.docking_mode = "ir"
                  
             if self.failed_count > 10:
                 self.get_logger().info(f'Docking aborted for no bump sensor data')
@@ -100,6 +102,11 @@ class DockingMainActionServer(Node):
 
         self.get_logger().info(f'Bumped from Camera: {self.docking_camera.bumped}')
         self.get_logger().info(f'Bumped from IR: {self.docking_ir.bumped}')
+        if self.docking_mode == "camera":
+            self.get_logger().info(f'Docked Using Camera')
+        else:
+             self.get_logger().info(f'Docked Using IR')
+
         if (self.docking_camera.bumped or self.docking_ir.bumped):
             print("Bumped!!")
             self.docking_ir.move_robot(0.0, 0.0)
@@ -110,10 +117,10 @@ class DockingMainActionServer(Node):
                 start_time = time.time()
 
                 if self.docking_camera.charger_status ==1 or self.docking_ir.is_charging:
-                    if self.docking_ir.bumped:
+                    if self.docking_mode == "ir":
                         self.get_logger().info("weblog="+' Docked with IR and charging!')
                     else:
-                        self.get_logger().info("weblog="+' Docked and charging!')
+                        self.get_logger().info("weblog="+' Docked with camera and charging!')
                     goal_handle.succeed()
                     result = DockingRequest.Result()
                     result.result = True
