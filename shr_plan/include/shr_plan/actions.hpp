@@ -579,7 +579,6 @@ namespace pddl_lib {
                     ps.docking_try = 0;
                     std::cout << "Person intervened" << pred_started << std::endl;
 
-
                 }else{
                     // already called for failure and waiting for intervention
                     return BT::NodeStatus::FAILURE;
@@ -601,6 +600,7 @@ namespace pddl_lib {
             if (!pred_started){
 
                 RCLCPP_INFO(rclcpp::get_logger("########## STARTT #################"), "Your message here");
+
 
 //                const char* homeDir = std::getenv("HOME");
 //                std::string cmd_startros = std::string(homeDir);
@@ -665,9 +665,11 @@ namespace pddl_lib {
                     if (ret == BT::NodeStatus::SUCCESS) {
                         std::cout << "Unsuccessful docking. Call made successfully!" << std::endl;
                         // so that it doesnt keep on calling
+
                     } else {
                         std::cout << "Unsuccessful docking. Call failed !" << std::endl;
                     }
+
 
                     ps.docking_try = 0;
 
@@ -675,12 +677,14 @@ namespace pddl_lib {
                     auto client = ps.node_->create_client<std_srvs::srv::SetBool>("/runstop");
                     auto request = std::make_shared<std_srvs::srv::SetBool::Request>();
                     request->data = true;
+
                     // already called as informed
                     // since twilio has problems, will inform on discord
                     ps.already_called = 1;
 
                     std::string log_message_runstop = std::string("weblog= Robot failed to dock 3 time, please intervene");
                     RCLCPP_INFO(ps.world_state_converter->get_logger(), log_message_runstop.c_str());
+
 
                     if (client->wait_for_service(std::chrono::seconds(3))) {
                         auto future_result = client->async_send_request(request);
@@ -1182,6 +1186,7 @@ namespace pddl_lib {
 
 
             const char* homeDir = std::getenv("HOME");
+
 
             std::string cmd_startros = "/home/hello-robot/smarthome_ws/src/smart-home-robot/external/helper_script/start_nav.sh";
 
