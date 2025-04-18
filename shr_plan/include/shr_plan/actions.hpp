@@ -861,6 +861,7 @@ namespace pddl_lib {
 
                     std::system(cmd_startros.c_str());
 
+
                     std::cout << " ------ finish start ----" << std::endl;
                     kb.insert_predicate({"started", {}});
 
@@ -1342,6 +1343,7 @@ namespace pddl_lib {
 
 //            std::string cmd_startros = std::string(homeDir);
 //            cmd_startros += "/start_nav.sh";
+
 
             std::system(cmd_startros.c_str());
 
