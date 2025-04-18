@@ -6,7 +6,7 @@
 #include <std_msgs/msg/int32.hpp>
 #include <tf2_ros/transform_listener.h>
 #include "std_msgs/msg/string.hpp"
-
+#include "std_msgs/msg/float64_multi_array.hpp"
 
 #pragma once
 
@@ -30,7 +30,8 @@ private:
     std::shared_ptr<shr_parameters::ParamListener> param_listener_;
     std::unordered_map<std::string, Eigen::MatrixXd> mesh_vert_map_robot;
     std::unordered_map<std::string, Eigen::MatrixXd> mesh_vert_map_person;
-
+    double patient_x;
+    double patient_y;
 public:
 
     WorldStateListener(const std::string &node_name, std::shared_ptr<shr_parameters::ParamListener> param_listener)
@@ -75,6 +76,10 @@ public:
                     world_state_->robot_charging = msg->data;
                 });
 
+        person_sub_ = this->create_subscription<std_msgs::msg::Float64MultiArray>(
+                "person_loc", 10,
+                std::bind(&Float64MultiArraySubscriber::person_callback, this, std::placeholders::_1));
+
         good_weather_sub_ = create_subscription<std_msgs::msg::Int32>(
                 params.topics.good_weather, 10, [this](const std_msgs::msg::Int32::SharedPtr msg) {
                     std::lock_guard<std::mutex> lock(world_state_mtx);
@@ -107,6 +112,22 @@ public:
         }
     }
 
+    void person_callback(const std_msgs::msg::Float64MultiArray::SharedPtr msg){
+        if (msg->data.size() >= 2) {
+            patient_x = msg->data[0];
+            patient_y = msg->data[1];
+
+            RCLCPP_INFO(this->get_logger(), "Received position: x=%.2f, y=%.2f", patient_x, patient_y);
+
+            // Optionally store them as class variables if needed later
+            // this->x_ = x;
+            // this->y_ = y;
+            // this->z_ = z;
+        } else {
+            RCLCPP_WARN(this->get_logger(), "Received array has fewer than 2 elements.");
+        }
+    }
+
     bool check_robot_at_loc(const std::string &loc) {
         if (mesh_vert_map_robot.find(loc) == mesh_vert_map_robot.end()) {
             return false;
@@ -130,6 +151,18 @@ public:
         }
 
         Eigen::Vector3d point = {robot_location.transform.translation.x, robot_location.transform.translation.y, 0.0};
+        // cause it doesnt matter sice its 2D robot_location.transform.translation.z};
+        return shr_utils::PointInMesh(point, verts, verts2d);
+    }
+
+    bool check_person_at_loc_topic(const std::string &loc) {
+        if (mesh_vert_map_person.find(loc) == mesh_vert_map_person.end()) {
+            return false;
+        }
+        auto verts = mesh_vert_map_person.at(loc);
+        Eigen::MatrixXd verts2d = verts.block(0, 0, 2, verts.cols());
+
+        Eigen::Vector3d point = {patient_x, patient_y, 0.0};
         // cause it doesnt matter sice its 2D robot_location.transform.translation.z};
         return shr_utils::PointInMesh(point, verts, verts2d);
     }
