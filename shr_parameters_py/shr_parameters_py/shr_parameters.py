@@ -43,6 +43,10 @@ class shr_parameters:
                 instances = ["em_trash"]
                 empty_trash_reminder_times = ["Fridays 09h30m0s/10h30m0s"]
             EmptyTrashProtocol = __Emptytrashprotocol()
+            class __Morningwakeprotocol:
+                instances = ["morning_wake"]
+                morning_wake_reminder_times = ["Everyday 08h25m0s/8h45m0s"]
+            MorningWakeProtocol = __Morningwakeprotocol()
         pddl = __Pddl()
         class __Topics:
             time = "/protocol_time"
@@ -150,6 +154,14 @@ class shr_parameters:
                     updated_params.pddl.EmptyTrashProtocol.empty_trash_reminder_times = param.value
                     self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
 
+                if param.name == self.prefix_ + "pddl.MorningWakeProtocol.instances":
+                    updated_params.pddl.MorningWakeProtocol.instances = param.value
+                    self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
+
+                if param.name == self.prefix_ + "pddl.MorningWakeProtocol.morning_wake_reminder_times":
+                    updated_params.pddl.MorningWakeProtocol.morning_wake_reminder_times = param.value
+                    self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
+
                 if param.name == self.prefix_ + "topics.time":
                     updated_params.topics.time = param.value
                     self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
@@ -239,6 +251,16 @@ class shr_parameters:
                 parameter = updated_params.pddl.EmptyTrashProtocol.empty_trash_reminder_times
                 self.node_.declare_parameter(self.prefix_ + "pddl.EmptyTrashProtocol.empty_trash_reminder_times", parameter, descriptor)
 
+            if not self.node_.has_parameter(self.prefix_ + "pddl.MorningWakeProtocol.instances"):
+                descriptor = ParameterDescriptor(description="Empty Trash protocols", read_only = False)
+                parameter = updated_params.pddl.MorningWakeProtocol.instances
+                self.node_.declare_parameter(self.prefix_ + "pddl.MorningWakeProtocol.instances", parameter, descriptor)
+
+            if not self.node_.has_parameter(self.prefix_ + "pddl.MorningWakeProtocol.morning_wake_reminder_times"):
+                descriptor = ParameterDescriptor(description="time that each protocol is triggered", read_only = False)
+                parameter = updated_params.pddl.MorningWakeProtocol.morning_wake_reminder_times
+                self.node_.declare_parameter(self.prefix_ + "pddl.MorningWakeProtocol.morning_wake_reminder_times", parameter, descriptor)
+
             if not self.node_.has_parameter(self.prefix_ + "topics.time"):
                 descriptor = ParameterDescriptor(description="topic for protocol clock time", read_only = False)
                 parameter = updated_params.topics.time
@@ -308,6 +330,12 @@ class shr_parameters:
             param = self.node_.get_parameter(self.prefix_ + "pddl.EmptyTrashProtocol.empty_trash_reminder_times")
             self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
             updated_params.pddl.EmptyTrashProtocol.empty_trash_reminder_times = param.value
+            param = self.node_.get_parameter(self.prefix_ + "pddl.MorningWakeProtocol.instances")
+            self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
+            updated_params.pddl.MorningWakeProtocol.instances = param.value
+            param = self.node_.get_parameter(self.prefix_ + "pddl.MorningWakeProtocol.morning_wake_reminder_times")
+            self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
+            updated_params.pddl.MorningWakeProtocol.morning_wake_reminder_times = param.value
             param = self.node_.get_parameter(self.prefix_ + "topics.time")
             self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
             updated_params.topics.time = param.value

@@ -53,6 +53,7 @@ namespace pddl_lib {
             {{"em_trash","EmptyTrashProtocol"},{{"reminder_1_msg", {0, 1}},{"reminder_2_msg", {0, 1}},{"wait", {60, 0}},}},
             {{"em_dishwasher","EmptyDishwasherProtocol"},{{"reminder_1_msg", {0, 1}},{"reminder_2_msg", {0, 1}},{"wait", {60, 0}},}},
 
+            {{"morning_wake","MorningWakeProtocol"},{{"reminder_1_msg", {0, 1}},{"reminder_2_msg", {0, 1}},{"wait", {60, 0}},}},
         };
 
         const std::unordered_map <InstantiatedParameter, std::unordered_map<std::string, std::string>> automated_reminder_msgs = {
@@ -62,6 +63,7 @@ namespace pddl_lib {
             {{"gym_reminder","GymReminderProtocol"},{{"reminder_1_msg", "gym_reminder1.txt"},}},
             {{"em_trash","EmptyTrashProtocol"},{{"reminder_1_msg", "em_trash_reminder.txt"},{"reminder_2_msg", "em_trash_reminder_2.txt"},}},
             {{"em_dishwasher","EmptyDishwasherProtocol"},{{"reminder_1_msg", "em_dishwasher_reminder.txt"},{"reminder_2_msg", "em_dishwasher_reminder_2.txt"},}},
+            {{"morning_wake","MorningWakeProtocol"},{{"reminder_1_msg", "morning_reminder_1.txt"},{"reminder_2_msg", "morning_reminder_2.txt"},}},
         };
 
         const std::unordered_map <InstantiatedParameter, std::unordered_map<std::string, std::string>> recorded_reminder_msgs = {
@@ -799,6 +801,47 @@ namespace pddl_lib {
             return BT::NodeStatus::SUCCESS;
         }
 
+        BT::NodeStatus high_level_domain_StartMorningWakeProtocol(const InstantiatedAction &action) override {
+            auto &kb = KnowledgeBase::getInstance();
+            InstantiatedParameter protocol = action.parameters[0];
+            InstantiatedParameter cur = action.parameters[2];
+            InstantiatedParameter dest = action.parameters[3];
+
+
+            auto [ps, lock] = ProtocolState::getConcurrentInstance();
+            lock.Lock();
+            std::string currentDateTime = getCurrentDateTime();
+            std::string log_message =
+                    std::string("weblog=") + currentDateTime + " high_level_domain_StartMorningWakeProtocol" + " started";
+            RCLCPP_INFO(ps.world_state_converter->get_logger(), log_message.c_str());
+
+            // instantiate_protocol("medicine_reminder.pddl", {{"current_loc", cur.name},{"dest_loc",    dest.name}});
+            if (dest.name == cur.name) {
+                std::string updated_dest = "bedroom"; // Default case
+
+                // Swap destination if current_loc is "living_room" or "bedroom"
+                if (cur.name == "living_room") {
+                    updated_dest = "bedroom";
+                } else if (cur.name == "bedroom") {
+                    updated_dest = "living_room";
+                }
+
+                RCLCPP_INFO(rclcpp::get_logger("debug"),
+                            "StartMorningWakeProtocol: Robot is already at %s. Changing destination to %s.",
+                            cur.name.c_str(), updated_dest.c_str());
+
+                // Just proceed with the protocol without moving
+                instantiate_protocol("morning_wake_reminder.pddl", {{"current_loc", cur.name}, {"dest_loc", updated_dest}});
+            } else {
+                // Move to the medicine location if not already there
+                instantiate_protocol("morning_wake_reminder.pddl", {{"current_loc", cur.name}, {"dest_loc", dest.name}});
+            }
+
+            ps.active_protocol = protocol;
+            lock.UnLock();
+            return BT::NodeStatus::SUCCESS;
+        }
+
         BT::NodeStatus high_level_domain_StartEmptyTrashProtocol(const InstantiatedAction &action) override {
             auto &kb = KnowledgeBase::getInstance();
             InstantiatedParameter protocol = action.parameters[0];
@@ -908,7 +951,8 @@ namespace pddl_lib {
                 {"gym_reminder", "GymReminderProtocol"},
                 {"drinking", "DrinkingProtocol"},
                 {"em_trash" , "EmptyTrashProtocol"},
-                {"em_dishwasher", "EmptyDishwasherProtocol"}
+                {"em_dishwasher", "EmptyDishwasherProtocol"},
+                {"morning_wake", "MorningWakeProtocol"}
 
             };
 
@@ -919,6 +963,7 @@ namespace pddl_lib {
                 {"already_reminded_drinking",{"drinking"}},
                 {"already_reminded_empty_trash", {"em_trash"}},
                 {"already_reminded_empty_dishwasher", {"em_dishwasher"}},
+                {"already_reminded_morning_wake", {"morning_wake"}},
             };
 
             std::ifstream ifs(keywordsFile);
@@ -1145,6 +1190,9 @@ namespace pddl_lib {
             } else if (active_protocol.type == "EmptyTrashProtocol") {
                 kb.insert_predicate({"already_reminded_empty_trash", {active_protocol}});
                 kb.erase_predicate({"empty_trash_protocol_enabled", {active_protocol}});
+            }else if (active_protocol.type == "MorningWakeProtocol") {
+                kb.insert_predicate({"already_reminded_morning_wake", {active_protocol}});
+                kb.erase_predicate({"morning_wake_protocol_enabled", {active_protocol}});
             }
             
             // RCLCPP_INFO(rclcpp::get_logger(std::string("weblog=")+"shr_domain_MessageGivenSuccess"+active_protocol.type), "user...");
@@ -1178,6 +1226,9 @@ namespace pddl_lib {
             }else if (active_protocol.type == "WalkingProtocol") {
                 kb.insert_predicate({"already_reminded_walking", {active_protocol}});
                 kb.erase_predicate({"walking_reminder_enabled", {active_protocol}});
+            }else if (active_protocol.type == "MorningWakeProtocol") {
+                kb.insert_predicate({"already_reminded_morning_wake", {active_protocol}});
+                kb.erase_predicate({"morning_wake_protocol_enabled", {active_protocol}});
             }
 
             // RCLCPP_INFO(rclcpp::get_logger(std::string("weblog=")+"shr_domain_PersonAtSuccess"+active_protocol.type), "user...");

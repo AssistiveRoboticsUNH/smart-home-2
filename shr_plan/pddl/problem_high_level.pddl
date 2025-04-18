@@ -6,6 +6,7 @@
      am_meds pm_meds - MedicineProtocol
      em_trash - EmptyTrashProtocol
      em_dishwasher - EmptyDishwasherProtocol
+     morning_wake - MorningWakeProtocol
      nathan - Person
      t1 - Time  ;;t2 t3 t4 t5
 
@@ -21,17 +22,20 @@
       (visible_location home)
       (visible_location living_room)
       (visible_location bedroom)
+      (check_location_wakeup bedroom)
+      (check_location_wakeup home)
 
       (not_visible_location outside)
 
       ;; add when you need to test the protocl 
-      ;;(person_at t1 nathan living_room)
-      ;;(person_currently_at nathan living_room)
-      ;;(robot_at home)
+      (person_at t1 nathan bedroom)
+      (person_currently_at nathan bedroom)
+      (robot_at home)
       
       ;;(time_for_drinking_reminder drinking)
       ;;(time_for_empty_trash_reminder em_trash)
       ;;(time_for_empty_dishwasher_reminder em_dishwasher)
+      (time_for_morning_wake_reminder morning_wake)
 
       
 

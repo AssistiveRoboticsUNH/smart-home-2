@@ -8,3 +8,4 @@ already_reminded_walking
 already_reminded_drinking
 already_reminded_empty_trash
 already_reminded_empty_dishwasher
+already_reminded_morning_wake

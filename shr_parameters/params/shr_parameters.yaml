@@ -52,6 +52,17 @@ shr_parameters:
         default_value: [ "Fridays 09h30m0s/10h30m0s"],
         description: "time that each protocol is triggered",
       }
+    MorningWakeProtocol:
+      instances: {
+        type: string_array,
+        default_value: [ "morning_wake" ],
+        description: "Empty Trash protocols",
+      }
+      morning_wake_reminder_times: {
+        type: string_array,
+        default_value: [ "Everyday 08h25m0s/8h45m0s" ],
+        description: "time that each protocol is triggered",
+      }
 
   topics:
     time: {

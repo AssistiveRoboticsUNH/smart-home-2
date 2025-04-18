@@ -20,7 +20,7 @@
     (robot_at_time ?t - Time ?lmr - Landmark)
     (person_at ?t - Time ?p - Person ?lmp - Landmark)
 
-    ;;(person_currently_at ?p - Person ?lmp - Landmark)
+    (person_currently_at ?p - Person ?lmp - Landmark)
 
     (person_at_success ?p - Person ?lmp - Landmark)
 
@@ -257,10 +257,12 @@
                 )
             )
 
+
             ;; this condition enforces that the person is not at the location specified in not_person_location_constraint
-            ;;(forall (?lmp - Landmark)
-            ;;  (not (and (person_at ?t ?p ?lmp) (reminder_person_not_location_constraint ?a ?p ?lmp) ) )
-            ;;)
+            (forall (?lmp - Landmark)
+              (not (and (person_at ?t ?p ?lmp) (reminder_person_not_location_constraint ?a ?p ?lmp) ) )
+            )
+
             (not (abort))
 		)
     :effect (and (message_given ?m)  (executed_reminder ?a)
@@ -357,7 +359,7 @@
 (:action PersonAtSuccess
 	:parameters (?p - Person ?t - Time ?lmp - Landmark)
 	:precondition (and
-	                ;;(person_currently_at ?p - Person ?lmp - Landmark)
+	                (person_at ?t ?p ?lmp)
 	                (person_at_success ?p ?lmp)
 	                (success_location ?lmp)
 	                (not (abort))

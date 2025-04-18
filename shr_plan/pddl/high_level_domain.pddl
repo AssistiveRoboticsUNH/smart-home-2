@@ -10,6 +10,7 @@
   MedicineProtocol
   EmptyDishwasherProtocol
   EmptyTrashProtocol
+  MorningWakeProtocol
   Landmark
   Time
   Person
@@ -33,6 +34,7 @@
 
   (visible_location ?lmp - Landmark)
   (not_visible_location ?lmp - Landmark)
+  (check_location_wakeup ?lmp - Landmark)
 
    ;; drinking reminder
   (drinking_protocol_enabled ?dr - DrinkingProtocol)
@@ -56,6 +58,11 @@
   (empty_dishwasher_protocol_enabled ?etd - EmptyDishwasherProtocol)
   (time_for_empty_dishwasher_reminder ?etd - EmptyDishwasherProtocol)
   (already_reminded_empty_dishwasher ?etd - EmptyDishwasherProtocol)
+
+;; morning wake reminder
+   (morning_wake_protocol_enabled ?mw - MorningWakeProtocol)
+   (time_for_morning_wake_reminder ?mw - MorningWakeProtocol)
+   (already_reminded_morning_wake ?mw - MorningWakeProtocol)
 
   (low_level_failed)
 
@@ -171,6 +178,7 @@
             (forall (?medicine_protocol - MedicineProtocol) (not (medicine_protocol_enabled ?medicine_protocol)) )
             (forall (?empty_trash_protocol - EmptyTrashProtocol) (not (empty_trash_protocol_enabled ?empty_trash_protocol)) )
             (forall (?empty_dishwasher_protocol - EmptyDishwasherProtocol) (not (empty_dishwasher_protocol_enabled ?empty_dishwasher_protocol)) )
+            (forall (?morning_wake_protocol - MorningWakeProtocol) (not (morning_wake_protocol_enabled ?morning_wake_protocol)) )
           )
 )
 
@@ -213,6 +221,7 @@
             (forall (?drinking_protocol - DrinkingProtocol) (not (drinking_protocol_enabled ?drinking_protocol)) )
             (forall (?empty_trash_protocol - EmptyTrashProtocol) (not (empty_trash_protocol_enabled ?empty_trash_protocol)) )
             (forall (?empty_dishwasher_protocol - EmptyDishwasherProtocol) (not (empty_dishwasher_protocol_enabled ?empty_dishwasher_protocol)) )
+            (forall (?morning_wake_protocol - MorningWakeProtocol) (not (morning_wake_protocol_enabled ?morning_wake_protocol)) )
 
           )
 )
@@ -255,6 +264,7 @@
             (forall (?drinking_protocol - DrinkingProtocol) (not (drinking_protocol_enabled ?drinking_protocol)) )
             (forall (?medicine_protocol - MedicineProtocol) (not (medicine_protocol_enabled ?medicine_protocol)) )
             (forall (?empty_dishwasher_protocol - EmptyDishwasherProtocol) (not (empty_dishwasher_protocol_enabled ?empty_dishwasher_protocol)) )
+            (forall (?morning_wake_protocol - MorningWakeProtocol) (not (morning_wake_protocol_enabled ?morning_wake_protocol)) )
           )
 )
 
@@ -294,6 +304,7 @@
             (forall (?drinking_protocol - DrinkingProtocol) (not (drinking_protocol_enabled ?drinking_protocol)) )
             (forall (?medicine_protocol - MedicineProtocol) (not (medicine_protocol_enabled ?medicine_protocol)) )
             (forall (?empty_trash_protocol - EmptyTrashProtocol) (not (empty_trash_protocol_enabled ?empty_trash_protocol)) )
+            (forall (?morning_wake_protocol - MorningWakeProtocol) (not (morning_wake_protocol_enabled ?morning_wake_protocol)) )
           )
 )
 
@@ -305,6 +316,49 @@
       (time_for_empty_dishwasher_reminder ?e)
       (not (already_reminded_empty_dishwasher ?e))
       (empty_dishwasher_protocol_enabled ?e)
+		)
+	:effect (and (success) (not (priority_2)) )
+)
+
+
+(:action StartMorningWakeProtocol
+	:parameters (?mw - MorningWakeProtocol ?p - Person ?cur - Landmark ?dest - Landmark)
+	:precondition (and
+	    (priority_2)
+      (time_for_morning_wake_reminder ?mw)
+      (visible_location ?dest)
+      (not (not_visible_location ?dest))
+      (check_location_wakeup ?dest)
+      (check_location_wakeup ?cur)
+      (visible_location ?cur)
+      (not (not_visible_location ?cur))
+      (person_currently_at ?p ?cur)
+      (robot_at ?cur)
+
+      (not (already_reminded_morning_wake ?mw))
+      (forall (?mw - MorningWakeProtocol) (not (morning_wake_protocol_enabled ?mw)) )
+      (started)
+		)
+	:effect (and
+	          (success)
+            (not (priority_2))
+            (morning_wake_protocol_enabled ?mw)
+            (not (low_level_failed))
+            (forall (?drinking_protocol - DrinkingProtocol) (not (drinking_protocol_enabled ?drinking_protocol)) )
+            (forall (?medicine_protocol - MedicineProtocol) (not (medicine_protocol_enabled ?medicine_protocol)) )
+            (forall (?empty_trash_protocol - EmptyTrashProtocol) (not (empty_trash_protocol_enabled ?empty_trash_protocol)) )
+            (forall (?empty_dishwasher_protocol - EmptyDishwasherProtocol) (not (empty_dishwasher_protocol_enabled ?empty_dishwasher_protocol)) )
+          )
+)
+
+(:action ContinueStartMorningWakeProtocol
+	:parameters (?mw - StartMorningWakeProtocol)
+	:precondition (and
+	    (priority_2)
+	    (not (low_level_failed))
+      (time_for_morning_wake_reminder ?mw)
+      (not (already_reminded_morning_wake ?mw))
+      (morning_wake_protocol_enabled ?mw)
 		)
 	:effect (and (success) (not (priority_2)) )
 )
@@ -324,6 +378,7 @@
                 (forall (?med - MedicineProtocol) (not (medicine_protocol_enabled ?med)) )
                 (forall (?etr - EmptyTrashProtocol) (not (empty_trash_protocol_enabled ?etr)) )
                 (forall (?etd - EmptyDishwasherProtocol) (not (empty_dishwasher_protocol_enabled ?etd)) )
+                (forall (?morning_wake_protocol - MorningWakeProtocol) (not (morning_wake_protocol_enabled ?morning_wake_protocol)) )
           )
 )
 
@@ -380,6 +435,15 @@
                     (and
                         (time_for_empty_dishwasher_reminder ?etd)
                         (not (already_reminded_empty_dishwasher ?etd))
+                    )
+                )
+            )
+
+            (forall (?mw - MorningWakeProtocol)
+                (not
+                    (and
+                        (time_for_morning_wake_reminder ?mw)
+                        (not (already_reminded_morning_wake ?mw))
                     )
                 )
             )

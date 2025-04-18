@@ -60,6 +60,17 @@ namespace pddl_lib {
         }
     }
 
+    std::optional<long> get_inst_index(MorningWakeProtocol m, const shr_parameters::Params &params) {
+        const auto &instances = params.pddl.MorningWakeProtocol.instances;
+        auto it = std::find(instances.begin(), instances.end(), m);
+        if (it != instances.end()) {
+            auto index = std::distance(instances.begin(), it);
+            return index;
+        } else {
+            return {};
+        }
+    }
+
     std::optional<long> get_inst_index(InstantiatedParameter inst, const shr_parameters::Params &params) {
         if (inst.type == "DrinkingProtocol") {
             return get_inst_index((DrinkingProtocol) inst.name, params);
@@ -72,6 +83,9 @@ namespace pddl_lib {
         }
         else if (inst.type == "EmptyTrashProtocol") {
             return get_inst_index((EmptyTrashProtocol) inst.name, params);
+        }
+        else if (inst.type == "MorningWakeProtocol") {
+            return get_inst_index((MorningWakeProtocol) inst.name, params);
         }
         return {};
     }
