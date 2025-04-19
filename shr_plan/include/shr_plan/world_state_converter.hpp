@@ -13,6 +13,8 @@
 class WorldStateListener : public rclcpp::Node {
 private:
     rclcpp::Subscription<std_msgs::msg::Int32>::SharedPtr person_intervened_;
+    rclcpp::Subscription<std_msgs::msg::Float64MultiArray>::SharedPtr person_sub_;
+
     rclcpp::Subscription<std_msgs::msg::Int32>::SharedPtr eating_sub_;
     rclcpp::Subscription<std_msgs::msg::Int32>::SharedPtr charging_sub_;
     rclcpp::Subscription<builtin_interfaces::msg::Time>::SharedPtr time_sub_;
@@ -76,9 +78,19 @@ public:
                     world_state_->robot_charging = msg->data;
                 });
 
-        person_sub_ = this->create_subscription<std_msgs::msg::Float64MultiArray>(
-                "person_loc", 10,
-                std::bind(&Float64MultiArraySubscriber::person_callback, this, std::placeholders::_1));
+        person_sub_ = create_subscription<std_msgs::msg::Float64MultiArray>(
+            "person_loc", 10, [this](const std_msgs::msg::Float64MultiArray::SharedPtr msg) {
+                std::lock_guard<std::mutex> lock(world_state_mtx);  // Optional if accessing shared data
+
+                if (msg->data.size() >= 2) {
+                    patient_x = msg->data[0];
+                    patient_y = msg->data[1];
+
+                    RCLCPP_INFO(this->get_logger(), "Received position: x=%.2f, y=%.2f", patient_x, patient_y);
+                } else {
+                    RCLCPP_WARN(this->get_logger(), "Received array has fewer than 2 elements.");
+                }
+            });
 
         good_weather_sub_ = create_subscription<std_msgs::msg::Int32>(
                 params.topics.good_weather, 10, [this](const std_msgs::msg::Int32::SharedPtr msg) {
@@ -112,21 +124,21 @@ public:
         }
     }
 
-    void person_callback(const std_msgs::msg::Float64MultiArray::SharedPtr msg){
-        if (msg->data.size() >= 2) {
-            patient_x = msg->data[0];
-            patient_y = msg->data[1];
+    // void person_callback(const std_msgs::msg::Float64MultiArray::SharedPtr msg){
+    //     if (msg->data.size() >= 2) {
+    //         patient_x = msg->data[0];
+    //         patient_y = msg->data[1];
 
-            RCLCPP_INFO(this->get_logger(), "Received position: x=%.2f, y=%.2f", patient_x, patient_y);
+    //         RCLCPP_INFO(this->get_logger(), "Received position: x=%.2f, y=%.2f", patient_x, patient_y);
 
-            // Optionally store them as class variables if needed later
-            // this->x_ = x;
-            // this->y_ = y;
-            // this->z_ = z;
-        } else {
-            RCLCPP_WARN(this->get_logger(), "Received array has fewer than 2 elements.");
-        }
-    }
+    //         // Optionally store them as class variables if needed later
+    //         // this->x_ = x;
+    //         // this->y_ = y;
+    //         // this->z_ = z;
+    //     } else {
+    //         RCLCPP_WARN(this->get_logger(), "Received array has fewer than 2 elements.");
+    //     }
+    // }
 
     bool check_robot_at_loc(const std::string &loc) {
         if (mesh_vert_map_robot.find(loc) == mesh_vert_map_robot.end()) {

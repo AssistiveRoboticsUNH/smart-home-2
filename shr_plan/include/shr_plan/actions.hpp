@@ -578,6 +578,8 @@ namespace pddl_lib {
                     ps.already_called == 0;
                     ps.docking_try = 0;
                     std::cout << "Person intervened" << pred_started << std::endl;
+                    std::string log_message_intr = std::string("weblog= Person intervened");
+                    RCLCPP_INFO(ps.world_state_converter->get_logger(), log_message_intr.c_str());
 
                 }else{
                     // already called for failure and waiting for intervention
