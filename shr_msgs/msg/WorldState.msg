@@ -5,4 +5,5 @@ int32 robot_charging
 int32 person_eating
 int32 good_weather
 string screen_ack
+int32 person_intervene
 builtin_interfaces/Time time

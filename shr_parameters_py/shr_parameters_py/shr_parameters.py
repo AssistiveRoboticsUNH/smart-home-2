@@ -33,15 +33,15 @@ class shr_parameters:
             MedicineProtocols = __Medicineprotocols()
             class __Gymreminderprotocols:
                 instances = ["gym_reminder"]
-                gym_reminder_times = ["Everday 06h30m0s/07h00m0s"]
+                gym_reminder_times = ["Everyday 06h30m0s/07h00m0s"]
             GymReminderProtocols = __Gymreminderprotocols()
             class __Medicinerefillreminderprotocols:
                 instances = ["medicine_refill_reminder"]
-                medicine_refill_reminder_times = ["Monday 14h00m0s/15h00m0s"]
+                medicine_refill_reminder_times = ["Everyday 14h00m0s/15h00m0s"]
             MedicineRefillReminderProtocols = __Medicinerefillreminderprotocols()
             class __Medicinerefillpharmacyreminderprotocols:
                 instances = ["medicine_pharmacy_reminder"]
-                medicine_refill_pharmacy_reminder_times = ["Tuesday 10h00m0s/11h00m0s"]
+                medicine_refill_pharmacy_reminder_times = ["Everyday 10h00m0s/11h00m0s"]
             MedicineRefillPharmacyReminderProtocols = __Medicinerefillpharmacyreminderprotocols()
             class __Walkingprotocols:
                 instances = ["walking_reminder"]
@@ -53,6 +53,7 @@ class shr_parameters:
             person_taking_medicine = "/person_taking_medicine"
             person_eating = "/person_eating"
             robot_charging = "/charging"
+            person_intervene = "/person_intervene"
             good_weather = "/good_weather"
             display_ack = "/screen_ack"
         topics = __Topics()
@@ -178,6 +179,10 @@ class shr_parameters:
                     updated_params.topics.robot_charging = param.value
                     self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
 
+                if param.name == self.prefix_ + "topics.person_intervene":
+                    updated_params.topics.person_intervene = param.value
+                    self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
+
                 if param.name == self.prefix_ + "topics.good_weather":
                     updated_params.topics.good_weather = param.value
                     self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
@@ -281,6 +286,11 @@ class shr_parameters:
                 parameter = updated_params.topics.robot_charging
                 self.node_.declare_parameter(self.prefix_ + "topics.robot_charging", parameter, descriptor)
 
+            if not self.node_.has_parameter(self.prefix_ + "topics.person_intervene"):
+                descriptor = ParameterDescriptor(description="topic for checking good weather", read_only = False)
+                parameter = updated_params.topics.person_intervene
+                self.node_.declare_parameter(self.prefix_ + "topics.person_intervene", parameter, descriptor)
+
             if not self.node_.has_parameter(self.prefix_ + "topics.good_weather"):
                 descriptor = ParameterDescriptor(description="topic for checking good weather", read_only = False)
                 parameter = updated_params.topics.good_weather
@@ -348,6 +358,9 @@ class shr_parameters:
             param = self.node_.get_parameter(self.prefix_ + "topics.robot_charging")
             self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
             updated_params.topics.robot_charging = param.value
+            param = self.node_.get_parameter(self.prefix_ + "topics.person_intervene")
+            self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
+            updated_params.topics.person_intervene = param.value
             param = self.node_.get_parameter(self.prefix_ + "topics.good_weather")
             self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
             updated_params.topics.good_weather = param.value
