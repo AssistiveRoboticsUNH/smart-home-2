@@ -56,14 +56,11 @@ colcon build --symlink-install --cmake-args -DCMAKE_EXPORT_COMPILE_COMMANDS=1
 ```
 
 # Manual Intervention Protocol for Docking Failures
-If the robot fails to dock more than 3 times, it will enter runstop mode, call caregiver and notify on discord that the robot failed to dock 3 times asking for intervention.
-
-## Manual Intervention Protocol for Docking Failures
 
 If the robot fails to dock **more than 3 times**, it will:
 
 - Enter **runstop** mode.
-- Notify the caregiver or operator of the failure.
+- Notify the caregiver or operator of the failure on discord and through a phone call.
 - **Stop attempting to dock or move further**.
 
 To manually resolve the issue and allow the robot to retry docking:
