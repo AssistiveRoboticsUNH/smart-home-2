@@ -37,7 +37,7 @@ shr_parameters:
       }
       medicine_refill_reminder_times: {
         type: string_array,
-        default_value: [ "Monday 14h00m0s/15h00m0s" ],
+        default_value: [ "Everyday 14h00m0s/15h00m0s" ],
         description: "time that each protocol is triggered",
       }
     MedicineRefillPharmacyReminderProtocols:
@@ -48,7 +48,7 @@ shr_parameters:
       }
       medicine_refill_pharmacy_reminder_times: {
         type: string_array,
-        default_value: [ "Tuesday 10h00m0s/11h00m0s" ],
+        default_value: [ "Everyday 10h00m0s/11h00m0s" ],
         description: "time that each protocol is triggered",
       }
       # default_value: [ "Tuesday 09h30m0s/10h00m0s" ],

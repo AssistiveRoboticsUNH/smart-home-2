@@ -47,6 +47,7 @@ class LogSubscriber(Node):
         self.charger_subscriber = self.create_subscription(Int32, 'charging', self.iot_charger_callback, 10)
         self.current_subscriber = self.create_subscription(Float32, 'charging_current', self.current_callback, 10)
         self.person_intervention_publisher = self.create_publisher(Int32, 'person_intervene', 10)
+
         self.charger_status = None
         self.bump = None
         self.voltage = None
@@ -93,11 +94,11 @@ class LogSubscriber(Node):
             self.person_intervention_publisher.publish(msg)
             self.get_logger().info(f'Published message: {msg.data}')
             time.sleep(0.1)  # wait 0.1 seconds between messages
-        for j in range(3):
-            msg.data = 0
-            self.person_intervention_publisher.publish(msg)
-            self.get_logger().info(f'Published message: {msg.data}')
-            time.sleep(0.1)  # wait 0.1 seconds between messages
+        # for j in range(3):
+        #     msg.data = 0
+        #     self.person_intervention_publisher.publish(msg)
+        #     self.get_logger().info(f'Published message: {msg.data}')
+        #     time.sleep(0.1)  # wait 0.1 seconds between messages
 
 
     async  def on_message_callback(self, msg):

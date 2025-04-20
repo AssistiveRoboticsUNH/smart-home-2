@@ -2,7 +2,7 @@
 #include "shr_msgs/msg/world_state.hpp"
 #include <memory>
 #include "tf2_ros/buffer.h"
-#include <shr_parameters.hpp>
+#include <shr_parameters/shr_parameters.hpp>
 #include <std_msgs/msg/int32.hpp>
 #include <tf2_ros/transform_listener.h>
 #include "std_msgs/msg/string.hpp"
@@ -13,6 +13,7 @@
 class WorldStateListener : public rclcpp::Node {
 private:
     rclcpp::Subscription<std_msgs::msg::Int32>::SharedPtr person_intervened_;
+
     rclcpp::Subscription<std_msgs::msg::Float64MultiArray>::SharedPtr person_sub_;
 
     rclcpp::Subscription<std_msgs::msg::Int32>::SharedPtr eating_sub_;
@@ -71,6 +72,7 @@ public:
                     // 🔍 Debugging: Print received time
                     // RCLCPP_INFO(rclcpp::get_logger(std::string("user=") + "high_level_domain_Idle" + "started"), "⏳ Received protocol time update: sec = %d, nanosec = %d", msg->sec, msg->nanosec);
                 });
+                
 
         charging_sub_ = create_subscription<std_msgs::msg::Int32>(
                 params.topics.robot_charging, 10, [this](const std_msgs::msg::Int32::SharedPtr msg) {
@@ -123,6 +125,8 @@ public:
             mesh_vert_map_person[name_person] = verts_person;
         }
     }
+
+
 
     // void person_callback(const std_msgs::msg::Float64MultiArray::SharedPtr msg){
     //     if (msg->data.size() >= 2) {
