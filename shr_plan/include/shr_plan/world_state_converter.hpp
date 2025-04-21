@@ -171,7 +171,7 @@ public:
         return shr_utils::PointInMesh(point, verts, verts2d);
     }
 
-    bool check_person_at_loc_topic(const std::string &loc) {
+    bool check_person_at_loc(const std::string &loc) {
         if (mesh_vert_map_person.find(loc) == mesh_vert_map_person.end()) {
             return false;
         }
@@ -183,30 +183,30 @@ public:
         return shr_utils::PointInMesh(point, verts, verts2d);
     }
 
-    bool check_person_at_loc(const std::string &loc) {
-        if (mesh_vert_map_person.find(loc) == mesh_vert_map_person.end()) {
-            return false;
-        }
-        auto verts = mesh_vert_map_person.at(loc);
-        Eigen::MatrixXd verts2d = verts.block(0, 0, 2, verts.cols());
+    // bool check_person_at_loc(const std::string &loc) {
+//         if (mesh_vert_map_person.find(loc) == mesh_vert_map_person.end()) {
+//             return false;
+//         }
+//         auto verts = mesh_vert_map_person.at(loc);
+//         Eigen::MatrixXd verts2d = verts.block(0, 0, 2, verts.cols());
 
-        auto params = param_listener_->get_params();
-        geometry_msgs::msg::TransformStamped patient_location;
-        std::lock_guard<std::mutex> lock(tf_buffer_mtx);
-        try {
-//            patient_location = tf_buffer_->lookupTransform("odom", params.person_tf, tf2::TimePointZero); //TODO fix
-// changed from odom to unity because odom is not fixed
-            patient_location = tf_buffer_->lookupTransform("unity", params.person_tf, tf2::TimePointZero, std::chrono::seconds(100000)); //TODO fix
+//         auto params = param_listener_->get_params();
+//         geometry_msgs::msg::TransformStamped patient_location;
+//         std::lock_guard<std::mutex> lock(tf_buffer_mtx);
+//         try {
+// //            patient_location = tf_buffer_->lookupTransform("odom", params.person_tf, tf2::TimePointZero); //TODO fix
+// // changed from odom to unity because odom is not fixed
+//             patient_location = tf_buffer_->lookupTransform("unity", params.person_tf, tf2::TimePointZero, std::chrono::seconds(100000)); //TODO fix
 
-        } catch (const tf2::TransformException &ex) {
-            RCLCPP_INFO(get_logger(), "Could not transform %s to %s: %s", "unity", params.person_tf.c_str(), ex.what());
-            return false;
-        }
+//         } catch (const tf2::TransformException &ex) {
+//             RCLCPP_INFO(get_logger(), "Could not transform %s to %s: %s", "unity", params.person_tf.c_str(), ex.what());
+//             return false;
+//         }
 
-        Eigen::Vector3d point = {patient_location.transform.translation.x, patient_location.transform.translation.y, 0.0};
-        // cause it doesnt matter sice its 2D robot_location.transform.translation.z};
-        return shr_utils::PointInMesh(point, verts, verts2d);
-    }
+//         Eigen::Vector3d point = {patient_location.transform.translation.x, patient_location.transform.translation.y, 0.0};
+//         // cause it doesnt matter sice its 2D robot_location.transform.translation.z};
+//         return shr_utils::PointInMesh(point, verts, verts2d);
+//     }
 
     std::optional<geometry_msgs::msg::TransformStamped> get_tf(const std::string &base, const std::string &frame) {
         geometry_msgs::msg::TransformStamped robot_location;
