@@ -335,7 +335,7 @@
       (person_currently_at ?p ?cur)
       (robot_at ?cur)
 
-      (not (already_reminded_morning_wake ?mw))
+      (not (already_reminded_morning_wake ?mw)) 
       (forall (?mw - MorningWakeProtocol) (not (morning_wake_protocol_enabled ?mw)) )
       (started)
 		)
@@ -352,13 +352,13 @@
 )
 
 (:action ContinueStartMorningWakeProtocol
-	:parameters (?mw - StartMorningWakeProtocol)
+	:parameters (?m - MorningWakeProtocol)
 	:precondition (and
 	    (priority_2)
 	    (not (low_level_failed))
-      (time_for_morning_wake_reminder ?mw)
-      (not (already_reminded_morning_wake ?mw))
-      (morning_wake_protocol_enabled ?mw)
+      (time_for_morning_wake_reminder ?m)
+      (not (already_reminded_morning_wake ?m))
+      (morning_wake_protocol_enabled ?m)
 		)
 	:effect (and (success) (not (priority_2)) )
 )
