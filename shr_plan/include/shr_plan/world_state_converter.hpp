@@ -2,16 +2,20 @@
 #include "shr_msgs/msg/world_state.hpp"
 #include <memory>
 #include "tf2_ros/buffer.h"
-#include <shr_parameters.hpp>
+#include <shr_parameters/shr_parameters.hpp>
 #include <std_msgs/msg/int32.hpp>
 #include <tf2_ros/transform_listener.h>
 #include "std_msgs/msg/string.hpp"
-
+#include "std_msgs/msg/float64_multi_array.hpp"
 
 #pragma once
 
 class WorldStateListener : public rclcpp::Node {
 private:
+    rclcpp::Subscription<std_msgs::msg::Int32>::SharedPtr person_intervened_;
+
+    rclcpp::Subscription<std_msgs::msg::Float64MultiArray>::SharedPtr person_sub_;
+
     rclcpp::Subscription<std_msgs::msg::Int32>::SharedPtr eating_sub_;
     rclcpp::Subscription<std_msgs::msg::Int32>::SharedPtr charging_sub_;
     rclcpp::Subscription<builtin_interfaces::msg::Time>::SharedPtr time_sub_;
@@ -29,7 +33,8 @@ private:
     std::shared_ptr<shr_parameters::ParamListener> param_listener_;
     std::unordered_map<std::string, Eigen::MatrixXd> mesh_vert_map_robot;
     std::unordered_map<std::string, Eigen::MatrixXd> mesh_vert_map_person;
-
+    double patient_x;
+    double patient_y;
 public:
 
     WorldStateListener(const std::string &node_name, std::shared_ptr<shr_parameters::ParamListener> param_listener)
@@ -42,6 +47,12 @@ public:
 
         tf_buffer_ = std::make_unique<tf2_ros::Buffer>(get_clock());
         tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_, true);
+
+        person_intervened_ = create_subscription<std_msgs::msg::Int32>(
+                params.topics.person_intervene, 10, [this](const std_msgs::msg::Int32::SharedPtr msg) {
+                    std::lock_guard<std::mutex> lock(world_state_mtx);
+                    world_state_->person_intervene = msg->data;
+                });
 
         eating_sub_ = create_subscription<std_msgs::msg::Int32>(
                 params.topics.person_eating, 10, [this](const std_msgs::msg::Int32::SharedPtr msg) {
@@ -61,12 +72,27 @@ public:
                     // 🔍 Debugging: Print received time
                     // RCLCPP_INFO(rclcpp::get_logger(std::string("user=") + "high_level_domain_Idle" + "started"), "⏳ Received protocol time update: sec = %d, nanosec = %d", msg->sec, msg->nanosec);
                 });
+                
 
         charging_sub_ = create_subscription<std_msgs::msg::Int32>(
                 params.topics.robot_charging, 10, [this](const std_msgs::msg::Int32::SharedPtr msg) {
                     std::lock_guard<std::mutex> lock(world_state_mtx);
                     world_state_->robot_charging = msg->data;
                 });
+
+        person_sub_ = create_subscription<std_msgs::msg::Float64MultiArray>(
+            "person_loc", 10, [this](const std_msgs::msg::Float64MultiArray::SharedPtr msg) {
+                std::lock_guard<std::mutex> lock(world_state_mtx);  // Optional if accessing shared data
+
+                if (msg->data.size() >= 2) {
+                    patient_x = msg->data[0];
+                    patient_y = msg->data[1];
+
+                    RCLCPP_INFO(this->get_logger(), "Received position: x=%.2f, y=%.2f", patient_x, patient_y);
+                } else {
+                    RCLCPP_WARN(this->get_logger(), "Received array has fewer than 2 elements.");
+                }
+            });
 
         good_weather_sub_ = create_subscription<std_msgs::msg::Int32>(
                 params.topics.good_weather, 10, [this](const std_msgs::msg::Int32::SharedPtr msg) {
@@ -99,6 +125,24 @@ public:
             mesh_vert_map_person[name_person] = verts_person;
         }
     }
+
+
+
+    // void person_callback(const std_msgs::msg::Float64MultiArray::SharedPtr msg){
+    //     if (msg->data.size() >= 2) {
+    //         patient_x = msg->data[0];
+    //         patient_y = msg->data[1];
+
+    //         RCLCPP_INFO(this->get_logger(), "Received position: x=%.2f, y=%.2f", patient_x, patient_y);
+
+    //         // Optionally store them as class variables if needed later
+    //         // this->x_ = x;
+    //         // this->y_ = y;
+    //         // this->z_ = z;
+    //     } else {
+    //         RCLCPP_WARN(this->get_logger(), "Received array has fewer than 2 elements.");
+    //     }
+    // }
 
     bool check_robot_at_loc(const std::string &loc) {
         if (mesh_vert_map_robot.find(loc) == mesh_vert_map_robot.end()) {
@@ -134,23 +178,35 @@ public:
         auto verts = mesh_vert_map_person.at(loc);
         Eigen::MatrixXd verts2d = verts.block(0, 0, 2, verts.cols());
 
-        auto params = param_listener_->get_params();
-        geometry_msgs::msg::TransformStamped patient_location;
-        std::lock_guard<std::mutex> lock(tf_buffer_mtx);
-        try {
-//            patient_location = tf_buffer_->lookupTransform("odom", params.person_tf, tf2::TimePointZero); //TODO fix
-// changed from odom to unity because odom is not fixed
-            patient_location = tf_buffer_->lookupTransform("unity", params.person_tf, tf2::TimePointZero, std::chrono::seconds(100000)); //TODO fix
-
-        } catch (const tf2::TransformException &ex) {
-            RCLCPP_INFO(get_logger(), "Could not transform %s to %s: %s", "unity", params.person_tf.c_str(), ex.what());
-            return false;
-        }
-
-        Eigen::Vector3d point = {patient_location.transform.translation.x, patient_location.transform.translation.y, 0.0};
+        Eigen::Vector3d point = {patient_x, patient_y, 0.0};
         // cause it doesnt matter sice its 2D robot_location.transform.translation.z};
         return shr_utils::PointInMesh(point, verts, verts2d);
     }
+
+    // bool check_person_at_loc(const std::string &loc) {
+//         if (mesh_vert_map_person.find(loc) == mesh_vert_map_person.end()) {
+//             return false;
+//         }
+//         auto verts = mesh_vert_map_person.at(loc);
+//         Eigen::MatrixXd verts2d = verts.block(0, 0, 2, verts.cols());
+
+//         auto params = param_listener_->get_params();
+//         geometry_msgs::msg::TransformStamped patient_location;
+//         std::lock_guard<std::mutex> lock(tf_buffer_mtx);
+//         try {
+// //            patient_location = tf_buffer_->lookupTransform("odom", params.person_tf, tf2::TimePointZero); //TODO fix
+// // changed from odom to unity because odom is not fixed
+//             patient_location = tf_buffer_->lookupTransform("unity", params.person_tf, tf2::TimePointZero, std::chrono::seconds(100000)); //TODO fix
+
+//         } catch (const tf2::TransformException &ex) {
+//             RCLCPP_INFO(get_logger(), "Could not transform %s to %s: %s", "unity", params.person_tf.c_str(), ex.what());
+//             return false;
+//         }
+
+//         Eigen::Vector3d point = {patient_location.transform.translation.x, patient_location.transform.translation.y, 0.0};
+//         // cause it doesnt matter sice its 2D robot_location.transform.translation.z};
+//         return shr_utils::PointInMesh(point, verts, verts2d);
+//     }
 
     std::optional<geometry_msgs::msg::TransformStamped> get_tf(const std::string &base, const std::string &frame) {
         geometry_msgs::msg::TransformStamped robot_location;

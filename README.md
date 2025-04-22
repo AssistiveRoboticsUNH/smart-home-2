@@ -55,6 +55,44 @@ colcon build --symlink-install
 colcon build --symlink-install --cmake-args -DCMAKE_EXPORT_COMPILE_COMMANDS=1
 ```
 
+# Manual Intervention Protocol for Docking Failures
+
+If the robot fails to dock **more than 3 times**, it will:
+
+- Enter **runstop** mode.
+- Notify the caregiver or operator of the failure on discord and through a phone call.
+- **Stop attempting to dock or move further**.
+
+To manually resolve the issue and allow the robot to retry docking:
+
+1. **Inspect the robot** to determine the cause of the docking failure (e.g., obstruction, misalignment, mechanical issue).
+2. **Fix the issue** physically or via remote tools as needed.
+3. Resume the robot:
+   - Either physically release the runstop if pressed, **or**
+   - Use the remote interface to set the robot back to a running state by running in the service in the terminal
+   command:
+   ```bash 
+   ros2 service call /runstop std_srvs/srv/SetBool data:\ false\
+   ```
+   - triggered remotely via Discord by sending the message:  
+   ```
+     run
+   ```
+4. **Send the intervention signal**:
+   - Publish `1` (as an `int32`) to the `/person_intervene` topic.
+    command:
+     ```bash
+     ros2 topic pub /person_intervene std_msgs/msg/Int32 '{data: 1}'
+     ```
+   - triggered remotely via Discord by sending the message:  
+     ```
+     intervened
+     ```
+
+Once `/person_intervene` is set to `1`, the robot will interpret this as confirmation that a person has resolved the issue, and it will resume docking attempts.
+
+> ⚠️ Note: The robot will **not retry docking or movement** until `/person_intervene` is received after a failure.
+
 # Setup planner to start and shutdown
 
 #### Step 1:

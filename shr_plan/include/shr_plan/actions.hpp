@@ -26,7 +26,9 @@ namespace pddl_lib {
         std::shared_ptr <WorldStateListener> world_state_converter;
 
         rclcpp::Publisher<std_msgs::msg::String>::SharedPtr display_publisher_;
+        rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr person_intervened_pub;
 
+        
         rclcpp::Node::SharedPtr node_ = std::make_shared<rclcpp::Node>("for_run_stop"); 
 
         // ✅ Getter for display_publisher_
@@ -40,6 +42,7 @@ namespace pddl_lib {
         }
 
         int docking_try = 0;
+        int already_called = 0;
 
         // change first to change time (x  before y after)
         // Msg in PDDL
@@ -89,6 +92,19 @@ namespace pddl_lib {
         rclcpp_action::Client<shr_msgs::action::QuestionResponseRequest>::SharedPtr voice_action_client_ = {};
 
 
+        void publish_person_intervened(int value) {
+            if (!person_intervened_pub) {
+                RCLCPP_ERROR(node_->get_logger(), "Publisher not initialized!");
+                return;
+            }
+    
+            std_msgs::msg::Int32 msg;
+            msg.data = value;
+            for (int i = 0; i < 5; ++i) {
+                person_intervened_pub->publish(msg);
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            }
+        }
 
         static InstantiatedParameter getActiveProtocol() {
             std::lock_guard <std::mutex> lock(getInstance().active_protocol_mtx);
@@ -166,7 +182,11 @@ namespace pddl_lib {
             return instance;
         }
 
-        ProtocolState() {} // Private constructor to prevent direct instantiation
+        ProtocolState() {
+            // todo: change to get the topic from world state params
+            person_intervened_pub = node_->create_publisher<std_msgs::msg::Int32>(
+                "person_intervene", rclcpp::QoS(10));
+        } // Private constructor to prevent direct instantiation
         ~ProtocolState() {} // Private destructor to prevent deletion
         ProtocolState(const ProtocolState &) = delete; // Disable copy constructor
         ProtocolState &operator=(const ProtocolState &) = delete; // Disable assignment operator
@@ -285,47 +305,82 @@ namespace pddl_lib {
         return *success;
     }
 
+    // since both docking and undocking have the same message type they can t have separate functions so docking
+    // will indicate wether its for docking nor undocking
     int send_goal_blocking(const shr_msgs::action::DockingRequest::Goal &goal, const InstantiatedAction &action,
-                           ProtocolState &ps) {
+                           ProtocolState &ps, int docking) {
 
         auto &kb = KnowledgeBase::getInstance();
         auto success = std::make_shared < std::atomic < int >> (-1);
+
+        // same type so goal options are same
         auto send_goal_options = rclcpp_action::Client<shr_msgs::action::DockingRequest>::SendGoalOptions();
-        send_goal_options.result_callback = [&success](
+        send_goal_options.result_callback = [&success, &docking](
                 const rclcpp_action::ClientGoalHandle<shr_msgs::action::DockingRequest>::WrappedResult result) {
             if (result.code == rclcpp_action::ResultCode::SUCCEEDED) {
                 *success = 1;
-                RCLCPP_INFO(rclcpp::get_logger(
-                        std::string("weblog=") + " Docking goal Succeeded."), "user...");
+                if (docking){
+                    RCLCPP_INFO(rclcpp::get_logger(
+                            std::string("weblog=") + " Docking goal Succeeded."), "user...");
+                }else{
+                    RCLCPP_INFO(rclcpp::get_logger(
+                            std::string("weblog=") + " Undocking goal Succeeded."), "user...");
+                }
+
             } else {
                 *success = 0;
-                RCLCPP_INFO(rclcpp::get_logger(std::string("weblog=") + " Docking goal aborted."), "user...");
-                std::cout << "Docking goal aborted." << std::endl;
+                if (docking){
+                    RCLCPP_INFO(rclcpp::get_logger(std::string("weblog=") + " Docking goal aborted."), "user...");
+                    std::cout << "Docking goal aborted." << std::endl;
+                }else{
+                    RCLCPP_INFO(rclcpp::get_logger(
+                            std::string("weblog=") + " Undocking goal Succeeded."), "user...");
+                }
+
             }
         };
-        ps.docking_->async_send_goal(goal, send_goal_options);
-        auto tmp = ps.active_protocol;
 
-        // prevent long navigation time
-        int count = 0;
-        int count_max = 150;
+        if (docking){
+            ps.docking_->async_send_goal(goal, send_goal_options);
+            auto tmp = ps.active_protocol;
 
-        while (*success == -1 && count_max > count) {
-            if (!(tmp == ps.active_protocol)) {
-                ps.docking_->async_cancel_all_goals();
-                return false;
+            // prevent long navigation time
+            int count = 0;
+            int count_max = 150;
+
+            while (*success == -1 && count_max > count) {
+                if (!(tmp == ps.active_protocol)) {
+                    ps.docking_->async_cancel_all_goals();
+                    return false;
+                }
+                count++;
+                rclcpp::sleep_for(std::chrono::seconds(1));
+                if (count_max - 1 == count) {
+                    RCLCPP_INFO(rclcpp::get_logger(
+                            std::string("weblog=") + " Docking failed for exceed time."), "user...");
+                    ps.docking_->async_cancel_all_goals();
+                    std::cout << " Docking failed for exceed time  " << std::endl;
+                    return false;
+                }
             }
-            count++;
-            rclcpp::sleep_for(std::chrono::seconds(1));
-            if (count_max - 1 == count) {
-                RCLCPP_INFO(rclcpp::get_logger(
-                        std::string("weblog=") + " Docking failed for exceed time."), "user...");
-                ps.docking_->async_cancel_all_goals();
-                std::cout << " Docking failed for exceed time  " << std::endl;
-                return false;
+            return *success;
+        }else{
+            ps.undocking_->async_send_goal(goal, send_goal_options);
+            auto tmp = ps.active_protocol;
+
+            while (*success == -1) {
+                if (!(tmp == ps.active_protocol)) {
+                    ps.undocking_->async_cancel_all_goals();
+                    RCLCPP_INFO(rclcpp::get_logger(std::string("weblog=") + "high_level_domain_MoveToLandmark" +
+                                                   "UnDocking failed for protocol mismatched."), "user...");
+                    return false;
+                }
+
+                rclcpp::sleep_for(std::chrono::seconds(1));
+
             }
+            return *success;
         }
-        return *success;
     }
 
     int send_goal_blocking(const shr_msgs::action::ReadScriptRequest::Goal &goal, const InstantiatedAction &action,
@@ -491,184 +546,182 @@ namespace pddl_lib {
 
     class ProtocolActions : public pddl_lib::ActionInterface {
     public:
-
         BT::NodeStatus charge_robot(ProtocolState &ps, const InstantiatedAction &action, bool pred_started){
-            
-
             std::cout << "ps.world_state_converter->get_world_state_msg()->robot_charging" << ps.world_state_converter->get_world_state_msg()->robot_charging  << std::endl;
-
-
             std::cout << "pred_started" << pred_started << std::endl;
             auto &kb = KnowledgeBase::getInstance();
 
-            if (!ps.world_state_converter->get_world_state_msg()->robot_charging == 1 && pred_started ) {
+            // if robot is already charging just exit
+            if (ps.world_state_converter->get_world_state_msg()->robot_charging == 1) {
+                return BT::NodeStatus::SUCCESS;
+            }
 
-                std::string log_message_charging = std::string("weblog= Robot Not Charging will move home and dock");
+            // create a way to set it back to 0 when person responds
+            if (ps.already_called == 1 ) {
+                if (ps.world_state_converter->get_world_state_msg()->person_intervene){
+                    //  reset
+                    ps.already_called = 0;
+                    ps.docking_try = 0;
+                    std::cout << "Person intervened"  << std::endl;
+                    std::string log_message_intr = std::string("weblog= Person intervened");
+                    RCLCPP_INFO(ps.world_state_converter->get_logger(), log_message_intr.c_str());
+                    // set back to false
+                    ps.publish_person_intervened(0);
 
-                RCLCPP_INFO(ps.world_state_converter->get_logger(), log_message_charging.c_str());
 
-                std::cout << "High level claim robot called " << std::endl;
-                auto robot_resource = ps.claimRobot();
-                ps.read_action_client_->async_cancel_all_goals();
-                ps.audio_action_client_->async_cancel_all_goals();
-                ps.undocking_->async_cancel_all_goals();
-                ps.docking_->async_cancel_all_goals();
-
-
-                std::cout << "navigate " << std::endl;
-
-                nav2_msgs::action::NavigateToPose::Goal navigation_goal_;
-                navigation_goal_.pose.header.frame_id = "map";
-                navigation_goal_.pose.header.stamp = ps.world_state_converter->now();
-                if (auto transform = ps.world_state_converter->get_tf("map", "home")) {
-                    navigation_goal_.pose.pose.orientation = transform.value().transform.rotation;
-                    navigation_goal_.pose.pose.position.x = transform.value().transform.translation.x;
-                    navigation_goal_.pose.pose.position.y = transform.value().transform.translation.y;
-                    navigation_goal_.pose.pose.position.z = transform.value().transform.translation.z;
-                }
-                auto status_nav = send_goal_blocking(navigation_goal_, action, ps);
-                std::cout << "status: " << status_nav << std::endl;
-                if (!status_nav) {
-                    std::cout << "Fail: " << std::endl;
-                    // lock.UnLock();
+                }else{
+                    // already called for failure and waiting for intervention
+                    std::cout << "Person heven't intervened"  << std::endl;
                     return BT::NodeStatus::FAILURE;
+                    
                 }
+            }
 
-                std::cout << "success navigation : " << std::endl;
+            // force claiming the robot
+            auto robot_resource = ps.claimRobot();
+            // stop any action clients
+            ps.read_action_client_->async_cancel_all_goals();
+            ps.audio_action_client_->async_cancel_all_goals();
+            ps.undocking_->async_cancel_all_goals();
+            ps.docking_->async_cancel_all_goals();
 
-                std::string log_message_navigate = std::string("weblog= Robot successfully navigated to home position");
-                RCLCPP_INFO(ps.world_state_converter->get_logger(), log_message_navigate.c_str());
+            // robot is not charging
+            std::cout << "ROBOT NOT CHARGING" << std::endl;
+            // if robot is not started turn it on
+            if (!pred_started){
+
+                RCLCPP_INFO(rclcpp::get_logger("########## STARTT #################"), "Your message here");
 
 
-                std::cout << "dock " << std::endl;
-                // comment in sim
-                shr_msgs::action::DockingRequest::Goal goal_msg_dock;
-                RCLCPP_INFO(rclcpp::get_logger(std::string("weblog=") + "high_level_domain_Idle" + "docking started"),
-                            "user...");
+//                const char* homeDir = std::getenv("HOME");
+//                std::string cmd_startros = std::string(homeDir);
+//                cmd_startros += "/start_nav.sh";
 
-                auto status_dock = send_goal_blocking(goal_msg_dock, action, ps);
-                std::cout << "status: " << status_dock << std::endl;
-                if (!status_dock) {
-                    ps.docking_try++;
-                    ps.docking_->async_cancel_all_goals();
-                    std::cout << "⚠️ Docking attempt " << ps.docking_try << " failed." << std::endl;
-                
-                    if (ps.docking_try > 2) {  // Call for help if repeated failures
-                        shr_msgs::action::CallRequest::Goal call_goal_;
-                        call_goal_.script_name = "call_msg_docking.xml";
-                        call_goal_.phone_number = "7742257735";
-                
-                        auto ret = send_goal_blocking(call_goal_, action) ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
-                
-                        if (ret == BT::NodeStatus::SUCCESS) {
-                            std::cout << "📞 Unsuccessful docking. Call made successfully!" << std::endl;
-                        }
-                        else{
-                            std::cout << "📞 Unsuccessful docking. Call failed successfully!" << std::endl;
-                        }
-                
-                        // ✅ Reset failure count after the call
-                        ps.docking_try = 0;
+                std::string cmd_startros = "/home/hello-robot/smarthome_ws/src/smart-home-robot/external/helper_script/start_nav.sh";
 
-                        // 🚨 Call /runstop service **after** the emergency call
-                        // 🚨 Call /runstop service **after** the emergency call
-                        auto client = ps.node_->create_client<std_srvs::srv::SetBool>("/runstop");
-                        auto request = std::make_shared<std_srvs::srv::SetBool::Request>();
-                        request->data = true;
+                std::system(cmd_startros.c_str());
 
-                        if (client->wait_for_service(std::chrono::seconds(3))) {
-                            auto future_result = client->async_send_request(request);
-                            if (future_result.wait_for(std::chrono::seconds(3)) == std::future_status::ready) {
-                                std::cout << "🚨 Runstop service called successfully after emergency call!" << std::endl;
-                            } else {
-                                std::cout << "⚠️ Failed to call Runstop service after emergency call." << std::endl;
-                            }
-                        } else {
-                            std::cout << "⚠️ Runstop service not available after emergency call!" << std::endl;
-                        }
-                    }
-                        
-                    return BT::NodeStatus::FAILURE;
-                }
-                
-                ps.docking_->async_cancel_all_goals();
-                std::cout << "success: " << std::endl;
-
-                std::cout << "✅ Docking goal succeeded after " << ps.docking_try << " failed attempts!" << std::endl;
-                ps.docking_try = 0;  // Reset failure count on success
-                // comment in sim
-
-                // // sleep for 60 seconds to deal with the delay from //charging topic
-                std::cout << " waiting  " << std::endl;
-                rclcpp::sleep_for(std::chrono::seconds(30));
-
-                std::cout << "High level ending " << std::endl;
+                std::cout << " ------ finish start ----" << std::endl;
+                kb.insert_predicate({"started", {}});
 
             }
-            
-            // for safety have it undock so that nav2 doesnt have to move when the robot is sp close to the docking
-            if (ps.world_state_converter->get_world_state_msg()->robot_charging != 1){
 
-                // start the robot before undocking
-                if (!pred_started){
+            // navigate to home position
 
-                    RCLCPP_INFO(rclcpp::get_logger("########## STARTT #################"), "Your message here");
+            // create a message
+            std::cout << "navigate " << std::endl;
+            nav2_msgs::action::NavigateToPose::Goal navigation_goal_;
+            navigation_goal_.pose.header.frame_id = "map";
+            navigation_goal_.pose.header.stamp = ps.world_state_converter->now();
 
-                    // const char* homeDir = std::getenv("HOME");
-                    // std::string cmd_startros = std::string(homeDir);
-                    // cmd_startros += "/start_nav.sh";
-                    // std::system(cmd_startros.c_str());
-                    
-                    std::string cmd_startros = "/home/hello-robot/smarthome_ws/src/smart-home-robot/external/helper_script/start_nav.sh";
-                    std::system(cmd_startros.c_str());
+            if (auto transform = ps.world_state_converter->get_tf("map", "home")) {
+                navigation_goal_.pose.pose.orientation = transform.value().transform.rotation;
+                navigation_goal_.pose.pose.position.x = transform.value().transform.translation.x;
+                navigation_goal_.pose.pose.position.y = transform.value().transform.translation.y;
+                navigation_goal_.pose.pose.position.z = transform.value().transform.translation.z;
+            }
 
-        
-                    std::cout << " ------ finish start ----" << std::endl;
-                    kb.insert_predicate({"started", {}});
+            auto status_nav = send_goal_blocking(navigation_goal_, action, ps);
+            std::cout << "status: " << status_nav << std::endl;
+            if (!status_nav) {
+                std::cout << "Fail: " << std::endl;
+                // lock.UnLock();
+                return BT::NodeStatus::FAILURE;
+            }
+            std::cout << "success navigation : " << std::endl;
+            std::string log_message_navigate = std::string("weblog= Robot successfully navigated to home position");
+            RCLCPP_INFO(ps.world_state_converter->get_logger(), log_message_navigate.c_str());
 
-                }
-                std::cout << "Undock " << std::endl;
+            // start docking
+            std::cout << "dock " << std::endl;
+            shr_msgs::action::DockingRequest::Goal goal_msg_dock;
+            RCLCPP_INFO(rclcpp::get_logger(std::string("weblog=") + "high_level_domain_Idle" + "docking started"),
+                        "user...");
 
-                shr_msgs::action::DockingRequest::Goal goal_msg;
+            auto status_dock = send_goal_blocking(goal_msg_dock, action, ps, 1);
+            // if failed to do try for two time then call person
 
-                auto success_undock = std::make_shared < std::atomic < int >> (-1);
-                auto send_goal_options_dock = rclcpp_action::Client<shr_msgs::action::DockingRequest>::SendGoalOptions();
-                send_goal_options_dock.result_callback = [&success_undock](
-                        const rclcpp_action::ClientGoalHandle<shr_msgs::action::DockingRequest>::WrappedResult result) {
-                    *success_undock = result.code == rclcpp_action::ResultCode::SUCCEEDED;
-                    if (*success_undock == 1) {
-                        RCLCPP_INFO(rclcpp::get_logger(std::string("weblog=") + "low_level_domain_MoveToLandmark" +
-                                                       "UnDocking goal Succeeded."), "user...");
+            if (!status_dock){
+                ps.docking_try++;
+                ps.docking_->async_cancel_all_goals();
+                std::cout << " Docking attempt " << ps.docking_try << " failed." << std::endl;
+
+                if (ps.docking_try > 2) {  // Call for help if repeated failures
+                    shr_msgs::action::CallRequest::Goal call_goal_;
+                    call_goal_.script_name = "call_msg_docking.xml";
+                    call_goal_.phone_number = "7742257735";
+
+                    auto ret = send_goal_blocking(call_goal_, action) ? BT::NodeStatus::SUCCESS
+                                                                      : BT::NodeStatus::FAILURE;
+
+                    if (ret == BT::NodeStatus::SUCCESS) {
+                        std::cout << "Unsuccessful docking. Call made successfully!" << std::endl;
+                        // so that it doesnt keep on calling
 
                     } else {
-                        RCLCPP_INFO(rclcpp::get_logger(std::string("weblog=") + "low_level_domain_MoveToLandmark" +
-                                                       "UnDocking goal aborted!."), "user...");
-
+                        std::cout << "Unsuccessful docking. Call failed !" << std::endl;
                     }
-                };
 
-                ps.undocking_->async_send_goal(goal_msg, send_goal_options_dock);
-                auto tmp_dock = ps.active_protocol;
 
-                while (*success_undock == -1) {
-                    if (!(tmp_dock == ps.active_protocol)) {
-                        ps.undocking_->async_cancel_all_goals();
-                        std::cout << " Failed " << std::endl;
-                        RCLCPP_INFO(rclcpp::get_logger(std::string("weblog=") + "high_level_domain_MoveToLandmark" +
-                                                       "UnDocking failed for protocol mismatched."), "user...");
+                    ps.docking_try = 0;
 
+                    // put robot on runstop
+                    auto client = ps.node_->create_client<std_srvs::srv::SetBool>("/runstop");
+                    auto request = std::make_shared<std_srvs::srv::SetBool::Request>();
+                    request->data = true;
+
+                    // already called as informed
+                    // since twilio has problems, will inform on discord
+                    ps.already_called = 1;
+
+                    std::string log_message_runstop = std::string("weblog= Robot failed to dock 3 time, please intervene");
+                    RCLCPP_INFO(ps.world_state_converter->get_logger(), log_message_runstop.c_str());
+
+
+                    if (client->wait_for_service(std::chrono::seconds(3))) {
+                        auto future_result = client->async_send_request(request);
+                        if (future_result.wait_for(std::chrono::seconds(3)) == std::future_status::ready) {
+                            std::cout << " Runstop service called successfully after emergency call!" << std::endl;
+                        } else {
+                            std::cout << " Failed to call Runstop service after emergency call." << std::endl;
+                        }
+                    } else {
+                        std::cout << " Runstop service not available after emergency call!" << std::endl;
                     }
-                    rclcpp::sleep_for(std::chrono::seconds(1));
                 }
-                ps.undocking_->async_cancel_all_goals();
-
-                // indicating that robot didnt charge itself and needs ot start again
                 return BT::NodeStatus::FAILURE;
             }
 
-            return BT::NodeStatus::SUCCESS;
+            // docked successfully but we need to wait to check if it actually charging
+            ps.docking_->async_cancel_all_goals();
+            std::cout << " Docking goal succeeded after " << ps.docking_try << " failed attempts!" << std::endl;
+            ps.docking_try = 0;
 
+            // sleep for 30 seconds to deal with the delay from charging topic for safety so it away form the dock when nav2 takes over
+            std::cout << " waiting  " << std::endl;
+            rclcpp::sleep_for(std::chrono::seconds(30));
+
+            //check if it actually docked if not undock so for safety so it away form the dock when nav2 takes over
+            // can be removed
+            if (ps.world_state_converter->get_world_state_msg()->robot_charging != 1){
+                // undock
+                std::cout << "Undock " << std::endl;
+                // undock goal is empty and same as docking
+                shr_msgs::action::DockingRequest::Goal goal_msg;
+
+                RCLCPP_INFO(rclcpp::get_logger(std::string("weblog=") + "high_level_domain_Idle" + "undocking started"),
+                           "user...");
+               auto success_undock = send_goal_blocking(goal_msg, action, ps, 0);
+               ps.undocking_->async_cancel_all_goals();
+
+                // indicating that robot didnt charge itself and needs to start again
+                return BT::NodeStatus::FAILURE;
+
+            }
+            // robot docked successfully
+            return BT::NodeStatus::SUCCESS;
         }
+
 
         // Timeout for now doesnt do anything inrodere for the protocol to be retriggered
         BT::NodeStatus high_level_domain_Idle(const InstantiatedAction &action) override {
@@ -694,6 +747,7 @@ namespace pddl_lib {
                     "user...");
 
             lock.Lock();
+
             BT::NodeStatus status = charge_robot(ps, action, pred_started);
 
             std::cout << "%%%%%%%  IDLE %%%%%%%  IDLE " << std::endl;
@@ -900,12 +954,13 @@ namespace pddl_lib {
             RCLCPP_INFO(rclcpp::get_logger("Shutdown"), "Published: %s", message.data.c_str());
 
             rclcpp::sleep_for(std::chrono::seconds(10));
-
+            
+            RCLCPP_INFO(ps.world_state_converter->get_logger(), "weblog=----Going to Charge Robot Function---");
             // dock the robot if it is not charging
             while (status !=BT::NodeStatus::SUCCESS){
                 /// TODO: IF IT RUNS FOR TOO LONG ISSUE MIGHT BE IN THE CHARGER
                 /// TODO: DISPLAY A WARNING ON THE SCREEN THAT IT NEEDS HELP
-                RCLCPP_INFO(ps.world_state_converter->get_logger(), "weblog=----Going to Charge Robot Function---");
+                
                 lock.Lock();
                 status = charge_robot(ps, action, true);
                 lock.UnLock();
@@ -995,7 +1050,6 @@ namespace pddl_lib {
 
             write_to_intersection(outputFile.c_str(), keyword_protocol_list);
 
-            
             // KILING ROS2 
 
             std::system("python3 /home/hello-robot/smarthome_ws/src/smart-home-robot/external/helper_script/kill_ros.py");
@@ -1037,12 +1091,15 @@ namespace pddl_lib {
             // RCLCPP_INFO(rclcpp::get_logger("########## STARTT #################"), "Your message here");
 
 
-            // const char* homeDir = std::getenv("HOME");
-            // std::string cmd_startros = std::string(homeDir);
-            // cmd_startros += "/start_nav.sh";
-            // std::system(cmd_startros.c_str());
-            
+            const char* homeDir = std::getenv("HOME");
+
+
             std::string cmd_startros = "/home/hello-robot/smarthome_ws/src/smart-home-robot/external/helper_script/start_nav.sh";
+
+//            std::string cmd_startros = std::string(homeDir);
+//            cmd_startros += "/start_nav.sh";
+
+
             std::system(cmd_startros.c_str());
 
             rclcpp::sleep_for(std::chrono::seconds(10));
@@ -1059,26 +1116,20 @@ namespace pddl_lib {
             }
             RCLCPP_INFO(ps.world_state_converter->get_logger(), "weblog=----before TURN_ON web----");
 
-
             ps.world_state_converter->reset_screen_ack();  // Optional: reset at the start
 
-            for (int i = 0; i < 200; ++i) {
+            for (int i = 0; i < 10; ++i) {
                 if (ps.world_state_converter->is_screen_ack_turn_on()) {
                     RCLCPP_INFO(rclcpp::get_logger("StartROS"), "✅ Received TURN_ON via screen_ack. Breaking loop.");
                     break;
                 }
-
                 auto message = std_msgs::msg::String();
                 message.data = "TURN_ON";
                 ps.getDisplayPublisher()->publish(message);
                 RCLCPP_INFO(rclcpp::get_logger("StartROS"), "📤 Published TURN_ON (%d/200)", i + 1);
                 rclcpp::sleep_for(std::chrono::seconds(1));
             }
-
-
             lock.UnLock();
-            
-            
             return BT::NodeStatus::SUCCESS;
         }
 
@@ -1258,115 +1309,60 @@ namespace pddl_lib {
 
         BT::NodeStatus MoveToLandmark_generic(const InstantiatedAction &action) {
             std::cout << "MoveToLandmark: " << std::endl;
-            
-            
+
             /// move robot to location
             std::string location = action.parameters[2].name;
+            std::cout << "MoveToLandmark: location = " << location << std::endl;
 
-            std::cout << "location: " << location << std::endl;
             auto [ps, lock] = ProtocolState::getConcurrentInstance();
             std::cout << "ps.world_state_converter->get_world_state_msg()->robot_charging: " << ps.world_state_converter->get_world_state_msg()->robot_charging << std::endl;
 
             std::string log_message = std::string("weblog=") + "Move to landmark: " + location;
             
-           lock.Lock();
+            lock.Lock();
                         
             RCLCPP_INFO(ps.world_state_converter->get_logger(), log_message.c_str());
-
-            // RCLCPP_INFO(ps.world_state_converter->get_logger(), "weblog=Move to landmark: %s", location.c_str())
-            
             std::cout << "log_message: " << log_message.c_str() << std::endl;
-            
 
+            // if robot is charging undock
             if (ps.world_state_converter->get_world_state_msg()->robot_charging == 1) {
                 std::cout << "Undock " << std::endl;
 
                 shr_msgs::action::DockingRequest::Goal goal_msg;
-
-                auto success_undock = std::make_shared < std::atomic < int >> (-1);
-                auto send_goal_options_dock = rclcpp_action::Client<shr_msgs::action::DockingRequest>::SendGoalOptions();
-                send_goal_options_dock.result_callback = [&success_undock](
-                        const rclcpp_action::ClientGoalHandle<shr_msgs::action::DockingRequest>::WrappedResult result) {
-                    *success_undock = result.code == rclcpp_action::ResultCode::SUCCEEDED;
-                    if (*success_undock == 1) {
-                        RCLCPP_INFO(rclcpp::get_logger(std::string("weblog=") + "MoveToLandmark" +
-                                                       "UnDocking goal Succeeded."), "user...");
-
-                    } else {
-                        RCLCPP_INFO(rclcpp::get_logger(std::string("weblog=") + "MoveToLandmark" +
-                                                       "UnDocking goal aborted!."), "user...");
-
-                    }
-                };
-
-                ps.undocking_->async_send_goal(goal_msg, send_goal_options_dock);
-                auto tmp_dock = ps.active_protocol;
-
-                while (*success_undock == -1) {
-                    if (!(tmp_dock == ps.active_protocol)) {
-                        ps.undocking_->async_cancel_all_goals();
-                        std::cout << " Failed " << std::endl;
-                        RCLCPP_INFO(rclcpp::get_logger(std::string("weblog=") + "MoveToLandmark" +
-                                                       "UnDocking failed for protocol mismatched."), "user...");
-
-                    }
-                    rclcpp::sleep_for(std::chrono::seconds(1));
-                }
+                RCLCPP_INFO(rclcpp::get_logger(std::string("weblog=") + "high_level_domain_Idle" + "undocking started"),
+                            "user...");
+                auto success_undock = send_goal_blocking(goal_msg, action, ps, 0);
                 ps.undocking_->async_cancel_all_goals();
 
-                nav2_msgs::action::NavigateToPose::Goal navigation_goal_;
-                navigation_goal_.pose.header.frame_id = "map";
-                navigation_goal_.pose.header.stamp = ps.world_state_converter->now();
-                if (auto transform = ps.world_state_converter->get_tf("map", location)) {
-                    navigation_goal_.pose.pose.orientation = transform.value().transform.rotation;
-                    navigation_goal_.pose.pose.position.x = transform.value().transform.translation.x;
-                    navigation_goal_.pose.pose.position.y = transform.value().transform.translation.y;
-                    navigation_goal_.pose.pose.position.z = transform.value().transform.translation.z;
-                } else {
-                    RCLCPP_INFO(rclcpp::get_logger(
-                                        std::string("weblog=") + "MoveToLandmark" + "moving to land mark failed!"),
-                                "user...");
-                    lock.UnLock();
-                    return BT::NodeStatus::FAILURE;
-                }
-
-                RCLCPP_INFO(rclcpp::get_logger(
-                                    std::string("weblog=") + "MoveToLandmark" + "moving to land mark succeed!"),
-                            "user...");
-                lock.UnLock();
-                return send_goal_blocking(navigation_goal_, action, ps) ? BT::NodeStatus::SUCCESS
-                                                                        : BT::NodeStatus::FAILURE;
-            } else {
-
-                int count_max = 30;
-
-                std::cout << "localize " << std::endl;
-
-                nav2_msgs::action::NavigateToPose::Goal navigation_goal_;
-                navigation_goal_.pose.header.frame_id = "map";
-                navigation_goal_.pose.header.stamp = ps.world_state_converter->now();
-                if (auto transform = ps.world_state_converter->get_tf("map", location)) {
-                    std::cout << "degug location moveto landmark" << location << std::endl;
-                    navigation_goal_.pose.pose.orientation = transform.value().transform.rotation;
-                    navigation_goal_.pose.pose.position.x = transform.value().transform.translation.x;
-                    navigation_goal_.pose.pose.position.y = transform.value().transform.translation.y;
-                    navigation_goal_.pose.pose.position.z = transform.value().transform.translation.z;
-                } else {
-                    RCLCPP_INFO(rclcpp::get_logger(
-                                        std::string("weblog=") + "shr_domain_MoveToLandmark" + "moving to land mark failed!"),
-                                "user...");
-                    lock.UnLock();
-                    return BT::NodeStatus::FAILURE;
-                }
-
-                RCLCPP_INFO(rclcpp::get_logger(
-                                    std::string("weblog=") + "shr_domain_MoveToLandmark" + "moving to land mark succeed!"),
-                            "user...");
-                lock.UnLock();
-                return send_goal_blocking(navigation_goal_, action, ps) ? BT::NodeStatus::SUCCESS
-                                                                        : BT::NodeStatus::FAILURE;
             }
 
+            int count_max = 30;
+
+            std::cout << "localize " << std::endl;
+
+            nav2_msgs::action::NavigateToPose::Goal navigation_goal_;
+            navigation_goal_.pose.header.frame_id = "map";
+            navigation_goal_.pose.header.stamp = ps.world_state_converter->now();
+            if (auto transform = ps.world_state_converter->get_tf("map", location)) {
+                std::cout << "degug location moveto landmark" << location << std::endl;
+                navigation_goal_.pose.pose.orientation = transform.value().transform.rotation;
+                navigation_goal_.pose.pose.position.x = transform.value().transform.translation.x;
+                navigation_goal_.pose.pose.position.y = transform.value().transform.translation.y;
+                navigation_goal_.pose.pose.position.z = transform.value().transform.translation.z;
+            } else {
+                RCLCPP_INFO(rclcpp::get_logger(
+                                    std::string("weblog=") + "shr_domain_MoveToLandmark" + "moving to land mark failed!"),
+                            "user...");
+                lock.UnLock();
+                return BT::NodeStatus::FAILURE;
+            }
+
+            RCLCPP_INFO(rclcpp::get_logger(
+                                std::string("weblog=") + "shr_domain_MoveToLandmark" + "moving to land mark succeed!"),
+                        "user...");
+            lock.UnLock();
+            return send_goal_blocking(navigation_goal_, action, ps) ? BT::NodeStatus::SUCCESS
+                                                                    : BT::NodeStatus::FAILURE;
         }
 
         BT::NodeStatus shr_domain_MoveToLandmark(const InstantiatedAction &action) override {

@@ -21,7 +21,7 @@
 
 
 #include "shr_utils/geometry.hpp"
-#include <shr_parameters.hpp>
+#include <shr_parameters/shr_parameters.hpp>
 #include <shr_plan/actions.hpp>
 
 #include <shr_plan/world_state_converter.hpp>
