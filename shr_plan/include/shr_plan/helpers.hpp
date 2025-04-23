@@ -71,6 +71,28 @@ namespace pddl_lib {
         }
     }
 
+	std::optional<long> get_inst_index(ShowerProtocol m, const shr_parameters::Params &params) {
+        const auto &instances = params.pddl.ShowerProtocol.instances;
+        auto it = std::find(instances.begin(), instances.end(), m);
+        if (it != instances.end()) {
+            auto index = std::distance(instances.begin(), it);
+            return index;
+        } else {
+            return {};
+        }
+    }
+
+	std::optional<long> get_inst_index(PamLocationProtocol m, const shr_parameters::Params &params) {
+        const auto &instances = params.pddl.PamLocationProtocol.instances;
+        auto it = std::find(instances.begin(), instances.end(), m);
+        if (it != instances.end()) {
+            auto index = std::distance(instances.begin(), it);
+            return index;
+        } else {
+            return {};
+        }
+    }
+
     std::optional<long> get_inst_index(InstantiatedParameter inst, const shr_parameters::Params &params) {
         if (inst.type == "DrinkingProtocol") {
             return get_inst_index((DrinkingProtocol) inst.name, params);
@@ -86,6 +108,12 @@ namespace pddl_lib {
         }
         else if (inst.type == "MorningWakeProtocol") {
             return get_inst_index((MorningWakeProtocol) inst.name, params);
+        }
+		else if (inst.type == "ShowerProtocol") {
+            return get_inst_index((ShowerProtocol) inst.name, params);
+        }
+		else if (inst.type == "PamLocationProtocol") {
+            return get_inst_index((PamLocationProtocol) inst.name, params);
         }
         return {};
     }

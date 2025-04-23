@@ -194,6 +194,46 @@ public:
         return TRUTH_VALUE::FALSE;
     }
 
+	TRUTH_VALUE person_shower(TRUTH_VALUE val, Time t) const override {
+        if (val == TRUTH_VALUE::TRUE) {
+            return TRUTH_VALUE::TRUE;
+        }
+        if (world_state_converter->get_world_state_msg()->person_shower == 1) {
+            return TRUTH_VALUE::TRUE;
+        }
+        return val;
+    }
+
+	TRUTH_VALUE time_for_shower_reminder(TRUTH_VALUE val, ShowerProtocol m) const override {
+        auto params = world_state_converter->get_params();
+        if (auto index = get_inst_index(m, params)) {
+            if (compare_time(params.pddl.ShowerProtocol.shower_reminder_times[index.value()])) {
+                return TRUTH_VALUE::TRUE;
+            }
+        }
+        return TRUTH_VALUE::FALSE;
+    }
+
+	TRUTH_VALUE time_for_pam_location_reminder(TRUTH_VALUE val, PamLocationProtocol m) const override {
+        auto params = world_state_converter->get_params();
+        if (auto index = get_inst_index(m, params)) {
+            if (compare_time(params.pddl.PamLocationProtocol.pam_location_reminder_times[index.value()])) {
+                return TRUTH_VALUE::TRUE;
+            }
+        }
+        return TRUTH_VALUE::FALSE;
+    }
+
+	TRUTH_VALUE pam_outside(TRUTH_VALUE val, PamLocationProtocol m) const override {
+        auto world_state_msg = world_state_converter->get_world_state_msg();
+
+        int pam_status = world_state_msg->pam_outside;
+        if (pam_status == 1) {
+            return TRUTH_VALUE::TRUE;
+        }
+        return TRUTH_VALUE::FALSE;
+    }
+
 private:
 
     int get_current_weekday() const{

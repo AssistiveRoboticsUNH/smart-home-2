@@ -63,6 +63,28 @@ shr_parameters:
         default_value: [ "Everyday 08h25m0s/8h45m0s" ],
         description: "time that each protocol is triggered",
       }
+    ShowerProtocol:
+      instances: {
+        type: string_array,
+        default_value: [ "shower" ],
+        description: "Empty Trash protocols",
+      }
+      shower_reminder_times: {
+        type: string_array,
+        default_value: [ "Everyday 07h25m0s/7h45m0s" ],
+        description: "time that each protocol is triggered",
+      }
+    PamLocationProtocol:
+      instances: {
+        type: string_array,
+        default_value: [ "pam_location" ],
+        description: "Empty Trash protocols",
+      }
+      pam_location_reminder_times: {
+        type: string_array,
+        default_value: [ "Everyday 06h25m0s/6h45m0s" ],
+        description: "time that each protocol is triggered",
+      }
 
   topics:
     time: {
@@ -74,6 +96,11 @@ shr_parameters:
       type: string,
       default_value: "/person_taking_medicine",
       description: "topic for sensor that detect if medication is taken",
+    }
+    person_shower: {
+      type: string,
+      default_value: "/person_shower",
+      description: "topic for sensor that detect if patients is taking shower or not",
     }
     person_eating: {
       type: string,
@@ -89,6 +116,12 @@ shr_parameters:
     good_weather: {
       type: string,
       default_value: "/good_weather",
+      description: "topic for checking good weather",
+    }
+
+    pam_outside: {
+      type: string,
+      default_value: "/pam_outside",
       description: "topic for checking good weather",
     }
 

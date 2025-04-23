@@ -47,13 +47,23 @@ class shr_parameters:
                 instances = ["morning_wake"]
                 morning_wake_reminder_times = ["Everyday 08h25m0s/8h45m0s"]
             MorningWakeProtocol = __Morningwakeprotocol()
+            class __Showerprotocol:
+                instances = ["shower"]
+                shower_reminder_times = ["Everyday 07h25m0s/7h45m0s"]
+            ShowerProtocol = __Showerprotocol()
+            class __Pamlocationprotocol:
+                instances = ["pam_location"]
+                pam_location_reminder_times = ["Everyday 06h25m0s/6h45m0s"]
+            PamLocationProtocol = __Pamlocationprotocol()
         pddl = __Pddl()
         class __Topics:
             time = "/protocol_time"
             person_taking_medicine = "/person_taking_medicine"
+            person_shower = "/person_shower"
             person_eating = "/person_eating"
             robot_charging = "/charging"
             good_weather = "/good_weather"
+            pam_outside = "/pam_outside"
             display_ack = "/screen_ack"
         topics = __Topics()
 
@@ -162,12 +172,32 @@ class shr_parameters:
                     updated_params.pddl.MorningWakeProtocol.morning_wake_reminder_times = param.value
                     self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
 
+                if param.name == self.prefix_ + "pddl.ShowerProtocol.instances":
+                    updated_params.pddl.ShowerProtocol.instances = param.value
+                    self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
+
+                if param.name == self.prefix_ + "pddl.ShowerProtocol.shower_reminder_times":
+                    updated_params.pddl.ShowerProtocol.shower_reminder_times = param.value
+                    self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
+
+                if param.name == self.prefix_ + "pddl.PamLocationProtocol.instances":
+                    updated_params.pddl.PamLocationProtocol.instances = param.value
+                    self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
+
+                if param.name == self.prefix_ + "pddl.PamLocationProtocol.pam_location_reminder_times":
+                    updated_params.pddl.PamLocationProtocol.pam_location_reminder_times = param.value
+                    self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
+
                 if param.name == self.prefix_ + "topics.time":
                     updated_params.topics.time = param.value
                     self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
 
                 if param.name == self.prefix_ + "topics.person_taking_medicine":
                     updated_params.topics.person_taking_medicine = param.value
+                    self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
+
+                if param.name == self.prefix_ + "topics.person_shower":
+                    updated_params.topics.person_shower = param.value
                     self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
 
                 if param.name == self.prefix_ + "topics.person_eating":
@@ -180,6 +210,10 @@ class shr_parameters:
 
                 if param.name == self.prefix_ + "topics.good_weather":
                     updated_params.topics.good_weather = param.value
+                    self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
+
+                if param.name == self.prefix_ + "topics.pam_outside":
+                    updated_params.topics.pam_outside = param.value
                     self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
 
                 if param.name == self.prefix_ + "topics.display_ack":
@@ -261,6 +295,26 @@ class shr_parameters:
                 parameter = updated_params.pddl.MorningWakeProtocol.morning_wake_reminder_times
                 self.node_.declare_parameter(self.prefix_ + "pddl.MorningWakeProtocol.morning_wake_reminder_times", parameter, descriptor)
 
+            if not self.node_.has_parameter(self.prefix_ + "pddl.ShowerProtocol.instances"):
+                descriptor = ParameterDescriptor(description="Empty Trash protocols", read_only = False)
+                parameter = updated_params.pddl.ShowerProtocol.instances
+                self.node_.declare_parameter(self.prefix_ + "pddl.ShowerProtocol.instances", parameter, descriptor)
+
+            if not self.node_.has_parameter(self.prefix_ + "pddl.ShowerProtocol.shower_reminder_times"):
+                descriptor = ParameterDescriptor(description="time that each protocol is triggered", read_only = False)
+                parameter = updated_params.pddl.ShowerProtocol.shower_reminder_times
+                self.node_.declare_parameter(self.prefix_ + "pddl.ShowerProtocol.shower_reminder_times", parameter, descriptor)
+
+            if not self.node_.has_parameter(self.prefix_ + "pddl.PamLocationProtocol.instances"):
+                descriptor = ParameterDescriptor(description="Empty Trash protocols", read_only = False)
+                parameter = updated_params.pddl.PamLocationProtocol.instances
+                self.node_.declare_parameter(self.prefix_ + "pddl.PamLocationProtocol.instances", parameter, descriptor)
+
+            if not self.node_.has_parameter(self.prefix_ + "pddl.PamLocationProtocol.pam_location_reminder_times"):
+                descriptor = ParameterDescriptor(description="time that each protocol is triggered", read_only = False)
+                parameter = updated_params.pddl.PamLocationProtocol.pam_location_reminder_times
+                self.node_.declare_parameter(self.prefix_ + "pddl.PamLocationProtocol.pam_location_reminder_times", parameter, descriptor)
+
             if not self.node_.has_parameter(self.prefix_ + "topics.time"):
                 descriptor = ParameterDescriptor(description="topic for protocol clock time", read_only = False)
                 parameter = updated_params.topics.time
@@ -270,6 +324,11 @@ class shr_parameters:
                 descriptor = ParameterDescriptor(description="topic for sensor that detect if medication is taken", read_only = False)
                 parameter = updated_params.topics.person_taking_medicine
                 self.node_.declare_parameter(self.prefix_ + "topics.person_taking_medicine", parameter, descriptor)
+
+            if not self.node_.has_parameter(self.prefix_ + "topics.person_shower"):
+                descriptor = ParameterDescriptor(description="topic for sensor that detect if patients is taking shower or not", read_only = False)
+                parameter = updated_params.topics.person_shower
+                self.node_.declare_parameter(self.prefix_ + "topics.person_shower", parameter, descriptor)
 
             if not self.node_.has_parameter(self.prefix_ + "topics.person_eating"):
                 descriptor = ParameterDescriptor(description="topic for sensor that detect if patient is eating", read_only = False)
@@ -285,6 +344,11 @@ class shr_parameters:
                 descriptor = ParameterDescriptor(description="topic for checking good weather", read_only = False)
                 parameter = updated_params.topics.good_weather
                 self.node_.declare_parameter(self.prefix_ + "topics.good_weather", parameter, descriptor)
+
+            if not self.node_.has_parameter(self.prefix_ + "topics.pam_outside"):
+                descriptor = ParameterDescriptor(description="topic for checking good weather", read_only = False)
+                parameter = updated_params.topics.pam_outside
+                self.node_.declare_parameter(self.prefix_ + "topics.pam_outside", parameter, descriptor)
 
             if not self.node_.has_parameter(self.prefix_ + "topics.display_ack"):
                 descriptor = ParameterDescriptor(description="topic for display ack", read_only = False)
@@ -336,12 +400,27 @@ class shr_parameters:
             param = self.node_.get_parameter(self.prefix_ + "pddl.MorningWakeProtocol.morning_wake_reminder_times")
             self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
             updated_params.pddl.MorningWakeProtocol.morning_wake_reminder_times = param.value
+            param = self.node_.get_parameter(self.prefix_ + "pddl.ShowerProtocol.instances")
+            self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
+            updated_params.pddl.ShowerProtocol.instances = param.value
+            param = self.node_.get_parameter(self.prefix_ + "pddl.ShowerProtocol.shower_reminder_times")
+            self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
+            updated_params.pddl.ShowerProtocol.shower_reminder_times = param.value
+            param = self.node_.get_parameter(self.prefix_ + "pddl.PamLocationProtocol.instances")
+            self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
+            updated_params.pddl.PamLocationProtocol.instances = param.value
+            param = self.node_.get_parameter(self.prefix_ + "pddl.PamLocationProtocol.pam_location_reminder_times")
+            self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
+            updated_params.pddl.PamLocationProtocol.pam_location_reminder_times = param.value
             param = self.node_.get_parameter(self.prefix_ + "topics.time")
             self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
             updated_params.topics.time = param.value
             param = self.node_.get_parameter(self.prefix_ + "topics.person_taking_medicine")
             self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
             updated_params.topics.person_taking_medicine = param.value
+            param = self.node_.get_parameter(self.prefix_ + "topics.person_shower")
+            self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
+            updated_params.topics.person_shower = param.value
             param = self.node_.get_parameter(self.prefix_ + "topics.person_eating")
             self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
             updated_params.topics.person_eating = param.value
@@ -351,6 +430,9 @@ class shr_parameters:
             param = self.node_.get_parameter(self.prefix_ + "topics.good_weather")
             self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
             updated_params.topics.good_weather = param.value
+            param = self.node_.get_parameter(self.prefix_ + "topics.pam_outside")
+            self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
+            updated_params.topics.pam_outside = param.value
             param = self.node_.get_parameter(self.prefix_ + "topics.display_ack")
             self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
             updated_params.topics.display_ack = param.value

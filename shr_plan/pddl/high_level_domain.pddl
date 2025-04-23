@@ -11,6 +11,8 @@
   EmptyDishwasherProtocol
   EmptyTrashProtocol
   MorningWakeProtocol
+  ShowerProtocol
+  PamLocationProtocol
   Landmark
   Time
   Person
@@ -63,6 +65,18 @@
    (morning_wake_protocol_enabled ?mw - MorningWakeProtocol)
    (time_for_morning_wake_reminder ?mw - MorningWakeProtocol)
    (already_reminded_morning_wake ?mw - MorningWakeProtocol)
+
+;; ShowerProtocol
+    (time_for_shower_reminder ?s - ShowerProtocol)
+    (already_reminded_shower ?s - ShowerProtocol)
+    (shower_reminder_enabled ?s - ShowerProtocol)
+    (already_taking_shower ?s - ShowerProtocol)
+
+;; pamlocation
+     (time_for_pam_location_reminder ?pl - PamLocationProtocol)
+     (already_reminded_pam_location ?pl - PamLocationProtocol)
+     (pam_location_reminder_enabled ?pl - PamLocationProtocol)
+     (pam_outside ?pl - PamLocationProtocol)
 
   (low_level_failed)
 
@@ -363,6 +377,97 @@
 	:effect (and (success) (not (priority_2)) )
 )
 
+
+(:action StartShowerProtocol
+	:parameters (?s - ShowerProtocol ?p - Person ?cur - Landmark ?dest - Landmark)
+	:precondition (and
+	    (priority_2)
+
+	  (robot_at ?cur)
+      (time_for_shower_reminder ?s)
+      (not (already_reminded_shower ?s))
+      (forall (?s - ShowerProtocol) (not (shower_reminder_enabled ?s)) )
+      (not (already_taking_shower ?s))
+      ;; person in visible area
+      (person_currently_at ?p ?cur)
+      (visible_location ?dest)
+      (not (not_visible_location ?dest))
+      (started)
+
+    )
+	:effect (and
+	          (success)
+	          (not (priority_2))
+	          (shower_reminder_enabled ?s)
+	          (not (low_level_failed))
+	          (forall (?dr - DrinkingProtocol) (not (drinking_protocol_enabled ?dr)) )
+              ;; ADD CHANGES HERE
+              (forall (?med - MedicineProtocol) (not (medicine_protocol_enabled ?med)) )
+              (forall (?etr - EmptyTrashProtocol) (not (empty_trash_protocol_enabled ?etr)) )
+              (forall (?etd - EmptyDishwasherProtocol) (not (empty_dishwasher_protocol_enabled ?etd)) )
+              (forall (?morning_wake_protocol - MorningWakeProtocol) (not (morning_wake_protocol_enabled ?morning_wake_protocol)) )
+          )
+)
+
+(:action ContinueShowerProtocol
+	:parameters (?s - ShowerProtocol)
+	:precondition (and
+	  (priority_2)
+	  (not (low_level_failed))
+      (not (already_reminded_shower ?s))
+      (not (already_taking_shower ?s))
+      (shower_reminder_enabled ?s)
+      (time_for_shower_reminder ?s)
+    )
+	:effect (and (success) (not (priority_2)) )
+)
+
+
+(:action StartPamLocationProtocol
+	:parameters (?pl - PamLocationProtocol ?p - Person ?cur - Landmark ?dest - Landmark)
+	:precondition (and
+	    (priority_2)
+
+	  (robot_at ?cur)
+      (time_for_pam_location_reminder ?pl)
+      (not (already_reminded_pam_location ?pl))
+      (forall (?pl - PamLocationProtocol) (not (pam_location_reminder_enabled ?pl)) )
+      (pam_outside ?pl)
+      ;; person in visible area
+      (person_currently_at ?p ?cur)
+      (visible_location ?dest)
+      (not (not_visible_location ?dest))
+      (started)
+
+    )
+	:effect (and
+	          (success)
+	          (not (priority_2))
+	          (pam_location_reminder_enabled ?pl)
+	          (not (low_level_failed))
+	          (forall (?dr - DrinkingProtocol) (not (drinking_protocol_enabled ?dr)) )
+              ;; ADD CHANGES HERE
+              (forall (?med - MedicineProtocol) (not (medicine_protocol_enabled ?med)) )
+              (forall (?etr - EmptyTrashProtocol) (not (empty_trash_protocol_enabled ?etr)) )
+              (forall (?etd - EmptyDishwasherProtocol) (not (empty_dishwasher_protocol_enabled ?etd)) )
+              (forall (?morning_wake_protocol - MorningWakeProtocol) (not (morning_wake_protocol_enabled ?morning_wake_protocol)) )
+              (forall (?pam_location - PamLocationProtocol) (not (pam_location_reminder_enabled ?pam_location)) )
+          )
+)
+
+(:action ContinuePamLocationProtocol
+	:parameters (?pl - PamLocationProtocol)
+	:precondition (and
+	  (priority_2)
+	  (not (low_level_failed))
+      (not (already_reminded_pam_location ?pl))
+      (pam_location_reminder_enabled ?pl)
+      (pam_outside ?pl)
+      (time_for_pam_location_reminder ?pl)
+    )
+	:effect (and (success) (not (priority_2)) )
+)
+
 (:action Idle
 	:parameters ()
 	:precondition (and
@@ -379,6 +484,7 @@
                 (forall (?etr - EmptyTrashProtocol) (not (empty_trash_protocol_enabled ?etr)) )
                 (forall (?etd - EmptyDishwasherProtocol) (not (empty_dishwasher_protocol_enabled ?etd)) )
                 (forall (?morning_wake_protocol - MorningWakeProtocol) (not (morning_wake_protocol_enabled ?morning_wake_protocol)) )
+                (forall (?shower - ShowerProtocol) (not (shower_reminder_enabled ?shower)) )
           )
 )
 
@@ -446,6 +552,24 @@
                         (not (already_reminded_morning_wake ?mw))
                     )
                 )
+            )
+
+            (forall (?s - ShowerProtocol)
+                 (not
+                     (and
+                         (time_for_shower_reminder ?s)
+                         (not (already_reminded_shower ?s))
+                     )
+                 )
+            )
+
+            (forall (?pl - PamLocationProtocol)
+                   (not
+                       (and
+                            (time_for_pam_location_reminder ?pl)
+                            (not (already_reminded_pam_location ?pl))
+                       )
+                   )
             )
 
 	    )
