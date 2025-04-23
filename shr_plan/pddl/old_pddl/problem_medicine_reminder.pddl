@@ -1,87 +1,69 @@
 (define (problem medicine_reminder)
 (:domain shr_domain)
 (:objects
-    current_loc dest_loc home outside - Landmark
+    current_loc dest_loc - Landmark
     nathan - Person
     t1 t2 t3 t4 t5 - Time
-    reminder_1_msg reminder_2_msg call_caregiver_msg - Msg
-    first_reminder second_reminder - ReminderAction
-    w1 w2 w3 w4 w5 - WaitAction
-    na1 na2 na3 - NoAction
+    guide_1_msg guide_2_msg automated_msg recorded_msg call_caregiver_guide_msg call_caregiver_msg - Msg
+    automated_reminder recorded_reminder guide_reminder_1 guide_reminder_2 - ReminderAction
+    caregiver_call caregiver_call_guide - CallAction
 )
 (:init
-    ;; Initial person and robot locations
-    ;;(person_at t1 nathan dest_loc)
-    ;;(robot_at current_loc)
 
-    ;; Enabled actions
+	  ;; needed actions
+    (person_at t1 nathan dest_loc)
+    (robot_at current_loc)
     (DetectPerson_enabled)
     (GiveReminder_enabled)
+    (MakeCall_enabled)
     (DetectTakingMedicine_enabled)
 
-    ;; Time progression
     (current_time t1)
     (next_time t1 t2)
     (next_time t2 t3)
     (next_time t3 t4)
     (next_time t4 t5)
 
+    (oneof (person_at t2 nathan current_loc) (person_at t2 nathan dest_loc) )
+    (oneof (person_at t3 nathan current_loc) (person_at t3 nathan dest_loc) )
+    (oneof (person_at t4 nathan current_loc) (person_at t4 nathan dest_loc) )
+    (oneof (person_at t5 nathan current_loc) (person_at t5 nathan dest_loc) )
 
-
-    ;; Person can be at different locations at future times
-    (oneof (person_at t2 nathan current_loc) (person_at t2 nathan dest_loc) (person_at t2 nathan outside))
-    (oneof (person_at t3 nathan current_loc) (person_at t3 nathan dest_loc) (person_at t3 nathan outside))
-    (oneof (person_at t4 nathan current_loc) (person_at t4 nathan dest_loc) (person_at t4 nathan outside))
-    (oneof (person_at t5 nathan current_loc) (person_at t5 nathan dest_loc) (person_at t5 nathan outside))
-
-    (home_location home)
-
-
-    ;; Allow traversal between locations if needed
     (traversable dest_loc current_loc)
     (traversable current_loc dest_loc)
-    (traversable home current_loc)
-    (traversable current_loc home)
-    (traversable dest_loc home)
-    (traversable home dest_loc)
 
-    ;; Define success states
-    (message_given_success reminder_2_msg)
+    ;;success states
+    (message_given_success call_caregiver_msg)
+    (message_given_success call_caregiver_guide_msg)
     (medicine_taken_success)
 
-    ;; Enforce same location constraint for interactions
-    (same_location_constraint)
+    ;; specify which actions must come before others
+    (reminder_blocks_reminder automated_reminder recorded_reminder)
+    (reminder_blocks_call recorded_reminder caregiver_call)
+    (reminder_blocks_reminder guide_reminder_1 guide_reminder_2)
+    (reminder_blocks_call guide_reminder_2 caregiver_call_guide)
 
-    ;; Specify required action order
-    (reminder_blocks_reminder first_reminder second_reminder)
+    ;; specify valid input argument combinations for all actions
+    (valid_call_message caregiver_call call_caregiver_msg)
+    (valid_call_message caregiver_call_guide call_caregiver_guide_msg)
+    (valid_reminder_message automated_reminder automated_msg)
+    (valid_reminder_message recorded_reminder recorded_msg)
+    (valid_reminder_message guide_reminder_1 guide_1_msg)
+    (valid_reminder_message guide_reminder_2 guide_2_msg)
 
-    ;; Define valid messages for reminders
-    (valid_reminder_message first_reminder reminder_1_msg)
-    (valid_reminder_message second_reminder reminder_2_msg)
+    ;; specify world state constraints for all actions
+    (reminder_person_location_constraint automated_reminder nathan dest_loc)
+    (reminder_person_not_taking_medicine_constraint automated_reminder nathan)
+    (reminder_person_location_constraint recorded_reminder nathan dest_loc)
+    (reminder_person_not_taking_medicine_constraint recorded_reminder nathan)
+    (reminder_not_person_location_constraint guide_reminder_1 nathan dest_loc)
+    (reminder_person_not_taking_medicine_constraint guide_reminder_1 nathan)
+    (reminder_not_person_location_constraint guide_reminder_2 nathan dest_loc)
+    (reminder_person_not_taking_medicine_constraint guide_reminder_2 nathan)
+    (call_not_person_location_constraint caregiver_call_guide nathan dest_loc)
+    (call_person_not_taking_medicine_constraint caregiver_call nathan)
 
-    ;; Constraints: Reminders should not be given if Nathan is taking medicine
-    (reminder_person_not_taking_medicine_constraint first_reminder nathan)
-    (reminder_person_not_taking_medicine_constraint second_reminder nathan)
-
-    ;; Ensure robot waits only when not outside
-    (wait_not_person_location_constraint t1 nathan outside)
-    (wait_not_person_location_constraint t2 nathan outside)
-    (wait_not_person_location_constraint t3 nathan outside)
-    (wait_not_person_location_constraint t4 nathan outside)
-    (wait_not_person_location_constraint t5 nathan outside)
-
-    ;; If person is outside, enforce no action
-    (noaction_person_location_constraint na1 nathan outside)
-    (noaction_person_location_constraint na2 nathan outside)
-    (noaction_person_location_constraint na3 nathan outside)
-
-    ;; Ensure the robot can wait only if at home
-    (wait_robot_location_constraint t1 home)
-    (wait_robot_location_constraint t2 home)
-    (wait_robot_location_constraint t3 home)
-    (wait_robot_location_constraint t4 home)
 )
-(:goal (and
-        (success))
-)
+(:goal (and (success)  ) )
+
 )

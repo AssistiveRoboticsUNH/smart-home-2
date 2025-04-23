@@ -7,6 +7,8 @@
      em_trash - EmptyTrashProtocol
      em_dishwasher - EmptyDishwasherProtocol
      morning_wake - MorningWakeProtocol
+     shower - ShowerProtocol
+     pam_location - PamLocationProtocol
      nathan - Person
      t1 - Time  ;;t2 t3 t4 t5
 
@@ -18,14 +20,22 @@
 
   )
   (:init
+
+
       (priority_1)
       (visible_location home)
       (visible_location living_room)
       (visible_location bedroom)
-      (check_location_wakeup bedroom)
-      (check_location_wakeup home)
+      ;;(check_location_wakeup living_room)
+      ;;(check_location_wakeup home)
 
       (not_visible_location outside)
+
+      ;;(time_for_morning_wake_reminder morning_wake)
+      (person_currently_at nathan living_room)
+      (person_at t1 nathan living_room)
+      (robot_at home)
+
 
       ;; add when you need to test the protocl 
       (person_at t1 nathan bedroom)
@@ -35,7 +45,14 @@
       ;;(time_for_drinking_reminder drinking)
       ;;(time_for_empty_trash_reminder em_trash)
       ;;(time_for_empty_dishwasher_reminder em_dishwasher)
-      (time_for_morning_wake_reminder morning_wake)
+      ;;(time_for_morning_wake_reminder morning_wake)
+      ;;(time_for_shower_reminder shower)
+      ;;(shower_reminder_enabled shower)
+      ;;(already_reminded_shower shower)
+      ;;(time_for_pam_location_reminder pam_location)
+      ;;(pam_outside pam_location)
+      ;;(pam_location_reminder_enabled pam_location)
+
 
       
 

@@ -20,6 +20,8 @@ private:
     rclcpp::Subscription<std_msgs::msg::Int32>::SharedPtr charging_sub_;
     rclcpp::Subscription<builtin_interfaces::msg::Time>::SharedPtr time_sub_;
     rclcpp::Subscription<std_msgs::msg::Int32>::SharedPtr taking_medicine_sub_;
+	rclcpp::Subscription<std_msgs::msg::Int32>::SharedPtr taking_shower_sub_;
+	rclcpp::Subscription<std_msgs::msg::Int32>::SharedPtr pam_outside_sub_;
     rclcpp::Subscription<std_msgs::msg::Int32>::SharedPtr good_weather_sub_;
     rclcpp::Subscription<std_msgs::msg::String>::SharedPtr screen_ack_sub_;
 
@@ -59,11 +61,18 @@ public:
                     std::lock_guard<std::mutex> lock(world_state_mtx);
                     world_state_->person_eating = msg->data;
                 });
-        taking_medicine_sub_ = create_subscription<std_msgs::msg::Int32>(
+        taking_shower_sub_ = create_subscription<std_msgs::msg::Int32>(
+                params.topics.person_shower, 10, [this](const std_msgs::msg::Int32::SharedPtr msg) {
+                    std::lock_guard<std::mutex> lock(world_state_mtx);
+                    world_state_->person_shower = msg->data;
+                });
+
+		taking_medicine_sub_ = create_subscription<std_msgs::msg::Int32>(
                 params.topics.person_taking_medicine, 10, [this](const std_msgs::msg::Int32::SharedPtr msg) {
                     std::lock_guard<std::mutex> lock(world_state_mtx);
                     world_state_->person_taking_medicine = msg->data;
                 });
+
         time_sub_ = create_subscription<builtin_interfaces::msg::Time>(
                 params.topics.time, 10, [this](const builtin_interfaces::msg::Time::SharedPtr msg) {
                     std::lock_guard<std::mutex> lock(world_state_mtx);
@@ -98,6 +107,12 @@ public:
                 params.topics.good_weather, 10, [this](const std_msgs::msg::Int32::SharedPtr msg) {
                     std::lock_guard<std::mutex> lock(world_state_mtx);
                     world_state_->good_weather = msg->data;
+                });
+
+		pam_outside_sub_ = create_subscription<std_msgs::msg::Int32>(
+                params.topics.pam_outside, 10, [this](const std_msgs::msg::Int32::SharedPtr msg) {
+                    std::lock_guard<std::mutex> lock(world_state_mtx);
+                    world_state_->pam_outside = msg->data;
                 });
 
         screen_ack_sub_ = create_subscription<std_msgs::msg::String>(

@@ -28,7 +28,7 @@
     (same_location_check ?l1 - Landmark ?l2 - Landmark)
 
     (person_taking_medicine ?t - Time)
-    (person_eating_food ?t - Time)
+    (person_shower ?t - Time)
 
     (no_action)
     (move_to_home_enabled)
@@ -46,13 +46,13 @@
     (message_given_success ?m - Msg)
     (success_location ?lmp - Landmark)
     (medicine_taken_success)
-    (food_eaten_success)
+    (shower_success)
 
 
     ;; enable/disable actions
     (GiveReminder_enabled)
     (DetectPerson_enabled)
-    (DetectEatingFood_enabled)
+    (DetectShower_enabled)
     (DetectTakingMedicine_enabled)
     (MakeCall_enabled)
     (MakeVoice_enabled)
@@ -101,10 +101,10 @@
     (call_person_location_constraint ?a - CallAction ?p - Person ?loc - Landmark)
     (call_not_person_location_constraint ?a - CallAction ?p - Person ?loc - Landmark)
     (call_person_not_taking_medicine_constraint ?a - CallAction ?p - Person)
-    (call_person_not_eating_food_constraint ?a - CallAction ?p - Person)
+    (call_person_not_shower_constraint ?a - CallAction ?p - Person)
 
     (reminder_person_not_taking_medicine_constraint ?a - ReminderAction ?p - Person)
-    (reminder_person_not_eating_food_constraint ?a - ReminderAction ?p - Person)
+    (reminder_person_not_shower_constraint ?a - ReminderAction ?p - Person)
     (wait_robot_location_constraint ?t - Time ?lmp - Landmark )
 
     (success)
@@ -124,14 +124,14 @@
 )
 
 ;; detect if person is at location
-(:action DetectEatingFood
+(:action DetectShower
     :parameters (?t - Time)
     :precondition (and
-                    (DetectEatingFood_enabled)
+                    (DetectShower_enabled)
                     (current_time ?t)
                     (not (abort))
 	                )
-    :observe (person_eating_food ?t)
+    :observe (person_shower ?t)
 )
 
 ;; detect if person is at location outside or inside or bedroom
@@ -182,7 +182,7 @@
             ;; enforce that the person didn't take medicine constraint
             (not (and (call_person_not_taking_medicine_constraint ?a ?p)  (not (not (person_taking_medicine ?t)) ) ) )
             ;; enforce that the person didn't eat food constraint
-            (not (and (call_person_not_eating_food_constraint ?a ?p)  (not (not (person_eating_food ?t)) ) ) )
+            (not (and (call_person_not_shower_constraint ?a ?p)  (not (not (person_shower ?t)) ) ) )
 
             ;; certain action instances block others, for example, we must call caregiver before calling emergency
             (forall (?ai - CallAction)
@@ -235,7 +235,7 @@
             ;; enforce that the person didn't take medicine constraint
             (not (and (reminder_person_not_taking_medicine_constraint ?a ?p)  (not (not (person_taking_medicine ?t)) ) ) )
             ;; enforce that the person didn't eat food constraint
-            (not (and (reminder_person_not_eating_food_constraint ?a ?p)  (not (not (person_eating_food ?t)) ) ) )
+            (not (and (reminder_person_not_shower_constraint ?a ?p)  (not (not (person_shower ?t)) ) ) )
 
             ;; certain action instances block others, for example, we must call caregiver before calling emergency
             (forall (?ai - ReminderAction)
@@ -425,12 +425,12 @@
     :effect (success)
 )
 
-;; eating food
-(:action FoodEatenSuccess
+;; shower success
+(:action ShowerSuccess
 	:parameters ()
 	:precondition (and
 	                (not (forall (?t - Time)
-                          (not (and (food_eaten_success) (person_eating_food ?t) ) )
+                          (not (and (shower_success) (person_shower ?t) ) )
                        )
 	                )
 	                (not (abort))

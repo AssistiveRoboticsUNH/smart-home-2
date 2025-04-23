@@ -1,7 +1,7 @@
 (define (problem medicine_reminder)
 (:domain shr_domain)
 (:objects
-    living_room bedroom home outside - Landmark
+    home bedroom outside living_room - Landmark
     nathan - Person
     t1 t2 t3 t4 t5 - Time
     reminder_1_msg reminder_2_msg call_caregiver_msg - Msg
@@ -11,13 +11,14 @@
 )
 (:init
     ;; Initial person and robot locations
-    (person_at t1 nathan bedroom)
-    (robot_at living_room)
+    ;;(person_at t1 nathan bedroom)
+    ;;(robot_at living_room)
+    ;;(person_shower t3)
 
     ;; Enabled actions
     (DetectPerson_enabled)
     (GiveReminder_enabled)
-    (DetectTakingMedicine_enabled)
+    (DetectShower_enabled)
 
     ;; Time progression
     (current_time t1)
@@ -27,13 +28,14 @@
     (next_time t4 t5)
 
 
+
     ;; Person can be at different locations at future times
     (oneof (person_at t2 nathan living_room) (person_at t2 nathan bedroom) (person_at t2 nathan outside))
     (oneof (person_at t3 nathan living_room) (person_at t3 nathan bedroom) (person_at t3 nathan outside))
     (oneof (person_at t4 nathan living_room) (person_at t4 nathan bedroom) (person_at t4 nathan outside))
     (oneof (person_at t5 nathan living_room) (person_at t5 nathan bedroom) (person_at t5 nathan outside))
 
-    
+
     ;; Allow traversal between locations if needed
     (traversable bedroom living_room)
     (traversable living_room bedroom)
@@ -44,7 +46,7 @@
 
     ;; Define success states
     (message_given_success reminder_2_msg)
-    (medicine_taken_success)
+    (shower_success)
 
     ;; Enforce same location constraint for interactions
     (same_location_constraint)
@@ -57,8 +59,8 @@
     (valid_reminder_message second_reminder reminder_2_msg)
 
     ;; Constraints: Reminders should not be given if Nathan is taking medicine
-    (reminder_person_not_taking_medicine_constraint first_reminder nathan)
-    (reminder_person_not_taking_medicine_constraint second_reminder nathan)
+    ;;(reminder_person_not_shower_constraint first_reminder nathan)
+    (reminder_person_not_shower_constraint second_reminder nathan)
 
     ;; Ensure robot waits only when not outside
     (wait_not_person_location_constraint t1 nathan outside)

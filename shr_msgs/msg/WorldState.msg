@@ -1,9 +1,11 @@
 geometry_msgs/Point patient_location
 geometry_msgs/Point robot_location
 int32 person_taking_medicine
+int32 person_shower
 int32 robot_charging
 int32 person_eating
 int32 good_weather
+int32 pam_outside
 string screen_ack
 int32 person_intervene
 builtin_interfaces/Time time
