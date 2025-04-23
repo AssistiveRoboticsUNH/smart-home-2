@@ -1,7 +1,7 @@
 (define (problem drinking_reminder)
 (:domain shr_domain)
 (:objects
-    home bedroom outside living_room - Landmark
+    living_room home outside bedroom - Landmark
     nathan - Person
     t1 t2 t3 t4 t5 - Time
     reminder_1_msg - Msg

@@ -1,7 +1,7 @@
 (define (problem high_level)
   (:domain high_level_domain)
   (:objects
-     home bedroom outside living_room - Landmark
+     living_room home outside bedroom - Landmark
      drinking - DrinkingProtocol
      am_meds pm_meds - MedicineProtocol
      em_trash - EmptyTrashProtocol
@@ -18,41 +18,24 @@
 
   )
   (:init
-
-     (morning_wake_protocol_enabled morning_wake)
-
-     (robot_at living_room)
-   ;;  (medicine_protocol_enabled am_meds)
-    ;;(time_to_take_medicine am_meds)
-	   (person_at t1 nathan living_room)
-
-	(time_for_morning_wake_reminder morning_wake)
-
-
       (priority_1)
       (visible_location home)
       (visible_location living_room)
       (visible_location bedroom)
-      (check_location_wakeup living_room)
+      (check_location_wakeup bedroom)
       (check_location_wakeup home)
 
       (not_visible_location outside)
 
-      ;;(time_for_morning_wake_reminder morning_wake)
-      ;;(person_currently_at nathan living_room)
-      ;;(person_at t1 nathan living_room)
-      ;;(robot_at home)
-
-
       ;; add when you need to test the protocl 
-      ;;(person_at t1 nathan living_room)
-      ;;(person_currently_at nathan living_room)
-      ;;(robot_at home)
+      (person_at t1 nathan bedroom)
+      (person_currently_at nathan bedroom)
+      (robot_at home)
       
       ;;(time_for_drinking_reminder drinking)
       ;;(time_for_empty_trash_reminder em_trash)
       ;;(time_for_empty_dishwasher_reminder em_dishwasher)
-      ;;(time_for_morning_wake_reminder morning_wake)
+      (time_for_morning_wake_reminder morning_wake)
 
       
 

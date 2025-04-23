@@ -786,28 +786,28 @@ namespace pddl_lib {
             RCLCPP_INFO(ps.world_state_converter->get_logger(), log_message.c_str());
             
 
-            instantiate_protocol("drinking_reminder.pddl");
+            // instantiate_protocol("drinking_reminder.pddl", {{"current_loc", cur.name}, {"dest_loc", dest.name}});
 
-            // if (dest.name == cur.name) {
-            //     std::string updated_dest = "bedroom"; // Default case
+            if (dest.name == cur.name) {
+                std::string updated_dest = "bedroom"; // Default case
             
-            //     // Swap destination if current_loc is "living_room" or "bedroom"
-            //     if (cur.name == "living_room") {
-            //         updated_dest = "bedroom";
-            //     } else if (cur.name == "bedroom") {
-            //         updated_dest = "living_room";
-            //     }
+                // Swap destination if current_loc is "living_room" or "bedroom"
+                if (cur.name == "living_room") {
+                    updated_dest = "bedroom";
+                } else if (cur.name == "bedroom") {
+                    updated_dest = "living_room";
+                }
             
-            //     RCLCPP_INFO(rclcpp::get_logger("debug"),
-            //                 "StartMedicineProtocol: Robot is already at %s. Changing destination to %s.", 
-            //                 cur.name.c_str(), updated_dest.c_str());
+                RCLCPP_INFO(rclcpp::get_logger("debug"),
+                            "StartMedicineProtocol: Robot is already at %s. Changing destination to %s.", 
+                            cur.name.c_str(), updated_dest.c_str());
             
-            //     // Just proceed with the protocol without moving
-            //     instantiate_protocol("drinking_reminder.pddl", {{"current_loc", cur.name}, {"dest_loc", updated_dest}});
-            // } else {
-            //     // Move to the medicine location if not already there
-            //     instantiate_protocol("drinking_reminder.pddl", {{"current_loc", cur.name}, {"dest_loc", dest.name}});
-            // }
+                // Just proceed with the protocol without moving
+                instantiate_protocol("drinking_reminder.pddl", {{"current_loc", cur.name}, {"dest_loc", updated_dest}});
+            } else {
+                // Move to the medicine location if not already there
+                instantiate_protocol("drinking_reminder.pddl", {{"current_loc", cur.name}, {"dest_loc", dest.name}});
+            }
             
             ps.active_protocol = protocol;
             lock.UnLock();
@@ -828,27 +828,27 @@ namespace pddl_lib {
                     std::string("weblog=") + currentDateTime + " high_level_domain_StartMedicineProtocol" + " started";
             RCLCPP_INFO(ps.world_state_converter->get_logger(), log_message.c_str());
 
-            instantiate_protocol("medicine_reminder.pddl");
-            // if (dest.name == cur.name) {
-            //     std::string updated_dest = "bedroom"; // Default case
+            // instantiate_protocol("medicine_reminder.pddl", {{"current_loc", cur.name},{"dest_loc",    dest.name}});
+            if (dest.name == cur.name) {
+                std::string updated_dest = "bedroom"; // Default case
             
-            //     // Swap destination if current_loc is "living_room" or "bedroom"
-            //     if (cur.name == "living_room") {
-            //         updated_dest = "bedroom";
-            //     } else if (cur.name == "bedroom") {
-            //         updated_dest = "living_room";
-            //     }
+                // Swap destination if current_loc is "living_room" or "bedroom"
+                if (cur.name == "living_room") {
+                    updated_dest = "bedroom";
+                } else if (cur.name == "bedroom") {
+                    updated_dest = "living_room";
+                }
             
-            //     RCLCPP_INFO(rclcpp::get_logger("debug"),
-            //                 "StartMedicineProtocol: Robot is already at %s. Changing destination to %s.", 
-            //                 cur.name.c_str(), updated_dest.c_str());
+                RCLCPP_INFO(rclcpp::get_logger("debug"),
+                            "StartMedicineProtocol: Robot is already at %s. Changing destination to %s.", 
+                            cur.name.c_str(), updated_dest.c_str());
             
-            //     // Just proceed with the protocol without moving
-            //     instantiate_protocol("medicine_reminder.pddl", {{"current_loc", cur.name}, {"dest_loc", updated_dest}});
-            // } else {
-            //     // Move to the medicine location if not already there
-            //     instantiate_protocol("medicine_reminder.pddl", {{"current_loc", cur.name}, {"dest_loc", dest.name}});
-            // }
+                // Just proceed with the protocol without moving
+                instantiate_protocol("medicine_reminder.pddl", {{"current_loc", cur.name}, {"dest_loc", updated_dest}});
+            } else {
+                // Move to the medicine location if not already there
+                instantiate_protocol("medicine_reminder.pddl", {{"current_loc", cur.name}, {"dest_loc", dest.name}});
+            }
             
             ps.active_protocol = protocol;
             lock.UnLock();
@@ -869,7 +869,27 @@ namespace pddl_lib {
                     std::string("weblog=") + currentDateTime + " high_level_domain_StartMorningWakeProtocol" + " started";
             RCLCPP_INFO(ps.world_state_converter->get_logger(), log_message.c_str());
 
-            instantiate_protocol("morning_wake_reminder.pddl");
+            // instantiate_protocol("medicine_reminder.pddl", {{"current_loc", cur.name},{"dest_loc",    dest.name}});
+            if (dest.name == cur.name) {
+                std::string updated_dest = "bedroom"; // Default case
+
+                // Swap destination if current_loc is "living_room" or "bedroom"
+                if (cur.name == "living_room") {
+                    updated_dest = "bedroom";
+                } else if (cur.name == "bedroom") {
+                    updated_dest = "living_room";
+                }
+
+                RCLCPP_INFO(rclcpp::get_logger("debug"),
+                            "StartMorningWakeProtocol: Robot is already at %s. Changing destination to %s.",
+                            cur.name.c_str(), updated_dest.c_str());
+
+                // Just proceed with the protocol without moving
+                instantiate_protocol("morning_wake_reminder.pddl", {{"current_loc", cur.name}, {"dest_loc", updated_dest}});
+            } else {
+                // Move to the medicine location if not already there
+                instantiate_protocol("morning_wake_reminder.pddl", {{"current_loc", cur.name}, {"dest_loc", dest.name}});
+            }
 
             ps.active_protocol = protocol;
             lock.UnLock();
@@ -889,7 +909,7 @@ namespace pddl_lib {
                     std::string("weblog=") + currentDateTime + " high_level_domain_StartEmptyTrashProtocol" + " started";
             RCLCPP_INFO(ps.world_state_converter->get_logger(), log_message.c_str());
 
-            instantiate_protocol("empty_trash_reminder.pddl");
+            instantiate_protocol("empty_trash_reminder.pddl", {{"current_loc", cur.name}, {"dest_loc", dest.name}});
             
             ps.active_protocol = protocol;
             lock.UnLock();
@@ -909,7 +929,7 @@ namespace pddl_lib {
                     std::string("weblog=") + currentDateTime + " high_level_domain_StartEmptyDishwaserProtocol" + " started";
             RCLCPP_INFO(ps.world_state_converter->get_logger(), log_message.c_str());
 
-            instantiate_protocol("empty_trash_reminder.pddl");
+            instantiate_protocol("empty_trash_reminder.pddl", {{"current_loc", cur.name}, {"dest_loc", dest.name}});
             
             ps.active_protocol = protocol;
             lock.UnLock();

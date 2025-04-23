@@ -1,7 +1,7 @@
 (define (problem empty_dishwasher_reminder)
 (:domain shr_domain)
 (:objects
-    home bedroom outside living_room - Landmark
+    living_room bedroom home outside - Landmark
     nathan - Person
     t1 t2 t3 t4 t5 - Time
     reminder_1_msg reminder_2_msg call_caregiver_msg - Msg
