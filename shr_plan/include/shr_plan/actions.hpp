@@ -58,6 +58,7 @@ namespace pddl_lib {
 			{{"pam_location","PamLocationProtocol"},{{"reminder_1_msg", {0, 1}},{"reminder_2_msg", {0, 1}},{"wait", {180, 0}},}},
             {{"pam_wed","PamLocationProtocol"},{{"reminder_1_msg", {0, 1}},{"reminder_2_msg", {0, 1}},{"wait", {180, 0}},}},
             {{"pam_fri","PamLocationProtocol"},{{"reminder_1_msg", {0, 1}},{"reminder_2_msg", {0, 1}},{"wait", {180, 0}},}},
+            {{"fitness","FitnessProtocol"},{{"reminder_1_msg", {0, 1}},{"reminder_2_msg", {0, 1}},{"wait", {180, 0}},}},
         };
 
         const std::unordered_map <InstantiatedParameter, std::unordered_map<std::string, std::string>> automated_reminder_msgs = {
@@ -72,6 +73,7 @@ namespace pddl_lib {
 			{{"pam_location","PamLocationProtocol"},{{"reminder_1_msg", "pam_reminder_1.txt"},{"reminder_2_msg", "pam_reminder_2.txt"},}},
             {{"pam_wed","PamLocationProtocol"},{{"reminder_1_msg", "pam_reminder_non_1.txt"},{"reminder_2_msg", "pam_reminder_non_2.txt"},}},
             {{"pam_fri","PamLocationProtocol"},{{"reminder_1_msg", "pam_reminder_fri_1.txt"},{"reminder_2_msg", "pam_reminder_fri_2.txt"},}},
+            {{"fitness","FitnessProtocol"},{{"reminder_1_msg", "fitness_1.txt"},{"reminder_2_msg", "fitness_2.txt"},}},
         };
 
         const std::unordered_map <InstantiatedParameter, std::unordered_map<std::string, std::string>> recorded_reminder_msgs = {
@@ -910,6 +912,26 @@ namespace pddl_lib {
             return BT::NodeStatus::SUCCESS;
         }
 
+        BT::NodeStatus high_level_domain_StartFitnessProtocol(const InstantiatedAction &action) override {
+            auto &kb = KnowledgeBase::getInstance();
+            InstantiatedParameter protocol = action.parameters[0];
+            InstantiatedParameter cur = action.parameters[2];
+            InstantiatedParameter dest = action.parameters[3];
+
+            auto [ps, lock] = ProtocolState::getConcurrentInstance();
+            lock.Lock();
+            std::string currentDateTime = getCurrentDateTime();
+            std::string log_message =
+                    std::string("weblog=") + currentDateTime + " high_level_domain_StartFitnessProtocol" + " started";
+            RCLCPP_INFO(ps.world_state_converter->get_logger(), log_message.c_str());
+
+            instantiate_protocol("fitness_reminder.pddl");
+
+            ps.active_protocol = protocol;
+            lock.UnLock();
+            return BT::NodeStatus::SUCCESS;
+        }
+
         
         BT::NodeStatus high_level_domain_MoveToLandmark(const InstantiatedAction &action) override {
             std::cout << "high_level_domain_MoveToLandmark MoveToLandmark: " << std::endl;
@@ -983,6 +1005,7 @@ namespace pddl_lib {
                 {"morning_wake", "MorningWakeProtocol"},
 				{"shower", "ShowerProtocol"},
 				{"pam_location", "PamLocationProtocol"},
+                {"fitness", "FitnessProtocol"},
 
             };
 
@@ -997,6 +1020,7 @@ namespace pddl_lib {
 				{"already_reminded_shower", {"shower"}},
                 {"already_taking_shower", {"shower"}},
 				{"already_reminded_pam_location", {"pam_location"}},
+                {"already_reminded_fitness", {"fitness"}},
             };
 
             std::ifstream ifs(keywordsFile);
@@ -1248,6 +1272,9 @@ namespace pddl_lib {
             }else if (active_protocol.type == "PamLocationProtocol") {
                 kb.insert_predicate({"already_reminded_pam_location", {active_protocol}});
                 kb.erase_predicate({"pam_location_reminder_enabled", {active_protocol}});
+            }else if (active_protocol.type == "FitnessProtocol") {
+                kb.insert_predicate({"already_reminded_fitness", {active_protocol}});
+                kb.erase_predicate({"fitness_protocol_enabled", {active_protocol}});
             }
             
             // RCLCPP_INFO(rclcpp::get_logger(std::string("weblog=")+"shr_domain_MessageGivenSuccess"+active_protocol.type), "user...");
@@ -1287,6 +1314,9 @@ namespace pddl_lib {
             }else if (active_protocol.type == "EmptyTrashProtocol") {
                 kb.insert_predicate({"already_reminded_empty_trash", {active_protocol}});
                 kb.erase_predicate({"empty_trash_protocol_enabled", {active_protocol}});
+            }else if (active_protocol.type == "FitnessProtocol") {
+                kb.insert_predicate({"already_reminded_fitness", {active_protocol}});
+                kb.erase_predicate({"fitness_protocol_enabled", {active_protocol}});
             }
 
             // RCLCPP_INFO(rclcpp::get_logger(std::string("weblog=")+"shr_domain_PersonAtSuccess"+active_protocol.type), "user...");

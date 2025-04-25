@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="VcsDirectoryMappings">
+    <mapping directory="" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/external/apriltag" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/external/apriltag_ros" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/external/convROS_agent" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/external/generate_parameter_library" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/external/helper_script" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/external/pddl_executor" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/external/robot_state_publisher" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/external/smartthings_ros" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/external/tf_to_yaml" vcs="Git" />
+  </component>
+</project>

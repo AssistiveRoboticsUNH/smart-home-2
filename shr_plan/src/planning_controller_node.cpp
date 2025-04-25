@@ -224,6 +224,16 @@ public:
         return TRUTH_VALUE::FALSE;
     }
 
+    TRUTH_VALUE time_for_fitness_reminder(TRUTH_VALUE val, FitnessProtocol m) const override {
+        auto params = world_state_converter->get_params();
+        if (auto index = get_inst_index(m, params)) {
+            if (compare_time(params.pddl.FitnessProtocol.fitness_reminder_times[index.value()])) {
+                return TRUTH_VALUE::TRUE;
+            }
+        }
+        return TRUTH_VALUE::FALSE;
+    }
+
 	TRUTH_VALUE pam_outside(TRUTH_VALUE val, PamLocationProtocol m) const override {
         auto world_state_msg = world_state_converter->get_world_state_msg();
 

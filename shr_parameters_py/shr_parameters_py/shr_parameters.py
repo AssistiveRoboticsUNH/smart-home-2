@@ -55,6 +55,10 @@ class shr_parameters:
                 instances = ["pam_location", "pam_wed", "pam_fri"]
                 pam_location_reminder_times = ["Everyday 06h25m0s/6h45m0s", "Everyday 05h25m0s/5h45m0s", "Everyday 04h25m0s/4h45m0s"]
             PamLocationProtocol = __Pamlocationprotocol()
+            class __Fitnessprotocol:
+                instances = ["fitness"]
+                fitness_reminder_times = ["Everyday 03h25m0s/3h45m0s"]
+            FitnessProtocol = __Fitnessprotocol()
         pddl = __Pddl()
         class __Topics:
             time = "/protocol_time"
@@ -188,6 +192,14 @@ class shr_parameters:
                     updated_params.pddl.PamLocationProtocol.pam_location_reminder_times = param.value
                     self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
 
+                if param.name == self.prefix_ + "pddl.FitnessProtocol.instances":
+                    updated_params.pddl.FitnessProtocol.instances = param.value
+                    self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
+
+                if param.name == self.prefix_ + "pddl.FitnessProtocol.fitness_reminder_times":
+                    updated_params.pddl.FitnessProtocol.fitness_reminder_times = param.value
+                    self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
+
                 if param.name == self.prefix_ + "topics.time":
                     updated_params.topics.time = param.value
                     self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
@@ -315,6 +327,16 @@ class shr_parameters:
                 parameter = updated_params.pddl.PamLocationProtocol.pam_location_reminder_times
                 self.node_.declare_parameter(self.prefix_ + "pddl.PamLocationProtocol.pam_location_reminder_times", parameter, descriptor)
 
+            if not self.node_.has_parameter(self.prefix_ + "pddl.FitnessProtocol.instances"):
+                descriptor = ParameterDescriptor(description="Fitness protocols", read_only = False)
+                parameter = updated_params.pddl.FitnessProtocol.instances
+                self.node_.declare_parameter(self.prefix_ + "pddl.FitnessProtocol.instances", parameter, descriptor)
+
+            if not self.node_.has_parameter(self.prefix_ + "pddl.FitnessProtocol.fitness_reminder_times"):
+                descriptor = ParameterDescriptor(description="time that each protocol is triggered", read_only = False)
+                parameter = updated_params.pddl.FitnessProtocol.fitness_reminder_times
+                self.node_.declare_parameter(self.prefix_ + "pddl.FitnessProtocol.fitness_reminder_times", parameter, descriptor)
+
             if not self.node_.has_parameter(self.prefix_ + "topics.time"):
                 descriptor = ParameterDescriptor(description="topic for protocol clock time", read_only = False)
                 parameter = updated_params.topics.time
@@ -412,6 +434,12 @@ class shr_parameters:
             param = self.node_.get_parameter(self.prefix_ + "pddl.PamLocationProtocol.pam_location_reminder_times")
             self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
             updated_params.pddl.PamLocationProtocol.pam_location_reminder_times = param.value
+            param = self.node_.get_parameter(self.prefix_ + "pddl.FitnessProtocol.instances")
+            self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
+            updated_params.pddl.FitnessProtocol.instances = param.value
+            param = self.node_.get_parameter(self.prefix_ + "pddl.FitnessProtocol.fitness_reminder_times")
+            self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
+            updated_params.pddl.FitnessProtocol.fitness_reminder_times = param.value
             param = self.node_.get_parameter(self.prefix_ + "topics.time")
             self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
             updated_params.topics.time = param.value

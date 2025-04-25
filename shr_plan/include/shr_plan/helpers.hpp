@@ -93,6 +93,17 @@ namespace pddl_lib {
         }
     }
 
+    std::optional<long> get_inst_index(FitnessProtocol m, const shr_parameters::Params &params) {
+        const auto &instances = params.pddl.FitnessProtocol.instances;
+        auto it = std::find(instances.begin(), instances.end(), m);
+        if (it != instances.end()) {
+            auto index = std::distance(instances.begin(), it);
+            return index;
+        } else {
+            return {};
+        }
+    }
+
     std::optional<long> get_inst_index(InstantiatedParameter inst, const shr_parameters::Params &params) {
         if (inst.type == "DrinkingProtocol") {
             return get_inst_index((DrinkingProtocol) inst.name, params);
@@ -114,7 +125,10 @@ namespace pddl_lib {
         }
 		else if (inst.type == "PamLocationProtocol") {
             return get_inst_index((PamLocationProtocol) inst.name, params);
-        }
+		}
+        else if (inst.type == "FitnessProtocol") {
+		    return get_inst_index((FitnessProtocol) inst.name, params);
+		}
         return {};
     }
 

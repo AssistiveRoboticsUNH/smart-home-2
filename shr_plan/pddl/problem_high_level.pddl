@@ -9,6 +9,7 @@
      morning_wake - MorningWakeProtocol
      shower - ShowerProtocol
      pam_location pam_wed pam_fri - PamLocationProtocol
+     fitness - FitnessProtocol
      nathan - Person
      t1 - Time  ;;t2 t3 t4 t5
 
@@ -52,6 +53,10 @@
       ;;(time_for_pam_location_reminder pam_location)
       ;;(pam_outside pam_location)
       ;;(pam_location_reminder_enabled pam_location)
+      ;;(time_for_fitness_reminder fitness)
+      ;;(fitness_protocol_enabled fitness)
+      ;;(already_reminded_fitness fitness)
+
 
 
       

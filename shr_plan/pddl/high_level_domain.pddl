@@ -13,6 +13,7 @@
   MorningWakeProtocol
   ShowerProtocol
   PamLocationProtocol
+  FitnessProtocol
   Landmark
   Time
   Person
@@ -77,6 +78,12 @@
      (already_reminded_pam_location ?pl - PamLocationProtocol)
      (pam_location_reminder_enabled ?pl - PamLocationProtocol)
      (pam_outside ?pl - PamLocationProtocol)
+
+;; fitness
+     (time_for_fitness_reminder ?ft - FitnessProtocol)
+     (already_reminded_fitness ?ft - FitnessProtocol)
+     (fitness_protocol_enabled ?ft - FitnessProtocol)
+
 
   (low_level_failed)
 
@@ -193,6 +200,9 @@
             (forall (?empty_trash_protocol - EmptyTrashProtocol) (not (empty_trash_protocol_enabled ?empty_trash_protocol)) )
             (forall (?empty_dishwasher_protocol - EmptyDishwasherProtocol) (not (empty_dishwasher_protocol_enabled ?empty_dishwasher_protocol)) )
             (forall (?morning_wake_protocol - MorningWakeProtocol) (not (morning_wake_protocol_enabled ?morning_wake_protocol)) )
+            (forall (?shower - ShowerProtocol) (not (shower_reminder_enabled ?shower)) )
+            (forall (?pam_location - PamLocationProtocol) (not (pam_location_reminder_enabled ?pam_location)) )
+            (forall (?fitness - FitnessProtocol) (not (fitness_protocol_enabled ?fitness)) )
           )
 )
 
@@ -236,6 +246,9 @@
             (forall (?empty_trash_protocol - EmptyTrashProtocol) (not (empty_trash_protocol_enabled ?empty_trash_protocol)) )
             (forall (?empty_dishwasher_protocol - EmptyDishwasherProtocol) (not (empty_dishwasher_protocol_enabled ?empty_dishwasher_protocol)) )
             (forall (?morning_wake_protocol - MorningWakeProtocol) (not (morning_wake_protocol_enabled ?morning_wake_protocol)) )
+            (forall (?shower - ShowerProtocol) (not (shower_reminder_enabled ?shower)) )
+            (forall (?pam_location - PamLocationProtocol) (not (pam_location_reminder_enabled ?pam_location)) )
+            (forall (?fitness - FitnessProtocol) (not (fitness_protocol_enabled ?fitness)) )
 
           )
 )
@@ -267,7 +280,7 @@
       (robot_at ?cur)
 
       (not (already_reminded_empty_trash ?e))
-      (forall (?etr - EmptyTrashProtocol) (not (empty_trash_protocol_enabled ?etr)) )
+      (forall (?e - EmptyTrashProtocol) (not (empty_trash_protocol_enabled ?e)) )
       (started)
 		)
 	:effect (and
@@ -279,6 +292,9 @@
             (forall (?medicine_protocol - MedicineProtocol) (not (medicine_protocol_enabled ?medicine_protocol)) )
             (forall (?empty_dishwasher_protocol - EmptyDishwasherProtocol) (not (empty_dishwasher_protocol_enabled ?empty_dishwasher_protocol)) )
             (forall (?morning_wake_protocol - MorningWakeProtocol) (not (morning_wake_protocol_enabled ?morning_wake_protocol)) )
+            (forall (?shower - ShowerProtocol) (not (shower_reminder_enabled ?shower)) )
+            (forall (?pam_location - PamLocationProtocol) (not (pam_location_reminder_enabled ?pam_location)) )
+            (forall (?fitness - FitnessProtocol) (not (fitness_protocol_enabled ?fitness)) )
           )
 )
 
@@ -319,6 +335,9 @@
             (forall (?medicine_protocol - MedicineProtocol) (not (medicine_protocol_enabled ?medicine_protocol)) )
             (forall (?empty_trash_protocol - EmptyTrashProtocol) (not (empty_trash_protocol_enabled ?empty_trash_protocol)) )
             (forall (?morning_wake_protocol - MorningWakeProtocol) (not (morning_wake_protocol_enabled ?morning_wake_protocol)) )
+            (forall (?shower - ShowerProtocol) (not (shower_reminder_enabled ?shower)) )
+            (forall (?pam_location - PamLocationProtocol) (not (pam_location_reminder_enabled ?pam_location)) )
+            (forall (?fitness - FitnessProtocol) (not (fitness_protocol_enabled ?fitness)) )
           )
 )
 
@@ -362,6 +381,10 @@
             (forall (?medicine_protocol - MedicineProtocol) (not (medicine_protocol_enabled ?medicine_protocol)) )
             (forall (?empty_trash_protocol - EmptyTrashProtocol) (not (empty_trash_protocol_enabled ?empty_trash_protocol)) )
             (forall (?empty_dishwasher_protocol - EmptyDishwasherProtocol) (not (empty_dishwasher_protocol_enabled ?empty_dishwasher_protocol)) )
+            (forall (?morning_wake_protocol - MorningWakeProtocol) (not (morning_wake_protocol_enabled ?morning_wake_protocol)) )
+            (forall (?shower - ShowerProtocol) (not (shower_reminder_enabled ?shower)) )
+            (forall (?pam_location - PamLocationProtocol) (not (pam_location_reminder_enabled ?pam_location)) )
+            (forall (?fitness - FitnessProtocol) (not (fitness_protocol_enabled ?fitness)) )
           )
 )
 
@@ -406,6 +429,8 @@
               (forall (?etr - EmptyTrashProtocol) (not (empty_trash_protocol_enabled ?etr)) )
               (forall (?etd - EmptyDishwasherProtocol) (not (empty_dishwasher_protocol_enabled ?etd)) )
               (forall (?morning_wake_protocol - MorningWakeProtocol) (not (morning_wake_protocol_enabled ?morning_wake_protocol)) )
+              (forall (?pam_location - PamLocationProtocol) (not (pam_location_reminder_enabled ?pam_location)) )
+              (forall (?fitness - FitnessProtocol) (not (fitness_protocol_enabled ?fitness)) )
           )
 )
 
@@ -451,6 +476,9 @@
               (forall (?etr - EmptyTrashProtocol) (not (empty_trash_protocol_enabled ?etr)) )
               (forall (?etd - EmptyDishwasherProtocol) (not (empty_dishwasher_protocol_enabled ?etd)) )
               (forall (?morning_wake_protocol - MorningWakeProtocol) (not (morning_wake_protocol_enabled ?morning_wake_protocol)) )
+              (forall (?shower - ShowerProtocol) (not (shower_reminder_enabled ?shower)) )
+              (forall (?fitness - FitnessProtocol) (not (fitness_protocol_enabled ?fitness)) )
+
               
           )
 )
@@ -465,6 +493,50 @@
       ;;(pam_outside ?pl)
       (time_for_pam_location_reminder ?pl)
     )
+	:effect (and (success) (not (priority_2)) )
+)
+
+
+(:action StartFitnessProtocol
+	:parameters (?ft - FitnessProtocol ?p - Person ?cur - Landmark ?dest - Landmark)
+	:precondition (and
+	    (priority_2)
+      (time_for_fitness_reminder ?ft)
+      (visible_location ?dest)
+      (not (not_visible_location ?dest))
+      (visible_location ?cur)
+      (not (not_visible_location ?cur))
+      (person_currently_at ?p ?cur)
+      (robot_at ?cur)
+
+      (not (already_reminded_fitness ?ft))
+      (forall (?ft - FitnessProtocol) (not (fitness_protocol_enabled ?ft)) )
+      (started)
+		)
+	:effect (and
+	          (success)
+            (not (priority_2))
+            (fitness_protocol_enabled ?ft)
+            (not (low_level_failed))
+            (forall (?drinking_protocol - DrinkingProtocol) (not (drinking_protocol_enabled ?drinking_protocol)) )
+            (forall (?medicine_protocol - MedicineProtocol) (not (medicine_protocol_enabled ?medicine_protocol)) )
+            (forall (?empty_dishwasher_protocol - EmptyDishwasherProtocol) (not (empty_dishwasher_protocol_enabled ?empty_dishwasher_protocol)) )
+            (forall (?morning_wake_protocol - MorningWakeProtocol) (not (morning_wake_protocol_enabled ?morning_wake_protocol)) )
+            (forall (?shower - ShowerProtocol) (not (shower_reminder_enabled ?shower)) )
+            (forall (?pam_location - PamLocationProtocol) (not (pam_location_reminder_enabled ?pam_location)) )
+            (forall (?etr - EmptyTrashProtocol) (not (empty_trash_protocol_enabled ?etr)) )
+          )
+)
+
+(:action ContinueFitnessProtocol
+	:parameters (?ft - FitnessProtocol)
+	:precondition (and
+	    (priority_2)
+	    (not (low_level_failed))
+      (time_for_fitness_reminder ?ft)
+      (not (already_reminded_fitness ?ft))
+      (fitness_protocol_enabled ?ft)
+		)
 	:effect (and (success) (not (priority_2)) )
 )
 
@@ -486,6 +558,7 @@
                 (forall (?morning_wake_protocol - MorningWakeProtocol) (not (morning_wake_protocol_enabled ?morning_wake_protocol)) )
                 (forall (?shower - ShowerProtocol) (not (shower_reminder_enabled ?shower)) )
                 (forall (?pam_location - PamLocationProtocol) (not (pam_location_reminder_enabled ?pam_location)) )
+                (forall (?fitness - FitnessProtocol) (not (fitness_protocol_enabled ?fitness)) )
           )
 )
 
@@ -573,6 +646,15 @@
                             (not (already_reminded_pam_location ?pl))
                        )
                    )
+            )
+
+            (forall (?ft - FitnessProtocol)
+                    (not
+                        (and
+                            (time_for_fitness_reminder ?ft)
+                            (not (already_reminded_fitness ?ft))
+                        )
+                    )
             )
 
 	    )
