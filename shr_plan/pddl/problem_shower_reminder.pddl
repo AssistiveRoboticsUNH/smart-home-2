@@ -1,4 +1,4 @@
-(define (problem medicine_reminder)
+(define (problem shower_reminder)
 (:domain shr_domain)
 (:objects
     home bedroom outside living_room - Landmark
@@ -12,6 +12,8 @@
 (:init
     ;; Initial person and robot locations
     ;;(person_at t1 nathan bedroom)
+    ;;(person_currently_at nathan bedroom)
+
     ;;(robot_at living_room)
     ;;(person_shower t3)
 
@@ -26,8 +28,6 @@
     (next_time t2 t3)
     (next_time t3 t4)
     (next_time t4 t5)
-
-
 
     ;; Person can be at different locations at future times
     (oneof (person_at t2 nathan living_room) (person_at t2 nathan bedroom) (person_at t2 nathan outside))

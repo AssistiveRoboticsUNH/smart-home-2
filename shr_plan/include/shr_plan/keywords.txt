@@ -10,4 +10,5 @@ already_reminded_empty_trash
 already_reminded_empty_dishwasher
 already_reminded_morning_wake
 already_reminded_shower
+already_taking_shower
 already_reminded_pam_location

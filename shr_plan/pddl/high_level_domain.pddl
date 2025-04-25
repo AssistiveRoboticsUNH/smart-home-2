@@ -451,7 +451,7 @@
               (forall (?etr - EmptyTrashProtocol) (not (empty_trash_protocol_enabled ?etr)) )
               (forall (?etd - EmptyDishwasherProtocol) (not (empty_dishwasher_protocol_enabled ?etd)) )
               (forall (?morning_wake_protocol - MorningWakeProtocol) (not (morning_wake_protocol_enabled ?morning_wake_protocol)) )
-              (forall (?pam_location - PamLocationProtocol) (not (pam_location_reminder_enabled ?pam_location)) )
+              
           )
 )
 
@@ -462,7 +462,7 @@
 	  (not (low_level_failed))
       (not (already_reminded_pam_location ?pl))
       (pam_location_reminder_enabled ?pl)
-      (pam_outside ?pl)
+      ;;(pam_outside ?pl)
       (time_for_pam_location_reminder ?pl)
     )
 	:effect (and (success) (not (priority_2)) )
@@ -485,6 +485,7 @@
                 (forall (?etd - EmptyDishwasherProtocol) (not (empty_dishwasher_protocol_enabled ?etd)) )
                 (forall (?morning_wake_protocol - MorningWakeProtocol) (not (morning_wake_protocol_enabled ?morning_wake_protocol)) )
                 (forall (?shower - ShowerProtocol) (not (shower_reminder_enabled ?shower)) )
+                (forall (?pam_location - PamLocationProtocol) (not (pam_location_reminder_enabled ?pam_location)) )
           )
 )
 
@@ -523,6 +524,7 @@
                     (and
                         (time_to_take_medicine ?med)
                         (not (already_reminded_medicine ?med))
+                        (not (already_took_medicine ?med))
                     )
                 )
             )
@@ -559,6 +561,7 @@
                      (and
                          (time_for_shower_reminder ?s)
                          (not (already_reminded_shower ?s))
+                         (not (already_taking_shower ?s))
                      )
                  )
             )

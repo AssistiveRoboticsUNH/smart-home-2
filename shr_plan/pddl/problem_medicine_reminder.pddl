@@ -11,8 +11,8 @@
 )
 (:init
     ;; Initial person and robot locations
-    (person_at t1 nathan bedroom)
-    (robot_at living_room)
+    ;;(person_at t1 nathan bedroom)
+    ;;(robot_at living_room)
 
     ;; Enabled actions
     (DetectPerson_enabled)

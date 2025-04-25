@@ -26,15 +26,15 @@
       (visible_location home)
       (visible_location living_room)
       (visible_location bedroom)
-      ;;(check_location_wakeup living_room)
-      ;;(check_location_wakeup home)
+      (check_location_wakeup living_room)
+      (check_location_wakeup home)
 
       (not_visible_location outside)
 
       ;;(time_for_morning_wake_reminder morning_wake)
-      (person_currently_at nathan living_room)
-      (person_at t1 nathan living_room)
-      (robot_at home)
+      ;;(person_currently_at nathan living_room)
+      ;;(person_at t1 nathan living_room)
+      ;;(robot_at home)
 
 
       ;; add when you need to test the protocl 

@@ -54,8 +54,8 @@ namespace pddl_lib {
             {{"em_dishwasher","EmptyDishwasherProtocol"},{{"reminder_1_msg", {0, 1}},{"reminder_2_msg", {0, 1}},{"wait", {60, 0}},}},
 
             {{"morning_wake","MorningWakeProtocol"},{{"reminder_1_msg", {0, 1}},{"reminder_2_msg", {0, 1}},{"wait", {60, 0}},}},
-			{{"shower","ShowerProtocol"},{{"reminder_1_msg", {0, 1}},{"reminder_2_msg", {0, 1}},{"wait", {60, 0}},}},
-			{{"pam_location","PamLocationProtocol"},{{"reminder_1_msg", {0, 1}},{"reminder_2_msg", {0, 1}},{"wait", {60, 0}},}},
+			{{"shower","ShowerProtocol"},{{"reminder_1_msg", {0, 1}},{"reminder_2_msg", {0, 1}},{"wait", {120, 0}},}},
+			{{"pam_location","PamLocationProtocol"},{{"reminder_1_msg", {0, 1}},{"reminder_2_msg", {0, 1}},{"wait", {180, 0}},}},
         };
 
         const std::unordered_map <InstantiatedParameter, std::unordered_map<std::string, std::string>> automated_reminder_msgs = {
@@ -991,6 +991,7 @@ namespace pddl_lib {
                 {"already_reminded_empty_dishwasher", {"em_dishwasher"}},
                 {"already_reminded_morning_wake", {"morning_wake"}},
 				{"already_reminded_shower", {"shower"}},
+                {"already_taking_shower", {"shower"}},
 				{"already_reminded_pam_location", {"pam_location"}},
             };
 
@@ -1110,7 +1111,7 @@ namespace pddl_lib {
 
             ps.world_state_converter->reset_screen_ack();  // Optional: reset at the start
 
-            for (int i = 0; i < 200; ++i) {
+            for (int i = 0; i < 20; ++i) {
                 if (ps.world_state_converter->is_screen_ack_turn_on()) {
                     RCLCPP_INFO(rclcpp::get_logger("StartROS"), "✅ Received TURN_ON via screen_ack. Breaking loop.");
                     break;
@@ -1153,6 +1154,8 @@ namespace pddl_lib {
             //std::string currentDateTime = getCurrentDateTime();
             InstantiatedPredicate pred{"already_taking_shower", {ps.active_protocol}};
             kb.insert_predicate(pred);
+            kb.erase_predicate({"shower_protocol_enabled", {ps.active_protocol}});
+
             std::string currentDateTime = getCurrentDateTime();
             std::string log_message = std::string("weblog=") + currentDateTime + " Patient taking or took the shower!";
             RCLCPP_INFO(ps.world_state_converter->get_logger(), log_message.c_str());
@@ -1292,7 +1295,7 @@ namespace pddl_lib {
         BT::NodeStatus shr_domain_Wait(const InstantiatedAction &action) override {
             auto [ps, lock] = ProtocolState::getConcurrentInstance();
             lock.Lock();
-            auto &kb = KnowledgeBase::getInstance();
+            // auto &kb = KnowledgeBase::getInstance();
             std::string msg = "wait";
             int wait_time = ps.wait_times.at(ps.active_protocol).at(msg).first;// Total wait time in seconds
             int wait_time_sec = wait_time * 10;
@@ -1302,10 +1305,16 @@ namespace pddl_lib {
 
             std::string log_message = "weblog=Robot Waiting";
             RCLCPP_INFO(ps.world_state_converter->get_logger(), log_message.c_str());
+            auto t = action.parameters[0];
+            InstantiatedPredicate person_shower = {"person_shower", {t}};
+            InstantiatedPredicate pam_outside = {"pam_outside", {ps.active_protocol}};
+            static std::optional<std::chrono::steady_clock::time_point> pam_inside_start_time;
+            // if (kb.find_predicate(took_medicine)) {
 
 //            while (std::chrono::steady_clock::now() - start_time < wait_time_sec ) {
             while (std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - start_time).count() < wait_time) {
-
+                    
+                    auto &kb = KnowledgeBase::getInstance();
                     // dock if not already charging
                     if (status !=BT::NodeStatus::SUCCESS){
                         status = charge_robot(ps, action, true);
@@ -1315,6 +1324,37 @@ namespace pddl_lib {
                         RCLCPP_INFO(rclcpp::get_logger(std::string("weblog=") + "shr_domain_Wait " + "medicine taken!"), "user...");
                         lock.UnLock();
                         return BT::NodeStatus::SUCCESS;
+                    }
+
+                    if ( kb.find_predicate(person_shower) && ps.active_protocol.type == "ShowerProtocol") {
+                        InstantiatedPredicate pred{"already_taking_shower", {ps.active_protocol}};
+                        kb.insert_predicate(pred);
+                        kb.erase_predicate({"shower_protocol_enabled", {ps.active_protocol}});
+
+                        abort(action);
+                        RCLCPP_INFO(rclcpp::get_logger(std::string("weblog=") + "shr_domain_Wait " + "shower taken!"), "user...");
+                        lock.UnLock();
+                        return BT::NodeStatus::SUCCESS;
+                    }
+
+                    if (!kb.find_predicate(pam_outside) && ps.active_protocol.type == "PamLocationProtocol") {
+                        if (!pam_inside_start_time.has_value()) {
+                            pam_inside_start_time = std::chrono::steady_clock::now();  // Start the timer
+                        } else {
+                            auto duration = std::chrono::steady_clock::now() - pam_inside_start_time.value();
+                            if (std::chrono::duration_cast<std::chrono::seconds>(duration).count() >= 60) {
+                                // ⏰ Pam has been inside for 30 mins
+                                InstantiatedPredicate pred{"already_reminded_pam_location", {ps.active_protocol}};
+                                kb.insert_predicate(pred);
+                                kb.erase_predicate({"pam_location_reminder_enabled", {ps.active_protocol}});
+                    
+                                abort(action);
+                                RCLCPP_INFO(rclcpp::get_logger("weblog=shr_domain_Wait"), "Assuming Pam is inside for 1 min ");
+                                pam_inside_start_time.reset();
+                                lock.UnLock();
+                                return BT::NodeStatus::SUCCESS;
+                            }
+                        }
                     }
 
                     rclcpp::sleep_for(std::chrono::seconds(10));
@@ -1678,7 +1718,7 @@ namespace pddl_lib {
                 lock.UnLock();
                 return BT::NodeStatus::SUCCESS;
             } else {
-                RCLCPP_INFO(rclcpp::get_logger(std::string("weblog=") + "shr_domain_DetectTakingMedicine" + "failed"),
+                RCLCPP_INFO(rclcpp::get_logger(std::string("weblog=") + "shr_domain_DetectPersonLocation" + "failed"),
                             "user...");
 
                 lock.UnLock();
