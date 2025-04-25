@@ -1019,7 +1019,7 @@ namespace pddl_lib {
                 {"already_reminded_morning_wake", {"morning_wake"}},
 				{"already_reminded_shower", {"shower"}},
                 {"already_taking_shower", {"shower"}},
-				{"already_reminded_pam_location", {"pam_location"}},
+				{"already_reminded_pam_location", {"pam_location", "pam_wed", "pam_fri"}},
                 {"already_reminded_fitness", {"fitness"}},
             };
 

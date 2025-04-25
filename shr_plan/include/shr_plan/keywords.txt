@@ -12,3 +12,4 @@ already_reminded_morning_wake
 already_reminded_shower
 already_taking_shower
 already_reminded_pam_location
+already_reminded_fitness
