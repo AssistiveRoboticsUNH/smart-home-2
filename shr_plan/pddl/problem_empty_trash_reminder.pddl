@@ -17,6 +17,7 @@
     ;; Enabled actions
     (DetectPerson_enabled)
     (GiveReminder_enabled)
+   
 
     ;; Time progression
     (current_time t1)
@@ -45,6 +46,8 @@
 
     ;; Define success states
     (message_given_success reminder_2_msg)
+    (success_location outside)
+    (person_at_success nathan outside)
 
     ;; Enforce same location constraint for interactions
     (same_location_constraint)

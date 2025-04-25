@@ -52,8 +52,8 @@ class shr_parameters:
                 shower_reminder_times = ["Everyday 07h25m0s/7h45m0s"]
             ShowerProtocol = __Showerprotocol()
             class __Pamlocationprotocol:
-                instances = ["pam_location"]
-                pam_location_reminder_times = ["Everyday 06h25m0s/6h45m0s"]
+                instances = ["pam_location", "pam_wed", "pam_fri"]
+                pam_location_reminder_times = ["Everyday 06h25m0s/6h45m0s", "Everyday 05h25m0s/5h45m0s", "Everyday 04h25m0s/4h45m0s"]
             PamLocationProtocol = __Pamlocationprotocol()
         pddl = __Pddl()
         class __Topics:

@@ -1,2 +1,1 @@
 already_reminded_medicine am_meds MedicineProtocol
-already_reminded_pam_location pam_location PamLocationProtocol

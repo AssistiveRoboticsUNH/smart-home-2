@@ -56,6 +56,8 @@ namespace pddl_lib {
             {{"morning_wake","MorningWakeProtocol"},{{"reminder_1_msg", {0, 1}},{"reminder_2_msg", {0, 1}},{"wait", {60, 0}},}},
 			{{"shower","ShowerProtocol"},{{"reminder_1_msg", {0, 1}},{"reminder_2_msg", {0, 1}},{"wait", {120, 0}},}},
 			{{"pam_location","PamLocationProtocol"},{{"reminder_1_msg", {0, 1}},{"reminder_2_msg", {0, 1}},{"wait", {180, 0}},}},
+            {{"pam_wed","PamLocationProtocol"},{{"reminder_1_msg", {0, 1}},{"reminder_2_msg", {0, 1}},{"wait", {180, 0}},}},
+            {{"pam_fri","PamLocationProtocol"},{{"reminder_1_msg", {0, 1}},{"reminder_2_msg", {0, 1}},{"wait", {180, 0}},}},
         };
 
         const std::unordered_map <InstantiatedParameter, std::unordered_map<std::string, std::string>> automated_reminder_msgs = {
@@ -68,6 +70,8 @@ namespace pddl_lib {
             {{"morning_wake","MorningWakeProtocol"},{{"reminder_1_msg", "morning_reminder_1.txt"},{"reminder_2_msg", "morning_reminder_2.txt"},}},
 			{{"shower","ShowerProtocol"},{{"reminder_1_msg", "shower_reminder_1.txt"},{"reminder_2_msg", "shower_reminder_2.txt"},}},
 			{{"pam_location","PamLocationProtocol"},{{"reminder_1_msg", "pam_reminder_1.txt"},{"reminder_2_msg", "pam_reminder_2.txt"},}},
+            {{"pam_wed","PamLocationProtocol"},{{"reminder_1_msg", "pam_reminder_non_1.txt"},{"reminder_2_msg", "pam_reminder_non_2.txt"},}},
+            {{"pam_fri","PamLocationProtocol"},{{"reminder_1_msg", "pam_reminder_fri_1.txt"},{"reminder_2_msg", "pam_reminder_fri_2.txt"},}},
         };
 
         const std::unordered_map <InstantiatedParameter, std::unordered_map<std::string, std::string>> recorded_reminder_msgs = {
@@ -1280,6 +1284,9 @@ namespace pddl_lib {
             }else if (active_protocol.type == "MorningWakeProtocol") {
                 kb.insert_predicate({"already_reminded_morning_wake", {active_protocol}});
                 kb.erase_predicate({"morning_wake_protocol_enabled", {active_protocol}});
+            }else if (active_protocol.type == "EmptyTrashProtocol") {
+                kb.insert_predicate({"already_reminded_empty_trash", {active_protocol}});
+                kb.erase_predicate({"empty_trash_protocol_enabled", {active_protocol}});
             }
 
             // RCLCPP_INFO(rclcpp::get_logger(std::string("weblog=")+"shr_domain_PersonAtSuccess"+active_protocol.type), "user...");

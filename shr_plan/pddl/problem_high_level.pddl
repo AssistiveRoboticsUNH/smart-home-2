@@ -8,7 +8,7 @@
      em_dishwasher - EmptyDishwasherProtocol
      morning_wake - MorningWakeProtocol
      shower - ShowerProtocol
-     pam_location - PamLocationProtocol
+     pam_location pam_wed pam_fri - PamLocationProtocol
      nathan - Person
      t1 - Time  ;;t2 t3 t4 t5
 
