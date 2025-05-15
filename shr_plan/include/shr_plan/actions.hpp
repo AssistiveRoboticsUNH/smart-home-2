@@ -65,19 +65,6 @@ namespace pddl_lib {
                                                                                                           {"wait",           {0, 0}},
 
                                                                                                   }},
-                {{"medicine_refill_reminder",          "MedicineRefillReminderProtocol"},         {{"reminder_1_msg", {0, 1}},
-                                                                                                          {"wait",           {0, 0}},
-
-                                                                                                  }},
-                {{"medicine_pharmacy_reminder", "MedicineRefillPharmacyReminderProtocol"}, {{"reminder_1_msg", {0, 1}},
-                                                                                                          {"wait",           {0, 0}},
-
-                                                                                                  }},
-
-                {{"walking_reminder",                   "WalkingProtocol"}, {{"reminder_1_msg", {0, 1}},
-                                                                                    {"wait",           {0, 0}},
-
-                                                                            }},
 
         };
 
@@ -820,130 +807,17 @@ namespace pddl_lib {
                     std::string("weblog=") + currentDateTime + " high_level_domain_StartMedicineProtocol" + " started";
             RCLCPP_INFO(ps.world_state_converter->get_logger(), log_message.c_str());
 
-            if (dest.name == cur.name) {
-                std::string updated_dest = "bedroom"; // Default case
-            
-                // Swap destination if current_loc is "living_room" or "bedroom"
-                if (cur.name == "living_room") {
-                    updated_dest = "bedroom";
-                } else if (cur.name == "bedroom") {
-                    updated_dest = "living_room";
-                }
-            
-                RCLCPP_INFO(rclcpp::get_logger("debug"),
-                            "StartMedicineProtocol: Robot is already at %s. Changing destination to %s.", 
-                            cur.name.c_str(), updated_dest.c_str());
-            
-                // Just proceed with the protocol without moving
-                instantiate_protocol("medicine_reminder.pddl", {{"current_loc", cur.name}, {"dest_loc", updated_dest}});
-            } else {
-                // Move to the medicine location if not already there
-                instantiate_protocol("medicine_reminder.pddl", {{"current_loc", cur.name}, {"dest_loc", dest.name}});
-            }
+       
+            // Move to the medicine location if not already there
+            instantiate_protocol("medicine_reminder.pddl");
+        
             
             ps.active_protocol = protocol;
             lock.UnLock();
             return BT::NodeStatus::SUCCESS;
         }
 
-        // Gym protocol
-        BT::NodeStatus high_level_domain_StartGymReminderProtocol(const InstantiatedAction &action) override {
-            auto &kb = KnowledgeBase::getInstance();
-            InstantiatedParameter inst = action.parameters[0];
-            InstantiatedParameter cur = action.parameters[2];
-            InstantiatedParameter dest = action.parameters[3];
-            auto [ps, lock] = ProtocolState::getConcurrentInstance();
-            
-            lock.Lock();
 
-            std::string currentDateTime = getCurrentDateTime();
-            //RCLCPP_INFO(rclcpp::get_logger(std::string("weblog=")+"high_level_domain_StartExerciseReminderProtocol"+"started"), "user...");
-            RCLCPP_INFO(rclcpp::get_logger(
-                    currentDateTime + std::string("user=") + "StartGymReminderProtocol" + "started"),
-                        "user...");
-
-            std::string log_message =
-                    std::string("weblog=") + currentDateTime + " high_level_domain_StartGymReminderProtocol" +
-                    " started";
-            RCLCPP_INFO(ps.world_state_converter->get_logger(), log_message.c_str());
-
-
-
-            if (dest.name == cur.name) {
-                std::string updated_dest = "bedroom"; // Default case
-            
-                // Swap destination if current_loc is "living_room" or "bedroom"
-                if (cur.name == "living_room") {
-                    updated_dest = "bedroom";
-                } else if (cur.name == "bedroom") {
-                    updated_dest = "living_room";
-                }
-            
-                RCLCPP_INFO(rclcpp::get_logger("debug"),
-                            "StartMedicineProtocol: Robot is already at %s. Changing destination to %s.", 
-                            cur.name.c_str(), updated_dest.c_str());
-            
-                // Just proceed with the protocol without moving
-                instantiate_protocol("gym_reminder.pddl", {{"current_loc", cur.name}, {"dest_loc", updated_dest}});
-            } else {
-                // Move to the medicine location if not already there
-                instantiate_protocol("gym_reminder.pddl", {{"current_loc", cur.name}, {"dest_loc", dest.name}});
-            }
-            
-
-            ps.active_protocol = inst;
-            lock.UnLock();
-            return BT::NodeStatus::SUCCESS;
-        }
-
-
-        // StartMedicineRefill protocol
-        BT::NodeStatus high_level_domain_StartMedicineRefillReminderProtocol(const InstantiatedAction &action) override {
-            auto &kb = KnowledgeBase::getInstance();
-            InstantiatedParameter inst = action.parameters[0];
-            InstantiatedParameter cur = action.parameters[2];
-            InstantiatedParameter dest = action.parameters[3];
-
-            auto [ps, lock] = ProtocolState::getConcurrentInstance();
-            lock.Lock();
-
-            std::string currentDateTime = getCurrentDateTime();
-            //RCLCPP_INFO(rclcpp::get_logger(std::string("weblog=")+"high_level_domain_StartWanderingProtocol"+"started"), "user...");
-            RCLCPP_INFO(rclcpp::get_logger(
-                    currentDateTime + std::string("user=") + "StartMedicineRefillReminderProtocol" + "started"),
-                        "user...");
-
-            std::string log_message =
-                    std::string("weblog=") + currentDateTime + " high_level_domain_StartMedicineRefillReminderProtocol" +
-                    " started";
-            RCLCPP_INFO(ps.world_state_converter->get_logger(), log_message.c_str());
-
-            if (dest.name == cur.name) {
-                std::string updated_dest = "bedroom"; // Default case
-            
-                // Swap destination if current_loc is "living_room" or "bedroom"
-                if (cur.name == "living_room") {
-                    updated_dest = "bedroom";
-                } else if (cur.name == "bedroom") {
-                    updated_dest = "living_room";
-                }
-            
-                RCLCPP_INFO(rclcpp::get_logger("debug"),
-                            "StartMedicineProtocol: Robot is already at %s. Changing destination to %s.", 
-                            cur.name.c_str(), updated_dest.c_str());
-            
-                // Just proceed with the protocol without moving
-                instantiate_protocol("medicine_refill_reminder.pddl", {{"current_loc", cur.name}, {"dest_loc", updated_dest}});
-            } else {
-                // Move to the medicine location if not already there
-                instantiate_protocol("medicine_refill_reminder.pddl", {{"current_loc", cur.name}, {"dest_loc", dest.name}});
-            }
-            
-
-            ps.active_protocol = inst;
-            lock.UnLock();
-            return BT::NodeStatus::SUCCESS;
-        }
 
         // MedicineRefillPharmacy check protocol
         BT::NodeStatus high_level_domain_StartMedicineRefillPharmacyReminderProtocol(const InstantiatedAction &action) override {

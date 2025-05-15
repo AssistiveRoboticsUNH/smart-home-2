@@ -6,11 +6,8 @@
 )
 
 (:types
-  GymReminderProtocol
-  MedicineRefillReminderProtocol
-  MedicineRefillPharmacyReminderProtocol
+  VideoReminderProtocol
   MedicineProtocol
-  WalkingProtocol
   Landmark
   Time
   Person
@@ -32,12 +29,8 @@
   (visible_location ?lmp - Landmark)
   (not_visible_location ?lmp - Landmark)
 
-(disable_refill)
   (medicine_protocol_enabled ?med - MedicineProtocol)
-  (gym_reminder_enabled ?gy - GymReminderProtocol)
-  (medicine_refill_reminder_enabled ?mdrf - MedicineRefillReminderProtocol)
-  (medicine_pharmacy_reminder_enabled ?ic - MedicineRefillPharmacyReminderProtocol)
-  (walking_protocol_enabled ?w - WalkingProtocol)
+  (video_reminder_enabled ?vid - VideoReminderProtocol)
 
   ;; medicine
   ;;(medicine_location ?lm - Landmark)
@@ -46,32 +39,9 @@
   (already_reminded_medicine ?m - MedicineProtocol)
   (already_called_about_medicine ?m - MedicineProtocol)
 
-
-  ;; gym reminder
-  ;;(gym_location ?lm - Landmark)
-  (gym_reminder_enabled ?gy - GymReminderProtocol)
-  (time_for_gym_reminder ?gy - GymReminderProtocol)
-  (already_reminded_gym ?gy - GymReminderProtocol)
-
-   ;; medicine_refill reminder
-  ;;(medicine_refill_location ?lm - Landmark)
-  (medicine_refill_reminder_enabled ?mdrf - MedicineRefillReminderProtocol)
-  (time_for_medicine_refill_reminder ?mdrf - MedicineRefillReminderProtocol)
-  (already_reminded_medicine_refill ?mdrf - MedicineRefillReminderProtocol)
-
-    ;; medicinepharmacy  reminder
-  ;;(medicine_pharmacy_location ?lm - Landmark)
-  (medicine_pharmacy_reminder_enabled ?ic - MedicineRefillPharmacyReminderProtocol)
-  (time_for_medicine_pharmacy_reminder ?ic - MedicineRefillPharmacyReminderProtocol)
-  (already_reminded_medicine_pharmacy ?ic - MedicineRefillPharmacyReminderProtocol)
-
-  ;;walking reminder
-
-  ;;(walking_reminder_location ?lm - Landmark)
-  (walking_reminder_enabled ?w - WalkingProtocol)
-  (time_for_walking_reminder ?w - WalkingProtocol)
-  (already_reminded_walking ?w - WalkingProtocol)
-  (good_weather ?w - WalkingProtocol)
+  ;; video protocol
+  (time_for_video ?v - VideoReminderProtocol)
+  (already_showed_video ?v - VideoReminderProtocol)
 
   (low_level_failed)
 
@@ -87,11 +57,11 @@
   (success)
 
   ;; for low level
-    (executed_reminder ?a - ReminderAction)
-    (executed_call ?c - CallAction)
-    (executed_voice ?a - VoiceAction)
+  (executed_reminder ?a - ReminderAction)
+  (executed_call ?c - CallAction)
+  (executed_voice ?a - VoiceAction)
+  (message_given ?m - Msg)
 
-    (message_given ?m - Msg)
 )
 
 (:action MoveToLandmark
@@ -106,7 +76,6 @@
 	          )
 	:effect (and (robot_at ?to) (not (robot_at ?from)) )
 )
-
 
 (:action ChangePriority_1_2
 	:parameters ()
@@ -154,13 +123,14 @@
 	:parameters (?m - MedicineProtocol ?p - Person ?cur - Landmark ?dest - Landmark)
 	:precondition (and
 	    (priority_2)
-      (time_to_take_medicine ?m)
-      (visible_location ?dest)
-      (not (not_visible_location ?dest))
-      (visible_location ?cur)
-      (not (not_visible_location ?cur))
-      (person_currently_at ?p ?cur)
-      (robot_at ?cur)
+        (time_to_take_medicine ?m)
+        (visible_location ?dest)
+        (not (not_visible_location ?dest))
+
+        (visible_location ?cur)
+        (not (not_visible_location ?cur))
+        (person_currently_at ?p ?cur)
+        (robot_at ?cur)
 
       ;;(medicine_location ?dest)
       
@@ -168,15 +138,13 @@
       (not (already_reminded_medicine ?m))
       (forall (?med - MedicineProtocol) (not (medicine_protocol_enabled ?med)) )
       (started)
-		)
+	)
 	:effect (and
 	          (success)
             (not (priority_2))
             (medicine_protocol_enabled ?m)
             (not (low_level_failed))
             (forall (?medicine_pharmacy - MedicineRefillPharmacyReminderProtocol) (not (medicine_pharmacy_reminder_enabled ?medicine_pharmacy)) )
-            (forall (?mdrf - MedicineRefillReminderProtocol) (not (medicine_refill_reminder_enabled ?mdrf)) )
-            (forall (?gy - GymReminderProtocol) (not (gym_reminder_enabled ?gy)) )
           )
 )
 
@@ -194,19 +162,16 @@
 	:effect (and (success) (not (priority_2)) )
 )
 
-;; Gym reminder Protocol
-(:action StartGymReminderProtocol
-	:parameters (?gy - GymReminderProtocol ?p - Person ?cur - Landmark ?dest - Landmark)
+;; video reminder Protocol
+(:action StartVideoReminderProtocol
+	:parameters (?vid - VideoReminderProtocol ?p - Person ?cur - Landmark ?dest - Landmark)
 	:precondition (and
 	  (priority_2)
-
-
       (robot_at ?cur)
-      ;;(gym_location ?dest)
 
-      (time_for_gym_reminder ?gy)
-      (not (already_reminded_gym ?gy))
-      (forall (?gy - GymReminderProtocol) (not (gym_reminder_enabled ?gy)) )
+      (time_for_video ?vid)
+      (not (already_showed_video ?vid))
+      (forall (?vid - VideoReminderProtocol) (not (video_reminder_enabled ?vid)) )
 
       ;; person in visible area
       (person_currently_at ?p ?cur)
@@ -221,170 +186,20 @@
 	:effect (and
 	          (success)
 	          (not (priority_2))
-	          (gym_reminder_enabled ?gy)
+	          (video_reminder_enabled ?vid)
 	          (not (low_level_failed))
 	          (forall (?med - MedicineProtocol) (not (medicine_protocol_enabled ?med)) )
-
-              (forall (?medicine_pharmacy - MedicineRefillPharmacyReminderProtocol) (not (medicine_pharmacy_reminder_enabled ?medicine_pharmacy)) )
-              (forall (?mdrf - MedicineRefillReminderProtocol) (not (medicine_refill_reminder_enabled ?mdrf)) )
-              (forall (?w - WalkingProtocol) (not (walking_reminder_enabled ?w)) )
           )
 )
 
-(:action ContinueGymReminderProtocol
-	:parameters (?gy - GymReminderProtocol)
+(:action ContinueVideoReminderProtocol
+	:parameters (?vid - VideoReminderProtocol)
 	:precondition (and
-	    (priority_2)
-	    (not (low_level_failed))
-
-      (not (already_reminded_gym ?gy))
-      (gym_reminder_enabled ?gy)
-      (time_for_gym_reminder ?gy)
-    )
-	:effect (and (success) (not (priority_2)) )
-)
-
-
-
-;; medicine_refill reminder Protocol
-(:action StartMedicineRefillReminderProtocol
-	:parameters (?mdrf - MedicineRefillReminderProtocol ?p - Person ?cur - Landmark ?dest - Landmark)
-	:precondition (and
-	    (priority_2)
-
-    (not disable_refill)
-      (robot_at ?cur)
-      ;;(medicine_refill_location ?dest)
-
-      (time_for_medicine_refill_reminder ?mdrf)
-      (not (already_reminded_medicine_refill ?mdrf))
-      (forall (?mdrf - MedicineRefillReminderProtocol) (not (medicine_refill_reminder_enabled ?mdrf)) )
-
-      ;; person in visible area
-      (person_currently_at ?p ?cur)
-      (visible_location ?dest)
-      (not (not_visible_location ?dest))
-      (visible_location ?cur)
-      (not (not_visible_location ?cur))
-
-      (started)
-
-    )
-	:effect (and
-	          (success)
-	          (not (priority_2))
-	          (medicine_refill_reminder_enabled ?mdrf)
-	          (not (low_level_failed))
-	          (forall (?med - MedicineProtocol) (not (medicine_protocol_enabled ?med)) )
-              (forall (?medicine_pharmacy - MedicineRefillPharmacyReminderProtocol) (not (medicine_pharmacy_reminder_enabled ?medicine_pharmacy)) )
-              (forall (?gy - GymReminderProtocol) (not (gym_reminder_enabled ?gy)) )
-              (forall (?w - WalkingProtocol) (not (walking_reminder_enabled ?w)) )
-          )
-)
-
-(:action ContinueMedicineRefillReminderProtocol
-	:parameters (?mdrf - MedicineRefillReminderProtocol)
-	:precondition (and
-	    (priority_2)
-	    (not (low_level_failed))
-
-      (not (already_reminded_medicine_refill ?mdrf))
-      (medicine_refill_reminder_enabled ?mdrf)
-      (time_for_medicine_refill_reminder ?mdrf)
-    )
-	:effect (and (success) (not (priority_2)) )
-)
-
-;; medicine_pharmacy  Reminder Protocol
-
-(:action StartMedicineRefillPharmacyReminderProtocol
-	:parameters (?ic - MedicineRefillPharmacyReminderProtocol ?p - Person ?cur - Landmark ?dest - Landmark)
-	:precondition (and
-	    (priority_2)
-
-	  (robot_at ?cur)
-      ;;(medicine_pharmacy_location ?dest)
-
-      (time_for_medicine_pharmacy_reminder ?ic)
-      (not (already_reminded_medicine_pharmacy ?ic))
-      (forall (?ic - MedicineRefillPharmacyReminderProtocol) (not (medicine_pharmacy_reminder_enabled ?ic)) )
-
-      ;; person in visible area
-      (person_currently_at ?p ?cur)
-      (visible_location ?dest)
-      (not (not_visible_location ?dest))
-
-      (started)
-
-    )
-	:effect (and
-	          (success)
-	          (not (priority_2))
-	          (medicine_pharmacy_reminder_enabled ?ic)
-	          (not (low_level_failed))
-	          (forall (?med - MedicineProtocol) (not (medicine_protocol_enabled ?med)) )
-              (forall (?mdrf - MedicineRefillReminderProtocol) (not (medicine_refill_reminder_enabled ?mdrf)) )
-              (forall (?gy - GymReminderProtocol) (not (gym_reminder_enabled ?gy)) )
-              (forall (?w - WalkingProtocol) (not (walking_reminder_enabled ?w)) )
-          )
-)
-
-(:action ContinueMedicineRefillPharmacyReminderProtocol
-	:parameters (?ic - MedicineRefillPharmacyReminderProtocol)
-	:precondition (and
-	    (priority_2)
-	    (not (low_level_failed))
-
-      (not (already_reminded_medicine_pharmacy ?ic))
-      (medicine_pharmacy_reminder_enabled ?ic)
-      (time_for_medicine_pharmacy_reminder ?ic)
-    )
-	:effect (and (success) (not (priority_2)) )
-)
-
-
-(:action StartWalkingProtocol
-	:parameters (?w - WalkingProtocol ?p - Person ?cur - Landmark ?dest - Landmark)
-	:precondition (and
-	    (priority_2)
-
-	  (robot_at ?cur)
-      ;;(walking_reminder_location ?dest)
-
-      (time_for_walking_reminder ?w)
-      (not (already_reminded_walking ?w))
-      (good_weather ?w)
-      (forall (?ic - WalkingProtocol) (not (walking_reminder_enabled ?w)) )
-
-      ;; person in visible area
-      (person_currently_at ?p ?cur)
-      (visible_location ?dest)
-      (not (not_visible_location ?dest))
-      (started)
-
-    )
-	:effect (and
-	          (success)
-	          (not (priority_2))
-	          (walking_reminder_enabled ?w)
-	          (not (low_level_failed))
-	          (forall (?med - MedicineProtocol) (not (medicine_protocol_enabled ?med)) )
-              (forall (?mdrf - MedicineRefillReminderProtocol) (not (medicine_refill_reminder_enabled ?mdrf)) )
-              (forall (?medicine_pharmacy - MedicineRefillPharmacyReminderProtocol) (not (medicine_pharmacy_reminder_enabled ?medicine_pharmacy)) )
-              (forall (?gy - GymReminderProtocol) (not (gym_reminder_enabled ?gy)) )
-          )
-)
-
-(:action ContinueWalkingProtocol
-	:parameters (?w - WalkingProtocol)
-	:precondition (and
-	    (priority_2)
-	    (not (low_level_failed))
-
-      (not (already_reminded_walking ?w))
-      (good_weather ?w)
-      (walking_reminder_enabled ?w)
-      (time_for_walking_reminder ?w)
+	  (priority_2)
+	  (not (low_level_failed))
+      (not (already_showed_video ?vid))
+      (video_reminder_enabled ?vid)
+      (time_for_video ?vid)
     )
 	:effect (and (success) (not (priority_2)) )
 )
@@ -397,10 +212,7 @@
 	:effect (and (success)
 	              (not (priority_5))
                 (forall (?med - MedicineProtocol) (not (medicine_protocol_enabled ?med)) )
-                (forall (?medicine_pharmacy - MedicineRefillPharmacyReminderProtocol) (not (medicine_pharmacy_reminder_enabled ?medicine_pharmacy)) )
-                (forall (?mdrf - MedicineRefillReminderProtocol) (not (medicine_refill_reminder_enabled ?mdrf)) )
-                (forall (?gy - GymReminderProtocol) (not (gym_reminder_enabled ?gy)) )
-                (forall (?w - WalkingProtocol) (not (walking_reminder_enabled ?w)) )
+                (forall (?vid - VideoReminderProtocol) (not (video_reminder_enabled ?vid)) )
                 (not (low_level_failed))
           )
 )
@@ -436,45 +248,14 @@
                 )
             )
             ;;; 2
-            (forall (?gym - GymReminderProtocol)
+            (forall (?vid - VideoReminderProtocol)
                 (not
                     (and
-                        (time_for_gym_reminder ?gym)
-                        (not (already_reminded_gym ?gym))
+                        (time_for_video ?vid)
+                        (not (already_showed_video ?vid))
                     )
                 )
             )
-            ;;; 3
-            (forall (?mr - MedicineRefillReminderProtocol)
-                (not
-                    (and
-                        (time_for_medicine_refill_reminder ?mr)
-                        (not (already_reminded_medicine_refill ?mr))
-                    )
-                )
-            )
-            ;;; 4
-            (forall (?mrp - MedicineRefillPharmacyReminderProtocol)
-                (not
-                    (and
-                        (time_for_medicine_pharmacy_reminder ?mrp)
-                        (not (already_reminded_medicine_pharmacy ?mrp))
-                    )
-                )
-            )
-
-            ;;; 5 
-            (forall (?wk - WalkingProtocol)
-                (not
-                    (and
-                        (time_for_walking_reminder ?wk)
-                        (good_weather ?wk)
-                        (not (already_reminded_walking ?wk))
-                    )
-                )
-            )
-
-
 	    )
 	:effect (and (success)
 	            (not (priority_4))
