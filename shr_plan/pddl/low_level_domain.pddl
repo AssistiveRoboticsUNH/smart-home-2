@@ -143,7 +143,7 @@
         (current_time ?t)
         (DetectPlayVideo_enabled)
         (not (abort))
-        (used_reminder ?t)
+        (used_voice ?t)
       )
     :observe (play_video)
 )
@@ -180,9 +180,9 @@
 	        )
 )
 
-;; Move to any landmark, avoiding terrain
+;; can be used to tick time without needing to wait 
 (:action TickWithoutWaiting
-	:parameters (?t - Time ?from - Landmark )
+	:parameters (?t - Time)
 	:precondition (and
                   (play_video)
 	                (DetectPlayVideo_enabled)
@@ -269,12 +269,11 @@
               (not (and (reminder_blocks_reminder ?ai ?a)  (not (executed_reminder ?ai) ) ) )
             )
             
-            ;;(not (and
-            ;;  (DetectPlayVideo_enabled) 
-            ;;  (last_reminder ?ai)
-            ;;  (not (play_video))
-            ;; )
-            ;;)
+            (not (and
+              (DetectPlayVideo_enabled) 
+              (not (play_video))
+             )
+            )
 
             (forall (?vi - VoiceAction)
              (not (and (voice_blocks_reminder ?vi ?a) (not (executed_voice ?vi)) ))
@@ -334,9 +333,9 @@
         (message_given ?m)
         (executed_voice ?v)  ;; Mark as executed
         (used_voice ?t)  ;; Track usage
-        (forall (?tn - Time)
-          (when (next_time ?t ?tn) (and (not (current_time ?t)) (current_time ?tn)) )
-        )
+        ;;(forall (?tn - Time)
+        ;;  (when (next_time ?t ?tn) (and (not (current_time ?t)) (current_time ?tn)) )
+        ;;)
     )
 )
 

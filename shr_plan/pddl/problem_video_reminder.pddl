@@ -62,8 +62,9 @@
 
     ;; Define success states
     (GiveReminder_enabled)
+    (MakeVoice_enabled)
 
-    (message_given_success first_reminder)
+    (message_given_success reminder_1_msg)
 
     ;; Enforce same location constraint for interactions
     (same_location_constraint)
@@ -74,9 +75,6 @@
 
     ;; Define valid messages for reminders
     (valid_reminder_message first_reminder reminder_1_msg)
-    
-    ;;(valid_reminder_message second_reminder reminder_2_msg)
-
 
     ;; Ensure robot waits only when not outside
     (wait_not_person_location_constraint t1 nathan outside)
