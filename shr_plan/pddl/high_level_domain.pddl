@@ -8,6 +8,7 @@
 (:types
   VideoReminderProtocol
   MedicineProtocol
+  OneReminderProtocol
   Landmark
   Time
   Person
@@ -31,6 +32,7 @@
 
   (medicine_protocol_enabled ?med - MedicineProtocol)
   (video_reminder_enabled ?vid - VideoReminderProtocol)
+  (one_reminder_enabled ?o - OneReminderProtocol)
 
   ;; medicine
   ;;(medicine_location ?lm - Landmark)
@@ -42,6 +44,10 @@
   ;; video protocol
   (time_for_video ?v - VideoReminderProtocol)
   (already_showed_video ?v - VideoReminderProtocol)
+
+  ;; one reminders
+  (time_for_one_reminder ?o - OneReminderProtocol)
+  (already_gave_one_reminder ?o - OneReminderProtocol)
 
   (low_level_failed)
 
@@ -144,7 +150,8 @@
             (not (priority_2))
             (medicine_protocol_enabled ?m)
             (not (low_level_failed))
-            (forall (?medicine_pharmacy - MedicineRefillPharmacyReminderProtocol) (not (medicine_pharmacy_reminder_enabled ?medicine_pharmacy)) )
+            (forall (?vid - VideoReminderProtocol) (not (video_reminder_enabled ?vid)) )
+            (forall (?one - OneReminderProtocol) (not (one_reminder_enabled ?one)) )
           )
 )
 
@@ -189,6 +196,7 @@
 	          (video_reminder_enabled ?vid)
 	          (not (low_level_failed))
 	          (forall (?med - MedicineProtocol) (not (medicine_protocol_enabled ?med)) )
+              (forall (?one - OneReminderProtocol) (not (one_reminder_enabled ?one)) )
           )
 )
 
@@ -203,6 +211,50 @@
     )
 	:effect (and (success) (not (priority_2)) )
 )
+
+(:action StartOneReminderProtocol
+	:parameters (?o - OneReminderProtocol ?p - Person ?cur - Landmark ?dest - Landmark)
+	:precondition (and
+	  (priority_2)
+      (robot_at ?cur)
+
+      (time_for_one_reminder ?o)
+      (not (already_gave_one_reminder ?o))
+      (forall (?one - OneReminderProtocol) (not (one_reminder_enabled ?one)) )
+
+      ;; person in visible area
+      (person_currently_at ?p ?cur)
+      (visible_location ?dest)
+      (not (not_visible_location ?dest))
+      (visible_location ?cur)
+      (not (not_visible_location ?cur))
+
+      (started)
+
+    )
+	:effect (and
+	          (success)
+	          (not (priority_2))
+	          (one_reminder_enabled ?o)
+	          (not (low_level_failed))
+	          (forall (?med - MedicineProtocol) (not (medicine_protocol_enabled ?med)) )
+              (forall (?vid - VideoReminderProtocol) (not (video_reminder_enabled ?vid)) )
+
+          )
+)
+
+(:action ContinueOneReminderProtocol
+	:parameters (?on - OneReminderProtocol)
+	:precondition (and
+	  (priority_2)
+	  (not (low_level_failed))
+      (not (already_gave_one_reminder ?on))
+      (one_reminder_enabled ?on)
+      (time_for_one_reminder ?on)
+    )
+	:effect (and (success) (not (priority_2)) )
+)
+
 
 (:action Idle
 	:parameters ()

@@ -5,6 +5,7 @@
 
      am_meds pm_meds - MedicineProtocol
      coffee_reminder microwave_reminder - VideoReminderProtocol
+     trash - OneReminderProtocol
 
      nathan - Person
      t1 - Time ;;t2 t3 t4 t5
@@ -27,8 +28,12 @@
       (person_currently_at nathan living_room)
       (person_at t1 nathan living_room)
       (robot_at home)
+
+      ;;(time_for_one_reminder trash)
+      ;;(one_reminder_enabled trash)
+
       (time_for_video coffee_reminder)
-      ;;(video_reminder_enabled coffee_reminder)
+      (video_reminder_enabled coffee_reminder)
 
       ;;(medicine_location living_room)
       ;;(gym_location living_room)

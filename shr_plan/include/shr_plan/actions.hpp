@@ -61,10 +61,6 @@ namespace pddl_lib {
                                                                                                           {"wait", {9, 0}},
                                                                                                         //   {"wait", {900, 0}},
                                                                                                   }},
-                {{"gym_reminder",                      "GymReminderProtocol"},                    {{"voice_msg", {0, 1}},
-                                                                                                          {"wait",           {0, 0}},
-
-                                                                                                  }},
 
         };
 
@@ -74,15 +70,16 @@ namespace pddl_lib {
                                                                      }},
                 {{"pm_meds",       "MedicineProtocol"},              {{"reminder_1_msg", "pm_med_reminder.txt"},
                                                                      }},
-                {{"gym_reminder",          "GymReminderProtocol"},          {{"reminder_1_msg", "gym_reminder1.txt"},
+                {{"trash",       "OneReminderProtocol"},              {{"reminder_1_msg", "trash_reminder.txt"},
                                                                      }},
-                {{"medicine_refill_reminder",      "MedicineRefillReminderProtocol"},      {{"reminder_1_msg", "medicine_refill.txt"},
-                                                                     }},
-                {{"medicine_pharmacy_reminder",      "MedicineRefillPharmacyReminderProtocol"},      {{"reminder_1_msg", "pharmacy_refill.txt"},
-                                                                     }},
-                {{"walking_reminder",       "WalkingProtocol"},              {{"reminder_1_msg", "walking_reminder.txt"},
-                                                                             }},
         };
+
+        const std::unordered_map <InstantiatedParameter, std::unordered_map<std::string, std::string>> video_reminder_msgs = {
+                {{"coffee_reminder", "VideoReminderProtocol"}, {{"reminder_1_msg", "coffee_vid.mp4"},
+                                                  }},
+                {{"microwave_reminder", "VideoReminderProtocol"}, {{"reminder_1_msg", "micro_vid.mp4"},
+                                                  }},
+        }
 
         const std::unordered_map <InstantiatedParameter, std::unordered_map<std::string, std::string>> recorded_reminder_msgs = {
                 {{"am_meds", "MedicineProtocol"}, {{"reminder_2_msg", "medicine_voice_reminder.mp4"},
@@ -94,9 +91,15 @@ namespace pddl_lib {
 
         const std::unordered_map<InstantiatedParameter, std::unordered_map<std::string, std::vector<std::string>>> voice_msgs = {
                 {
-                        {"gym_reminder", "GymReminderProtocol"},
+                        {"coffee_reminder", "VideoReminderProtocol"},
                         {
-                                {"voice_msg", {"Good morning Howie, this is Florence, “would like to go to the gym, please say Yes or No ?", "if_true_text.txt", "if_false_text.txt"}}
+                                {"voice_msg", {"Dad, would you like assistance with your coffee now, please say Yes or No ?", "if_true_text.txt", "if_false_text.txt"}}
+                        }
+                },
+                {
+                        {"microwave_reminder", "VideoReminderProtocol"},
+                        {
+                                {"voice_msg", {"Dad, would you like to heat up your food please say Yes or No ?", "if_true_text.txt", "if_false_text.txt"}}
                         }
                 },
         };
@@ -794,17 +797,11 @@ namespace pddl_lib {
         BT::NodeStatus high_level_domain_StartMedicineProtocol(const InstantiatedAction &action) override {
             auto &kb = KnowledgeBase::getInstance();
             InstantiatedParameter protocol = action.parameters[0];
-            InstantiatedParameter cur = action.parameters[2];
-            InstantiatedParameter dest = action.parameters[3];
 
-
-            // instantiate_protocol("medicine_reminder.pddl", {{"current_loc", cur.name},
-            //                                                 {"dest_loc",    dest.name}});
             auto [ps, lock] = ProtocolState::getConcurrentInstance();
             lock.Lock();
             std::string currentDateTime = getCurrentDateTime();
-            std::string log_message =
-                    std::string("weblog=") + currentDateTime + " high_level_domain_StartMedicineProtocol" + " started";
+            std::string log_message = std::string("weblog=") + currentDateTime + " high_level_domain_StartMedicineProtocol" + " started";
             RCLCPP_INFO(ps.world_state_converter->get_logger(), log_message.c_str());
 
        
@@ -817,62 +814,29 @@ namespace pddl_lib {
             return BT::NodeStatus::SUCCESS;
         }
 
-
-
-        // MedicineRefillPharmacy check protocol
-        BT::NodeStatus high_level_domain_StartMedicineRefillPharmacyReminderProtocol(const InstantiatedAction &action) override {
+        BT::NodeStatus high_level_domain_StartOneReminderProtocol(const InstantiatedAction &action) override {
             auto &kb = KnowledgeBase::getInstance();
-            InstantiatedParameter inst = action.parameters[0];
-            InstantiatedParameter cur = action.parameters[2];
-            InstantiatedParameter dest = action.parameters[3];
+            InstantiatedParameter protocol = action.parameters[0];
 
             auto [ps, lock] = ProtocolState::getConcurrentInstance();
             lock.Lock();
-
             std::string currentDateTime = getCurrentDateTime();
-            //RCLCPP_INFO(rclcpp::get_logger(std::string("weblog=")+"high_level_domain_StartWanderingProtocol"+"started"), "user...");
-            RCLCPP_INFO(rclcpp::get_logger(
-                    currentDateTime + std::string("user=") + "StartMedicineRefillPharmacyReminderProtocol" + "started"),
-                        "user...");
-
-            std::string log_message =
-                    std::string("weblog=") + currentDateTime + " high_level_domain_StartMedicineRefillPharmacyReminderProtocol" +
-                    " started";
+            std::string log_message = std::string("weblog=") + currentDateTime + " high_level_domain_StartOneReminderProtocol" + " started";
             RCLCPP_INFO(ps.world_state_converter->get_logger(), log_message.c_str());
 
-            if (dest.name == cur.name) {
-                std::string updated_dest = "bedroom"; // Default case
-            
-                // Swap destination if current_loc is "living_room" or "bedroom"
-                if (cur.name == "living_room") {
-                    updated_dest = "bedroom";
-                } else if (cur.name == "bedroom") {
-                    updated_dest = "living_room";
-                }
-            
-                RCLCPP_INFO(rclcpp::get_logger("debug"),
-                            "StartMedicineProtocol: Robot is already at %s. Changing destination to %s.", 
-                            cur.name.c_str(), updated_dest.c_str());
-            
-                // Just proceed with the protocol without moving
-                instantiate_protocol("medicine_pharmacy_reminder.pddl", {{"current_loc", cur.name}, {"dest_loc", updated_dest}});
-            } else {
-                // Move to the medicine location if not already there
-                instantiate_protocol("medicine_pharmacy_reminder.pddl", {{"current_loc", cur.name}, {"dest_loc", dest.name}});
-            }
-            
+
+            // Move to the medicine location if not already there
+            instantiate_protocol("one_reminder.pddl");
 
 
-            ps.active_protocol = inst;
+            ps.active_protocol = protocol;
             lock.UnLock();
             return BT::NodeStatus::SUCCESS;
         }
 
-        BT::NodeStatus high_level_domain_StartWalkingProtocol(const InstantiatedAction &action) override {
+        BT::NodeStatus high_level_domain_StartVideoReminderProtocol(const InstantiatedAction &action) override {
             auto &kb = KnowledgeBase::getInstance();
             InstantiatedParameter inst = action.parameters[0];
-            InstantiatedParameter cur = action.parameters[2];
-            InstantiatedParameter dest = action.parameters[3];
 
             auto [ps, lock] = ProtocolState::getConcurrentInstance();
             lock.Lock();
@@ -880,36 +844,16 @@ namespace pddl_lib {
             std::string currentDateTime = getCurrentDateTime();
             //RCLCPP_INFO(rclcpp::get_logger(std::string("weblog=")+"high_level_domain_StartWanderingProtocol"+"started"), "user...");
             RCLCPP_INFO(rclcpp::get_logger(
-                                currentDateTime + std::string("user=") + "StartWalkingReminderProtocol" + "started"),
+                                currentDateTime + std::string("user=") + "StartVideoReminderProtocol" + "started"),
                         "user...");
 
             std::string log_message =
-                    std::string("weblog=") + currentDateTime + " high_level_domain_StartWalkingReminderProtocol" +
+                    std::string("weblog=") + currentDateTime + " high_level_domain_StartVideoReminderProtocol" +
                     " started";
             RCLCPP_INFO(ps.world_state_converter->get_logger(), log_message.c_str());
-
-            if (dest.name == cur.name) {
-                std::string updated_dest = "bedroom"; // Default case
             
-                // Swap destination if current_loc is "living_room" or "bedroom"
-                if (cur.name == "living_room") {
-                    updated_dest = "bedroom";
-                } else if (cur.name == "bedroom") {
-                    updated_dest = "living_room";
-                }
-            
-                RCLCPP_INFO(rclcpp::get_logger("debug"),
-                            "StartMedicineProtocol: Robot is already at %s. Changing destination to %s.", 
-                            cur.name.c_str(), updated_dest.c_str());
-            
-                // Just proceed with the protocol without moving
-                instantiate_protocol("walking_reminder.pddl", {{"current_loc", cur.name}, {"dest_loc", updated_dest}});
-            } else {
-                // Move to the medicine location if not already there
-                instantiate_protocol("walking_reminder.pddl", {{"current_loc", cur.name}, {"dest_loc", dest.name}});
-            }
-            
-
+            // Just proceed with the protocol without moving
+            instantiate_protocol("video_reminder.pddl");
 
             ps.active_protocol = inst;
             lock.UnLock();
@@ -1084,12 +1028,7 @@ namespace pddl_lib {
             // std::string log_message = std::string("weblog=----Starting ROS----");
             RCLCPP_INFO(ps.world_state_converter->get_logger(), "weblog=----Starting ROS----");
 
-
-            // RCLCPP_INFO(rclcpp::get_logger("########## STARTT #################"), "Your message here");
-
-
             const char* homeDir = std::getenv("HOME");
-
 
             std::string cmd_startros = "/home/hello-robot/smarthome_ws/src/smart-home-robot/external/helper_script/start_nav.sh";
 
@@ -1179,7 +1118,6 @@ namespace pddl_lib {
             return BT::NodeStatus::SUCCESS;
         }
 
-
         BT::NodeStatus shr_domain_TimeOut(const InstantiatedAction &action) override {
             auto &kb = KnowledgeBase::getInstance();
             auto [ps, lock] = ProtocolState::getConcurrentInstance();
@@ -1209,24 +1147,13 @@ namespace pddl_lib {
             //std::string currentDateTime = getCurrentDateTime();
             if (active_protocol.type == "MedicineProtocol") {
                 kb.insert_predicate({"already_reminded_medicine", {active_protocol}});
-                RCLCPP_INFO(ps.world_state_converter->get_logger(), "weblog= --- already_reminded_medicine ----");
                 kb.erase_predicate({"medicine_protocol_enabled", {active_protocol}});
-            }else if (active_protocol.type == "GymReminderProtocol") {
-                kb.insert_predicate({"already_reminded_gym", {active_protocol}});
-                RCLCPP_INFO(ps.world_state_converter->get_logger(), "weblog= --- already_reminded_gym ----");
-                kb.erase_predicate({"gym_reminder_enabled", {active_protocol}});
-            } else if (active_protocol.type == "MedicineRefillReminderProtocol") {
-                kb.insert_predicate({"already_reminded_medicine_refill", {active_protocol}});
-                RCLCPP_INFO(ps.world_state_converter->get_logger(), "weblog= --- already_reminded_medicine_refill ----");
-                kb.erase_predicate({"medicine_refill_reminder_enabled", {active_protocol}});
-            } else if (active_protocol.type == "MedicineRefillPharmacyReminderProtocol") {
-                kb.insert_predicate({"already_reminded_medicine_pharmacy", {active_protocol}});
-                RCLCPP_INFO(ps.world_state_converter->get_logger(), "weblog= --- already_reminded_medicine_pharmacy ----");
-                kb.erase_predicate({"medicine_pharmacy_reminder_enabled", {active_protocol}});
-            } else if (active_protocol.type == "WalkingProtocol") {
-                kb.insert_predicate({"already_reminded_walking", {active_protocol}});
-                RCLCPP_INFO(ps.world_state_converter->get_logger(), "weblog= --- already_reminded_walking ----");
-                kb.erase_predicate({"walking_reminder_enabled", {active_protocol}});
+            }else if (active_protocol.type == "VideoReminderProtocol") {
+                kb.insert_predicate({"already_showed_video", {active_protocol}});
+                kb.erase_predicate({"video_reminder_enabled", {active_protocol}});
+            }else if (active_protocol.type == "OneReminderProtocol") {
+                kb.insert_predicate({"already_gave_one_reminder", {active_protocol}});
+                kb.erase_predicate({"one_reminder_enabled", {active_protocol}});
             }
 
             // RCLCPP_INFO(rclcpp::get_logger(std::string("weblog=")+"shr_domain_MessageGivenSuccess"+active_protocol.type), "user...");
@@ -1245,22 +1172,12 @@ namespace pddl_lib {
             lock.Lock();
             auto active_protocol = ps.active_protocol;
             //std::string currentDateTime = getCurrentDateTime();
-            if (active_protocol.type == "MedicineProtocol") {
-                kb.insert_predicate({"already_reminded_medicine", {active_protocol}});
-                kb.erase_predicate({"medicine_protocol_enabled", {active_protocol}});
-            }else if (active_protocol.type == "GymReminderProtocol") {
-                kb.insert_predicate({"already_reminded_gym", {active_protocol}});
-                kb.erase_predicate({"gym_reminder_enabled", {active_protocol}});
-            } else if (active_protocol.type == "MedicineRefillReminderProtocol") {
-                kb.insert_predicate({"already_reminded_medicine_refill", {active_protocol}});
-                kb.erase_predicate({"medicine_refill_reminder_enabled", {active_protocol}});
-            } else if (active_protocol.type == "MedicineRefillPharmacyReminderProtocol") {
-                kb.insert_predicate({"already_reminded_medicine_pharmacy", {active_protocol}});
-                kb.erase_predicate({"medicine_pharmacy_reminder_enabled", {active_protocol}});
-            }else if (active_protocol.type == "WalkingProtocol") {
-                kb.insert_predicate({"already_reminded_walking", {active_protocol}});
-                kb.erase_predicate({"walking_reminder_enabled", {active_protocol}});
-            }
+//            if (active_protocol.type == "MedicineProtocol") {
+//                kb.insert_predicate({"already_reminded_medicine", {active_protocol}});
+//                kb.erase_predicate({"medicine_protocol_enabled", {active_protocol}});
+//            }else if (active_protocol.type == "GymReminderProtocol") {
+//                kb.insert_predicate({"already_reminded_gym", {active_protocol}});
+//                kb.erase_predicate({"gym_reminder_enabled", {active_protocol}});
 
             // RCLCPP_INFO(rclcpp::get_logger(std::string("weblog=")+"shr_domain_PersonAtSuccess"+active_protocol.type), "user...");
             // RCLCPP_INFO(rclcpp::get_logger(currentDateTime+std::string("user=")+"active protocol"+active_protocol.type), "user...");
@@ -1271,32 +1188,6 @@ namespace pddl_lib {
             lock.UnLock();
             return BT::NodeStatus::SUCCESS;
         }
-
-        // BT::NodeStatus shr_domain_Wait(const InstantiatedAction &action) override {
-        //     auto [ps, lock] = ProtocolState::getConcurrentInstance();
-        //     lock.Lock();
-        //     auto &kb = KnowledgeBase::getInstance();
-        //     std::string msg = "wait";
-        //     //std::string currentDateTime = getCurrentDateTime();
-        //     //  fix for all 
-        //     int wait_time = ps.wait_times.at(ps.active_protocol).at(msg).first;
-
-        //     for (int i = 0; i < wait_time; i++) {
-        //         if (ps.world_state_converter->get_world_state_msg()->person_taking_medicine == 1 && ps.active_protocol.type == "MedicineProtocol"){
-        //             RCLCPP_INFO(rclcpp::get_logger(std::string("weblog=") + "shr_domain_Wait " + "medicine taken!"),
-        //                         "user...");
-        //             lock.UnLock();
-        //             return BT::NodeStatus::SUCCESS;
-        //         }
-
-        //         rclcpp::sleep_for(std::chrono::seconds(10));
-        //     }
-
-        //     lock.UnLock();
-        //     return BT::NodeStatus::SUCCESS;
-        // }
-
-
 
         BT::NodeStatus shr_domain_Wait(const InstantiatedAction &action) override {
             auto [ps, lock] = ProtocolState::getConcurrentInstance();
@@ -1419,31 +1310,6 @@ namespace pddl_lib {
             auto &kb = KnowledgeBase::getInstance();
             std::string msg = action.parameters[3].name;
 
-
-            // ✅ Determine the robot's location dynamically
-            std::vector<std::string> locations = {"living_room", "bedroom"};
-            std::string robot_location = "unknown";
-
-            for (const auto &loc : locations) {
-                if (ps.world_state_converter->check_robot_at_loc(loc)) {
-                    robot_location = loc;
-                    break;
-                }
-            }
-
-            // ✅ Define audio devices
-            std::string USB_AUDIO = "alsa_output.usb-EMEET_EMEET_OfficeCore_M1A_21371696-00.mono-fallback";
-
-            // ✅ Switch audio output based on location
-            if (robot_location == "bedroom") {
-                RCLCPP_INFO(rclcpp::get_logger("GiveReminder"), "Robot is in BEDROOM. Switching to Bluetooth Speaker.");
-                std::system(("pactl set-default-sink " + USB_AUDIO).c_str());
-            } else {
-                RCLCPP_INFO(rclcpp::get_logger("GiveReminder"), "Robot is in %s. Switching to USB Audio.", robot_location.c_str());
-                std::system(("pactl set-default-sink " + USB_AUDIO).c_str());
-            }
-
-
             //std::string currentDateTime = getCurrentDateTime();
             int wait_time = ps.wait_times.at(ps.active_protocol).at(msg).first;
             for (int i = 0; i < wait_time; i++) {
@@ -1481,17 +1347,6 @@ namespace pddl_lib {
                         std::string("weblog=") + currentDateTime + " GiveReminder" + script_name_str + " succeed!";
                 RCLCPP_INFO(ps.world_state_converter->get_logger(), log_message.c_str());
                 rclcpp::sleep_for(std::chrono::seconds(ps.wait_times.at(ps.active_protocol).at(msg).second));
-                // wait_time = ps.wait_times.at(ps.active_protocol).at(msg).second;
-                // for (int i = 0; i < wait_time; i++) {
-                // if (kb.check_conditions(action.precondtions) == TRUTH_VALUE::TRUE) {
-                //     abort(action);
-                //     RCLCPP_INFO(rclcpp::get_logger(std::string("weblog=") + "shr_domain_GiveReminder" + "succeeded during wait time after reminder!"),
-                //                 "user...");
-                //     lock.UnLock();
-                //     return BT::NodeStatus::SUCCESS;
-                // }
-                //     rclcpp::sleep_for(std::chrono::seconds(1));
-                // }
 
             } else {
                 // RCLCPP_INFO(rclcpp::get_logger(std::string("weblog=")+"shr_domain_GiveReminder"+script_name_str+"failed!"), "user...");
@@ -1505,6 +1360,9 @@ namespace pddl_lib {
             return ret;
         }
 
+//        kb.insert_predicate({"abort", {}});
+//        kb.erase_predicate({"medicine_protocol_enabled", {active_protocol}});
+
         BT::NodeStatus shr_domain_MakeVoiceCommand(const InstantiatedAction &action) override {
             auto [ps, lock] = ProtocolState::getConcurrentInstance();
             RCLCPP_INFO(ps.world_state_converter->get_logger(), "weblog=---- Make Voice Command ----");
@@ -1512,29 +1370,6 @@ namespace pddl_lib {
             lock.Lock();
             auto params = ps.world_state_converter->get_params();
             auto &kb = KnowledgeBase::getInstance();
-
-            std::vector<std::string> locations = {"living_room", "bedroom"};
-            std::string robot_location = "unknown";
-
-            for (const auto &loc : locations) {
-                if (ps.world_state_converter->check_robot_at_loc(loc)) {
-                    robot_location = loc;
-                    break;
-                }
-            }
-
-            // ✅ Define audio devices
-            std::string USB_AUDIO = "alsa_output.usb-EMEET_EMEET_OfficeCore_M1A_21371696-00.mono-fallback";
-
-            // ✅ Switch audio output based on location
-            if (robot_location == "bedroom") {
-                RCLCPP_INFO(rclcpp::get_logger("GiveReminder"), "Robot is in BEDROOM. Switching to Bluetooth Speaker.");
-                std::system(("pactl set-default-sink " + USB_AUDIO).c_str());
-            } else {
-                RCLCPP_INFO(rclcpp::get_logger("GiveReminder"), "Robot is in %s. Switching to USB Audio.", robot_location.c_str());
-                std::system(("pactl set-default-sink " + USB_AUDIO).c_str());
-            }
-
 
             std::string msg = action.parameters[3].name;
             int wait_time = ps.wait_times.at(ps.active_protocol).at(msg).first;
@@ -1567,9 +1402,11 @@ namespace pddl_lib {
 
             if (response == 1) {
                 RCLCPP_INFO(rclcpp::get_logger("VoiceAction"), "User responded YES. Reading: %s", if_true_text.c_str());
+                kb.insert_predicate({"play_video", {}});
                 read_goal_.script_name = if_true_text;
             } else if (response == 0) {
                 RCLCPP_INFO(rclcpp::get_logger("VoiceAction"), "User responded NO. Reading: %s", if_false_text.c_str());
+                kb.erase_predicate({"play_video", {}});
                 read_goal_.script_name = if_false_text;
             } else {
                 RCLCPP_ERROR(rclcpp::get_logger("VoiceAction"), "❌ Failed to get a valid response. Proceeding anyway.");
@@ -1590,7 +1427,7 @@ namespace pddl_lib {
             lock.UnLock();
             return BT::NodeStatus::SUCCESS;  // **Only return SUCCESS if everything succeeded**
         }
-        
+
 
         BT::NodeStatus shr_domain_DetectTakingMedicine(const InstantiatedAction &action) override {
             auto &kb = KnowledgeBase::getInstance();
@@ -1637,6 +1474,28 @@ namespace pddl_lib {
                 lock.UnLock();
                 return BT::NodeStatus::FAILURE;
             }
+        }
+
+        BT::NodeStatus shr_domain_DetectPlayVideo(const InstantiatedAction &action) override {
+            auto [ps, lock] = ProtocolState::getConcurrentInstance();
+            lock.Lock();
+            auto &kb = KnowledgeBase::getInstance();
+            auto t = action.parameters[0];
+            //std::string currentDateTime = getCurrentDateTime();
+            InstantiatedPredicate play_video = {"play_video", {}});
+//            kb.insert_predicate({"abort", {}});
+            if (kb.find_predicate(play_video)) {
+                std::string currentDateTime = getCurrentDateTime();
+                std::string log_message = std::string("weblog=") + currentDateTime + " Detect Play Video " + " succeed!";
+                RCLCPP_INFO(ps.world_state_converter->get_logger(), log_message.c_str());
+                lock.UnLock();
+                return BT::NodeStatus::SUCCESS;
+            }else{
+                lock.UnLock();
+                return BT::NodeStatus::FAILURE;
+            }
+
+
         }
 
         std::string getCurrentDateTime() {

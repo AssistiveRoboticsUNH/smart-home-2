@@ -22,7 +22,7 @@
     ;;(person_currently_at ?p - Person ?lmp - Landmark)
     (person_at_success ?p - Person ?lmp - Landmark)
     (same_location ?l1 ?l2 - Landmark)
-    (home_location ?l - Landmark)
+  
     (same_location_check ?l1 - Landmark ?l2 - Landmark)
 
     (person_taking_medicine ?t - Time)
@@ -138,7 +138,7 @@
 
 ;; detect if person is at location outside or inside or bedroom
 (:action DetectPlayVideo
-    :parameters (?t - Time ?m - Msg)
+    :parameters (?t - Time)
     :precondition (and
         (current_time ?t)
         (DetectPlayVideo_enabled)
@@ -464,6 +464,7 @@
 (:action VideoPlayingSuccess
 	:parameters ()
 	:precondition (and
+        (DetectPlayVideo_enabled)
         (not (play_video))
         (not (abort))
       )

@@ -1,7 +1,9 @@
 (define (problem medicine_reminder)
 (:domain shr_domain)
 (:objects
-    current_loc dest_loc home outside - Landmark
+    living_room kitchen home outside - Landmark
+    ;;living_room kitchen dining home outside - Landmark
+
     nathan - Person
     t1 t2 t3 t4 t5 - Time
     reminder_1_msg reminder_2_msg call_caregiver_msg - Msg
@@ -11,8 +13,9 @@
 )
 (:init
     ;; Initial person and robot locations
-    ;;(person_at t1 nathan dest_loc)
-    ;;(robot_at current_loc)
+    
+    (person_at t1 nathan living_room)
+    (robot_at home)
 
     ;; Enabled actions
     (DetectPerson_enabled)
@@ -26,24 +29,25 @@
     (next_time t3 t4)
     (next_time t4 t5)
 
-
-
     ;; Person can be at different locations at future times
-    (oneof (person_at t2 nathan current_loc) (person_at t2 nathan dest_loc) (person_at t2 nathan outside))
-    (oneof (person_at t3 nathan current_loc) (person_at t3 nathan dest_loc) (person_at t3 nathan outside))
-    (oneof (person_at t4 nathan current_loc) (person_at t4 nathan dest_loc) (person_at t4 nathan outside))
-    (oneof (person_at t5 nathan current_loc) (person_at t5 nathan dest_loc) (person_at t5 nathan outside))
-
-    (home_location home)
+    (oneof (person_at t2 nathan living_room) (person_at t2 nathan kitchen) (person_at t2 nathan outside) )
+    (oneof (person_at t3 nathan living_room) (person_at t3 nathan kitchen) (person_at t3 nathan outside) )
+    (oneof (person_at t4 nathan living_room) (person_at t4 nathan kitchen) (person_at t4 nathan outside) )
+    (oneof (person_at t5 nathan living_room) (person_at t5 nathan kitchen) (person_at t5 nathan outside) )
 
 
     ;; Allow traversal between locations if needed
-    (traversable dest_loc current_loc)
-    (traversable current_loc dest_loc)
-    (traversable home current_loc)
-    (traversable current_loc home)
-    (traversable dest_loc home)
-    (traversable home dest_loc)
+    (traversable home living_room)
+    (traversable living_room home)
+    (traversable home kitchen)
+    (traversable kitchen home)
+
+
+
+    (traversable living_room kitchen)
+    (traversable kitchen living_room)
+
+ 
 
     ;; Define success states
     (message_given_success reminder_2_msg)

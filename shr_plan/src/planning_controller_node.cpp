@@ -157,64 +157,23 @@ public:
     }
 
 
-    TRUTH_VALUE time_for_gym_reminder(TRUTH_VALUE val, GymReminderProtocol  ) const override {
+    TRUTH_VALUE time_for_video(TRUTH_VALUE val, VideoReminderProtocol  ) const override {
         auto params = world_state_converter->get_params();
         if (auto index = get_inst_index(m, params)) {
-            if (compare_time(params.pddl.GymReminderProtocols.gym_reminder_times[index.value()])) {
+            if (compare_time(params.pddl.VideoReminderProtocols.video_reminder_times[index.value()])) {
                 return TRUTH_VALUE::TRUE;
             }
         }
         return TRUTH_VALUE::FALSE;
     }
 
-    TRUTH_VALUE time_for_medicine_refill_reminder(TRUTH_VALUE val, MedicineRefillReminderProtocol m) const override {
+    TRUTH_VALUE time_for_one_reminder(TRUTH_VALUE val, OneReminderProtocol m) const override {
         auto params = world_state_converter->get_params();
         if (auto index = get_inst_index(m, params)) {
-            if (compare_time(params.pddl.MedicineRefillReminderProtocols.medicine_refill_reminder_times[index.value()])) {
+            if (compare_time(params.pddl.OneReminderProtocols.one_reminder_times[index.value()])) {
                 return TRUTH_VALUE::TRUE;
             }
         }
-        return TRUTH_VALUE::FALSE;
-    }
-
-    TRUTH_VALUE time_for_medicine_pharmacy_reminder(TRUTH_VALUE val, MedicineRefillPharmacyReminderProtocol m) const override {
-        auto params = world_state_converter->get_params();
-        if (auto index = get_inst_index(m, params)) {
-            if (compare_time(params.pddl.MedicineRefillPharmacyReminderProtocols.medicine_refill_pharmacy_reminder_times[index.value()])) {
-                return TRUTH_VALUE::TRUE;
-            }
-        }
-        return TRUTH_VALUE::FALSE;
-    }
-
-    TRUTH_VALUE time_for_walking_reminder(TRUTH_VALUE val, WalkingProtocol m) const override {
-        auto params = world_state_converter->get_params();
-        if (auto index = get_inst_index(m, params)) {
-            if (compare_time(params.pddl.WalkingProtocols.walking_reminder_times[index.value()])) {
-                return TRUTH_VALUE::TRUE;
-            }
-        }
-        return TRUTH_VALUE::FALSE;
-    }
-
-    TRUTH_VALUE good_weather(TRUTH_VALUE val, WalkingProtocol w) const override {
-        // RCLCPP_INFO(rclcpp::get_logger("WeatherDebug"), "🌤️ Entering good_weather function for WalkingProtocol: ");
-
-        auto world_state_msg = world_state_converter->get_world_state_msg();
-        if (!world_state_msg) {
-            // RCLCPP_ERROR(rclcpp::get_logger("WeatherDebug"), "❌ Error: world_state_msg is NULL! Returning UNKNOWN.");
-            return TRUTH_VALUE::UNKNOWN;
-        }
-
-        int weather_status = world_state_msg->good_weather;
-        // RCLCPP_INFO(rclcpp::get_logger("WeatherDebug"), "🔍 Current good_weather value: %d", weather_status);
-
-        if (weather_status == 1) {
-            // RCLCPP_INFO(rclcpp::get_logger("WeatherDebug"), "✅ Weather is GOOD for WalkingProtocol: ");
-            return TRUTH_VALUE::TRUE;
-        }
-
-        // RCLCPP_WARN(rclcpp::get_logger("WeatherDebug"), "⚠️ Weather is NOT good for WalkingProtocol: ");
         return TRUTH_VALUE::FALSE;
     }
 
