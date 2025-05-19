@@ -6,3 +6,5 @@ int32 person_eating
 string screen_ack
 int32 person_intervene
 builtin_interfaces/Time time
+bool coffee
+bool heating_food

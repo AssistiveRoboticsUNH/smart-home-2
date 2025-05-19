@@ -28,6 +28,8 @@
 #include <shr_plan/intersection_helpers.hpp>
 #include <cstdlib>  // for getenv
 
+#include <typeinfo>
+
 using namespace pddl_lib;
 
 Domain load_domain(const std::string &domain_file) {
@@ -158,17 +160,34 @@ public:
 
 
     TRUTH_VALUE time_for_video(TRUTH_VALUE val, VideoReminderProtocol m) const override {
-        auto params = world_state_converter->get_params();
-        // std::cout << "time_for_video " << m << std::endl;
-
-        if (auto index = get_inst_index(m, params)) {
-            std::string time_range = params.pddl.VideoReminderProtocols.video_reminder_times[index.value()];
-            // std::cout << "time_range: " << time_range << std::endl;
-            if (compare_time(time_range)) {
+        if (m == "coffee_reminder"){
+            if (world_state_converter->get_world_state_msg()->coffee == 1){
+                return TRUTH_VALUE::TRUE;
+            }
+        }
+        else if (m == "microwave_reminder"){
+            if (world_state_converter->get_world_state_msg()->heating_food == 1){
                 return TRUTH_VALUE::TRUE;
             }
         }
         return TRUTH_VALUE::FALSE;
+    
+
+        // auto params = world_state_converter->get_params();
+        // std::cout << "m " << m << std::endl;
+       
+        // std::cout << "Type: " << typeid(m).name() << std::endl;
+        // std::cout << "-- : " << (m == "coffee_reminder") << std::endl;
+        // // std::cout << "time_for_video " << m << std::endl;
+
+        // if (auto index = get_inst_index(m, params)) {
+        //     std::string time_range = params.pddl.VideoReminderProtocols.video_reminder_times[index.value()];
+        //     // std::cout << "time_range: " << time_range << std::endl;
+        //     if (compare_time(time_range)) {
+        //         return TRUTH_VALUE::TRUE;
+        //     }
+        // }
+        // return TRUTH_VALUE::FALSE;
     }
 
     TRUTH_VALUE time_for_one_reminder(TRUTH_VALUE val, OneReminderProtocol m) const override {

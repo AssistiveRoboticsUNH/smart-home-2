@@ -74,12 +74,6 @@ namespace pddl_lib {
                                                                      }},
         };
 
-        // const std::unordered_map <InstantiatedParameter, std::unordered_map<std::string, std::string>> video_reminder_msgs = {
-        //         {{"coffee_reminder", "VideoReminderProtocol"}, {{"reminder_1_msg", "coffee_vid.mp4"},
-        //                                           }},
-        //         {{"microwave_reminder", "VideoReminderProtocol"}, {{"reminder_1_msg", "micro_vid.mp4"},
-        //                                           }},
-        // }
 
         const std::unordered_map <InstantiatedParameter, std::unordered_map<std::string, std::string>> recorded_reminder_msgs = {
                 {{"am_meds", "MedicineProtocol"}, {{"reminder_2_msg", "medicine_voice_reminder.mp4"},

@@ -34,6 +34,7 @@ class shr_parameters:
             class __Videoreminderprotocols:
                 instances = ["coffee_reminder", "microwave_reminder"]
                 video_reminder_times = ["Everyday 06h00m0s/07h00m0s", "Everyday 15h00m0s/17h00m0s"]
+                video_reminder_topics = ["/coffee", "/heating_food"]
             VideoReminderProtocols = __Videoreminderprotocols()
             class __Onereminderprotocols:
                 instances = ["trash"]
@@ -130,6 +131,10 @@ class shr_parameters:
                     updated_params.pddl.VideoReminderProtocols.video_reminder_times = param.value
                     self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
 
+                if param.name == self.prefix_ + "pddl.VideoReminderProtocols.video_reminder_topics":
+                    updated_params.pddl.VideoReminderProtocols.video_reminder_topics = param.value
+                    self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
+
                 if param.name == self.prefix_ + "pddl.OneReminderProtocols.instances":
                     updated_params.pddl.OneReminderProtocols.instances = param.value
                     self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
@@ -207,6 +212,11 @@ class shr_parameters:
                 parameter = updated_params.pddl.VideoReminderProtocols.video_reminder_times
                 self.node_.declare_parameter(self.prefix_ + "pddl.VideoReminderProtocols.video_reminder_times", parameter, descriptor)
 
+            if not self.node_.has_parameter(self.prefix_ + "pddl.VideoReminderProtocols.video_reminder_topics"):
+                descriptor = ParameterDescriptor(description="time that each protocol is triggered", read_only = False)
+                parameter = updated_params.pddl.VideoReminderProtocols.video_reminder_topics
+                self.node_.declare_parameter(self.prefix_ + "pddl.VideoReminderProtocols.video_reminder_topics", parameter, descriptor)
+
             if not self.node_.has_parameter(self.prefix_ + "pddl.OneReminderProtocols.instances"):
                 descriptor = ParameterDescriptor(description="trash protocols", read_only = False)
                 parameter = updated_params.pddl.OneReminderProtocols.instances
@@ -274,6 +284,9 @@ class shr_parameters:
             param = self.node_.get_parameter(self.prefix_ + "pddl.VideoReminderProtocols.video_reminder_times")
             self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
             updated_params.pddl.VideoReminderProtocols.video_reminder_times = param.value
+            param = self.node_.get_parameter(self.prefix_ + "pddl.VideoReminderProtocols.video_reminder_topics")
+            self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
+            updated_params.pddl.VideoReminderProtocols.video_reminder_topics = param.value
             param = self.node_.get_parameter(self.prefix_ + "pddl.OneReminderProtocols.instances")
             self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
             updated_params.pddl.OneReminderProtocols.instances = param.value

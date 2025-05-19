@@ -5,6 +5,8 @@
 #include <shr_parameters/shr_parameters.hpp>
 #include <std_msgs/msg/int32.hpp>
 #include <tf2_ros/transform_listener.h>
+
+#include "std_msgs/msg/bool.hpp"
 #include "std_msgs/msg/string.hpp"
 #include "std_msgs/msg/float64_multi_array.hpp"
 
@@ -21,6 +23,8 @@ private:
     rclcpp::Subscription<builtin_interfaces::msg::Time>::SharedPtr time_sub_;
     rclcpp::Subscription<std_msgs::msg::Int32>::SharedPtr taking_medicine_sub_;
     rclcpp::Subscription<std_msgs::msg::String>::SharedPtr screen_ack_sub_;
+    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr coffee_sub_;
+    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr heating_food_sub_;
 
     std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
     std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
@@ -99,6 +103,20 @@ public:
                     std::lock_guard<std::mutex> lock(world_state_mtx);
                     world_state_->screen_ack = msg->data;
                 });
+                
+
+        coffee_sub_ = create_subscription<std_msgs::msg::Bool>(
+                params.pddl.VideoReminderProtocols.video_reminder_topics[0], 10, [this](const std_msgs::msg::Bool::SharedPtr msg) {
+                    std::lock_guard<std::mutex> lock(world_state_mtx);
+                    world_state_->coffee = msg->data;
+                });
+
+
+        heating_food_sub_ = create_subscription<std_msgs::msg::Bool>(
+                params.pddl.VideoReminderProtocols.video_reminder_topics[1], 10, [this](const std_msgs::msg::Bool::SharedPtr msg) {
+            std::lock_guard<std::mutex> lock(world_state_mtx);
+            world_state_->heating_food = msg->data;
+        });
 
 
 
