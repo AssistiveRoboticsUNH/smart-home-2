@@ -20,7 +20,6 @@ private:
     rclcpp::Subscription<std_msgs::msg::Int32>::SharedPtr charging_sub_;
     rclcpp::Subscription<builtin_interfaces::msg::Time>::SharedPtr time_sub_;
     rclcpp::Subscription<std_msgs::msg::Int32>::SharedPtr taking_medicine_sub_;
-    rclcpp::Subscription<std_msgs::msg::Int32>::SharedPtr good_weather_sub_;
     rclcpp::Subscription<std_msgs::msg::String>::SharedPtr screen_ack_sub_;
 
     std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
@@ -94,11 +93,6 @@ public:
                 }
             });
 
-        good_weather_sub_ = create_subscription<std_msgs::msg::Int32>(
-                params.topics.good_weather, 10, [this](const std_msgs::msg::Int32::SharedPtr msg) {
-                    std::lock_guard<std::mutex> lock(world_state_mtx);
-                    world_state_->good_weather = msg->data;
-                });
 
         screen_ack_sub_ = create_subscription<std_msgs::msg::String>(
                 params.topics.display_ack, 10, [this](const std_msgs::msg::String::SharedPtr msg) {

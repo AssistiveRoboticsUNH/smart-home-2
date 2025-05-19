@@ -14,8 +14,8 @@
     ;;(person_at t1 nathan bedroom)
     ;;(robot_at home)
     ;;(robot_at_time t1 home)
-    (person_at t1 nathan living_room)
-    (robot_at home)
+    ;;(person_at t1 nathan living_room)
+    ;;(robot_at home)
 
     ;;(no_action)
 

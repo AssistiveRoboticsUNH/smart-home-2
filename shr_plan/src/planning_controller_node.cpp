@@ -157,10 +157,14 @@ public:
     }
 
 
-    TRUTH_VALUE time_for_video(TRUTH_VALUE val, VideoReminderProtocol  ) const override {
+    TRUTH_VALUE time_for_video(TRUTH_VALUE val, VideoReminderProtocol m) const override {
         auto params = world_state_converter->get_params();
+        // std::cout << "time_for_video " << m << std::endl;
+
         if (auto index = get_inst_index(m, params)) {
-            if (compare_time(params.pddl.VideoReminderProtocols.video_reminder_times[index.value()])) {
+            std::string time_range = params.pddl.VideoReminderProtocols.video_reminder_times[index.value()];
+            // std::cout << "time_range: " << time_range << std::endl;
+            if (compare_time(time_range)) {
                 return TRUTH_VALUE::TRUE;
             }
         }
@@ -169,7 +173,9 @@ public:
 
     TRUTH_VALUE time_for_one_reminder(TRUTH_VALUE val, OneReminderProtocol m) const override {
         auto params = world_state_converter->get_params();
+        // std::cout << "time_for_one_reminder " << m << std::endl;
         if (auto index = get_inst_index(m, params)) {
+            // std::cout << "time_for_one_reminder " << m << std::endl;
             if (compare_time(params.pddl.OneReminderProtocols.one_reminder_times[index.value()])) {
                 return TRUTH_VALUE::TRUE;
             }
@@ -263,6 +269,9 @@ private:
         auto time_1_secs = get_seconds(time_1);
         auto time_2_secs = get_seconds(time_2);
         auto current_time_secs = time.sec;
+        // std::cout << "time_1_secs: " << time_1_secs << std::endl;
+        // std::cout << "time_2_secs: " << time_2_secs << std::endl;
+        // std::cout << "current_time_secs: " << current_time_secs << std::endl;
 
         const int second_in_day = 60 * 60 * 24;
         double clock_distance = fmod((time_2_secs - time_1_secs + second_in_day), second_in_day);

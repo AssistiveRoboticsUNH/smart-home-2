@@ -51,15 +51,15 @@ namespace pddl_lib {
         // name field should be the same as the name of the protocol in the high_level_problem
         // mak sure the txt files and mp3 are in shr_resources
         wait_times = {
-                {{"am_meds",                           "MedicineProtocol"},                       {{"reminder_1_msg", {0, 1}},
-                                                                                                          {"reminder_2_msg", {0, 1}},
-                                                                                                          {"wait", {9, 0}},
-                                                                                                        //   {"wait", {900, 0}},
+                {{"am_meds",                           "MedicineProtocol"},                       {{"wait", {9, 0}},
                                                                                                   }},
-                {{"pm_meds",                           "MedicineProtocol"},                       {{"reminder_1_msg", {0, 1}},
-                                                                                                          {"reminder_2_msg", {0, 1}},
-                                                                                                          {"wait", {9, 0}},
-                                                                                                        //   {"wait", {900, 0}},
+                {{"pm_meds",                           "MedicineProtocol"},                       { {"wait", {9, 0}},
+                                                                                                  }},
+                {{"coffee_reminder",                   "VideoReminderProtocol"},                 { {"wait", {9, 0}},
+                                                                                                  }},
+                {{"microwave_reminder",                "VideoReminderProtocol"},                 { {"wait", {9, 0}},
+                                                                                                  }},
+                {{"trash",                           "OneReminderProtocol"},                       { {"wait", {9, 0}},
                                                                                                   }},
 
         };
@@ -74,17 +74,21 @@ namespace pddl_lib {
                                                                      }},
         };
 
-        const std::unordered_map <InstantiatedParameter, std::unordered_map<std::string, std::string>> video_reminder_msgs = {
-                {{"coffee_reminder", "VideoReminderProtocol"}, {{"reminder_1_msg", "coffee_vid.mp4"},
-                                                  }},
-                {{"microwave_reminder", "VideoReminderProtocol"}, {{"reminder_1_msg", "micro_vid.mp4"},
-                                                  }},
-        }
+        // const std::unordered_map <InstantiatedParameter, std::unordered_map<std::string, std::string>> video_reminder_msgs = {
+        //         {{"coffee_reminder", "VideoReminderProtocol"}, {{"reminder_1_msg", "coffee_vid.mp4"},
+        //                                           }},
+        //         {{"microwave_reminder", "VideoReminderProtocol"}, {{"reminder_1_msg", "micro_vid.mp4"},
+        //                                           }},
+        // }
 
         const std::unordered_map <InstantiatedParameter, std::unordered_map<std::string, std::string>> recorded_reminder_msgs = {
                 {{"am_meds", "MedicineProtocol"}, {{"reminder_2_msg", "medicine_voice_reminder.mp4"},
                                                   }},
                 {{"pm_meds", "MedicineProtocol"}, {{"reminder_2_msg", "medicine_voice_reminder.mp4"},
+                                                  }},
+                {{"coffee_reminder", "VideoReminderProtocol"}, {{"reminder_1_msg", "maggie_coffee.mp4"},
+                                                  }},
+                {{"microwave_reminder", "VideoReminderProtocol"}, {{"reminder_1_msg", "maggie_heating.mp4"},
                                                   }},
 
         };
@@ -1166,6 +1170,31 @@ namespace pddl_lib {
             return BT::NodeStatus::SUCCESS;
         }
 
+        BT::NodeStatus shr_domain_VideoPlayingSuccess(const InstantiatedAction &action) override {
+            auto &kb = KnowledgeBase::getInstance();
+            
+            auto [ps, lock] = ProtocolState::getConcurrentInstance();
+            std::string log_message_ = "weblog= ---shr_domain_VideoPlayingSuccess ---";
+            RCLCPP_INFO(ps.world_state_converter->get_logger(), log_message_.c_str());
+
+            lock.Lock();
+            auto active_protocol = ps.active_protocol;
+            //std::string currentDateTime = getCurrentDateTime();
+            if (active_protocol.type == "VideoReminderProtocol") {
+                kb.insert_predicate({"already_showed_video", {active_protocol}});
+                kb.erase_predicate({"video_reminder_enabled", {active_protocol}});
+            }
+
+            // RCLCPP_INFO(rclcpp::get_logger(std::string("weblog=")+"shr_domain_MessageGivenSuccess"+active_protocol.type), "user...");
+            // RCLCPP_INFO(rclcpp::get_logger(currentDateTime +std::string("user=")+"Message is given for: "+active_protocol.type), "user...");
+            std::string currentDateTime = getCurrentDateTime();
+            std::string log_message =
+                    std::string("weblog=") + "Person asked thatthe  video not be played: " + active_protocol.type;
+            RCLCPP_INFO(ps.world_state_converter->get_logger(), log_message.c_str());
+            lock.UnLock();
+            return BT::NodeStatus::SUCCESS;
+        }
+
         BT::NodeStatus shr_domain_PersonAtSuccess(const InstantiatedAction &action) override {
             auto &kb = KnowledgeBase::getInstance();
             auto [ps, lock] = ProtocolState::getConcurrentInstance();
@@ -1311,27 +1340,34 @@ namespace pddl_lib {
             std::string msg = action.parameters[3].name;
 
             //std::string currentDateTime = getCurrentDateTime();
-            int wait_time = ps.wait_times.at(ps.active_protocol).at(msg).first;
-            for (int i = 0; i < wait_time; i++) {
-                if (kb.check_conditions(action.precondtions) == TRUTH_VALUE::FALSE) {
-                    abort(action);
-                    RCLCPP_INFO(rclcpp::get_logger(std::string("weblog=") + "shr_domain_GiveReminder" + "failed!"),
-                                "user...");
-                    lock.UnLock();
-                    return BT::NodeStatus::FAILURE;
-                }
-                rclcpp::sleep_for(std::chrono::seconds(1));
+            if (kb.check_conditions(action.precondtions) == TRUTH_VALUE::FALSE) {
+                abort(action);
+                RCLCPP_INFO(rclcpp::get_logger(std::string("weblog=") + "shr_domain_GiveReminder" + "failed!"),
+                            "user...");
+                lock.UnLock();
+                return BT::NodeStatus::FAILURE;
             }
+            
             std::string script_name_str;
             BT::NodeStatus ret;
-            if (ps.automated_reminder_msgs.at(ps.active_protocol).find(msg) !=
-                ps.automated_reminder_msgs.at(ps.active_protocol).end()) {
+            std::cout << "active_protocol: " << ps.active_protocol << std::endl;
+            std::cout << "msg: " << msg << std::endl;
+            
+            // if (ps.automated_reminder_msgs.at(ps.active_protocol).find(msg) !=
+            //     ps.automated_reminder_msgs.at(ps.active_protocol).end())
+                
+            if (ps.automated_reminder_msgs.count(ps.active_protocol) &&
+                    ps.automated_reminder_msgs.at(ps.active_protocol).find(msg) !=
+                    ps.automated_reminder_msgs.at(ps.active_protocol).end()) {
+                std::cout << "automated_reminder_msgs: "  << std::endl;
+
                 shr_msgs::action::ReadScriptRequest::Goal read_goal_;
                 read_goal_.script_name = ps.automated_reminder_msgs.at(ps.active_protocol).at(msg);
                 script_name_str = std::string(read_goal_.script_name.begin(), read_goal_.script_name.end());
 
                 ret = send_goal_blocking(read_goal_, action, ps) ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
             } else {
+                std::cout << "recorded_reminder_msgs: "  << std::endl;
                 shr_msgs::action::PlayAudioRequest::Goal audio_goal_;
                 audio_goal_.file_name = ps.recorded_reminder_msgs.at(ps.active_protocol).at(msg);
                 script_name_str = std::string(audio_goal_.file_name.begin(), audio_goal_.file_name.end());
@@ -1339,19 +1375,14 @@ namespace pddl_lib {
                 ret = send_goal_blocking(audio_goal_, action, ps) ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
             }
             if (ret == BT::NodeStatus::SUCCESS) {
-                // RCLCPP_INFO(rclcpp::get_logger(std::string("weblog=")+"shr_domain_GiveReminder"+script_name_str+"succeed!"), "user...");
-                // RCLCPP_INFO(rclcpp::get_logger(currentDateTime+std::string("user=")+"GiveReminder"+script_name_str+"succeed!"), "user...");
-                // rclcpp::sleep_for(std::chrono::seconds(ps.wait_times.at(ps.active_protocol).at(msg).second));
-                std::string currentDateTime = "";//getCurrentDateTime();
+                std::string currentDateTime = "";
                 std::string log_message =
                         std::string("weblog=") + currentDateTime + " GiveReminder" + script_name_str + " succeed!";
                 RCLCPP_INFO(ps.world_state_converter->get_logger(), log_message.c_str());
-                rclcpp::sleep_for(std::chrono::seconds(ps.wait_times.at(ps.active_protocol).at(msg).second));
+                rclcpp::sleep_for(std::chrono::seconds(3));
 
             } else {
-                // RCLCPP_INFO(rclcpp::get_logger(std::string("weblog=")+"shr_domain_GiveReminder"+script_name_str+"failed!"), "user...");
-                // RCLCPP_INFO(rclcpp::get_logger(currentDateTime+std::string("user=")+"GiveReminder"+script_name_str+"failed!"), "user...");
-                std::string currentDateTime = "";//getCurrentDateTime();
+                std::string currentDateTime = "";
                 std::string log_message =
                         std::string("weblog=") + currentDateTime + " GiveReminder" + script_name_str + " failed!";
                 RCLCPP_INFO(ps.world_state_converter->get_logger(), log_message.c_str());
@@ -1359,9 +1390,6 @@ namespace pddl_lib {
             lock.UnLock();
             return ret;
         }
-
-//        kb.insert_predicate({"abort", {}});
-//        kb.erase_predicate({"medicine_protocol_enabled", {active_protocol}});
 
         BT::NodeStatus shr_domain_MakeVoiceCommand(const InstantiatedAction &action) override {
             auto [ps, lock] = ProtocolState::getConcurrentInstance();
@@ -1372,19 +1400,32 @@ namespace pddl_lib {
             auto &kb = KnowledgeBase::getInstance();
 
             std::string msg = action.parameters[3].name;
-            int wait_time = ps.wait_times.at(ps.active_protocol).at(msg).first;
 
-            for (int i = 0; i < wait_time; i++) {
-                if (kb.check_conditions(action.precondtions) == TRUTH_VALUE::FALSE) {
-                    abort(action);
-                    lock.UnLock();
-                    return BT::NodeStatus::FAILURE;
-                }
-                rclcpp::sleep_for(std::chrono::seconds(1));
+            if (kb.check_conditions(action.precondtions) == TRUTH_VALUE::FALSE) {
+                abort(action);
+                lock.UnLock();
+                return BT::NodeStatus::FAILURE;
             }
+            
+            std::cout << "active_protocol: " << ps.active_protocol << std::endl;
+
+            std::cout << "\n🧾 DEBUG: Contents of ps.voice_msgs\n";
+            for (const auto& [inst_param, inner_map] : ps.voice_msgs) {
+                std::cout << "  Protocol: (" << inst_param.name << ", " << inst_param.type << ")\n";
+                for (const auto& [key, vec] : inner_map) {
+                    std::cout << "    Key: " << key << "\n";
+                    for (size_t i = 0; i < vec.size(); ++i) {
+                        std::cout << "      [" << i << "]: " << vec[i] << "\n";
+                    }
+                }
+            }
+            std::cout << "🔚 End of ps.voice_msgs\n\n";
 
             // 🔴 Retrieve voice message details
             auto voice_data = ps.voice_msgs.at(ps.active_protocol).at("voice_msg");
+            std::cout << "voice_data 0 : " << voice_data[0]<< std::endl;
+            std::cout << "voice_data 1 : " << voice_data[1]<< std::endl;
+            std::cout << "voice_data 2 : " << voice_data[2]<< std::endl;
 
             std::string gym_question_text = voice_data[0]; // Main question
             std::string if_true_text = voice_data[1];      // Text to read if response is "yes"
@@ -1422,12 +1463,11 @@ namespace pddl_lib {
                 return BT::NodeStatus::FAILURE;  // **Return FAILURE if reading action fails**
             }
 
-            // ✅ Sleep for additional wait time before exiting
-            rclcpp::sleep_for(std::chrono::seconds(ps.wait_times.at(ps.active_protocol).at(msg).second));
+            // ✅ Sleep for additional wait time before exiting 3 sec
+            rclcpp::sleep_for(std::chrono::seconds(3));
             lock.UnLock();
             return BT::NodeStatus::SUCCESS;  // **Only return SUCCESS if everything succeeded**
         }
-
 
         BT::NodeStatus shr_domain_DetectTakingMedicine(const InstantiatedAction &action) override {
             auto &kb = KnowledgeBase::getInstance();
@@ -1482,7 +1522,7 @@ namespace pddl_lib {
             auto &kb = KnowledgeBase::getInstance();
             auto t = action.parameters[0];
             //std::string currentDateTime = getCurrentDateTime();
-            InstantiatedPredicate play_video = {"play_video", {}});
+            InstantiatedPredicate play_video = {"play_video", {}};
 //            kb.insert_predicate({"abort", {}});
             if (kb.find_predicate(play_video)) {
                 std::string currentDateTime = getCurrentDateTime();

@@ -1,4 +1,4 @@
-(define (problem medicine_reminder)
+(define (problem video_reminder)
 (:domain shr_domain)
 (:objects
     ;;living_room bedroom kitchen dining home outside - Landmark
@@ -13,8 +13,8 @@
 )
 (:init
     ;; Initial person and robot locations
-    (person_at t1 nathan living_room)
-    (robot_at home)
+    ;;(person_at t1 nathan living_room)
+    ;;(robot_at home)
 
     ;; Enabled actions
     (DetectPerson_enabled)
