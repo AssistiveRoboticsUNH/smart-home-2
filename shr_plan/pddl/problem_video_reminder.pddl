@@ -63,7 +63,6 @@
     
 
     (unknown (play_video))
-
     (DetectPlayVideo_enabled)
 
     (message_given_success reminder_1_msg)

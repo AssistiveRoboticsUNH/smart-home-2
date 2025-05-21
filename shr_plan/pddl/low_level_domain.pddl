@@ -71,7 +71,6 @@
     (executed_reminder ?a - ReminderAction)
     (executed_call ?c - CallAction)
     (executed_wait ?t - Time)
-    (executed_wait ?a - WaitAction)
     (executed_voice ?a - VoiceAction)
     (wait_blocks_wait ?a1 - WaitAction ?a2 - WaitAction)
 
@@ -107,6 +106,7 @@
     (call_person_not_eating_food_constraint ?a - CallAction ?p - Person)
 
     (reminder_person_not_taking_medicine_constraint ?a - ReminderAction ?p - Person)
+    (voice_person_not_taking_medicine_constraint ?v - VoiceAction ?p - Person)
     (reminder_person_not_eating_food_constraint ?a - ReminderAction ?p - Person)
     (wait_robot_location_constraint ?t - Time ?lmp - Landmark )
 
@@ -181,20 +181,6 @@
 	        )
 )
 
-;; can be used to tick time without needing to wait 
-(:action TickWithoutWaiting
-	:parameters (?t - Time)
-	:precondition (and
-                  (play_video)
-	                (DetectPlayVideo_enabled)
-	                (not (abort))
-	          )
-	:effect (and  
-	          (forall (?tn - Time)
-              (when (next_time ?t ?tn) (and (not (current_time ?t)) (current_time ?tn)) )
-            )
-	        )
-)
 
 ;;make call
 (:action MakeCall
@@ -240,10 +226,11 @@
             ;;)
             (not (abort))
 		)
-    :effect (and (message_given ?m)  (executed_call ?a)
-              (forall (?tn - Time)
-                (when (next_time ?t ?tn) (and (not (current_time ?t)) (current_time ?tn)) )
-              )
+    :effect (and (message_given ?m)
+              (executed_call ?a)
+              ;;(forall (?tn - Time)
+              ;;  (when (next_time ?t ?tn) (and (not (current_time ?t)) (current_time ?tn)) )
+              ;;)
               (used_reminder ?t)
     )
 )
@@ -257,7 +244,6 @@
 
             (not (used_reminder ?t))
             (valid_reminder_message ?a ?m)
-
             (not (executed_reminder ?a))
 
             ;; enforce that the person didn't take medicine constraint
@@ -300,7 +286,9 @@
             ;;)
             (not (abort))
 		)
-    :effect (and (message_given ?m)  (executed_reminder ?a)
+    :effect (and
+              (message_given ?m)
+              (executed_reminder ?a)
               (used_reminder ?t)
             )
 )
@@ -310,7 +298,8 @@
     :precondition (and
           (MakeVoice_enabled)  ;; Ensure voice system is active
           (current_time ?t)
-          (not (used_voice ?t))
+
+          (not (used_reminder ?t))
           (not (executed_voice ?v)) ;; Ensure it hasn't been used
           (valid_voice_message ?v ?m)
 
@@ -320,8 +309,10 @@
           )
 
           (forall (?r - ReminderAction)
-                       (not (and (reminder_blocks_voice ?r ?v) (not (executed_reminder ?r)) ))
+              (not (and (reminder_blocks_voice ?r ?v) (not (executed_reminder ?r)) ))
           )
+
+          (not (and (voice_person_not_taking_medicine_constraint ?v ?p)  (not (not (person_taking_medicine ?t)) ) ) )
 
           (same_location_constraint)
 
@@ -336,11 +327,8 @@
         )
     :effect (and
         (message_given ?m)
-        (executed_voice ?v)  ;; Mark as executed
-        (used_voice ?t)  ;; Track usage
-        ;;(forall (?tn - Time)
-        ;;  (when (next_time ?t ?tn) (and (not (current_time ?t)) (current_time ?tn)) )
-        ;;)
+        (executed_voice ?v)
+        (used_voice ?t)
     )
 )
 
@@ -364,7 +352,8 @@
                     (not (and (person_at ?t ?p ?lmp) (wait_not_person_location_constraint ?t ?p ?lmp) ) )
                   )
 	             )
-	:effect (and (executed_wait ?t)
+	:effect (and
+	        (executed_wait ?t)
             (forall (?tn - Time)
               (when (next_time ?t ?tn) (and (not (current_time ?t)) (current_time ?tn)) )
             )

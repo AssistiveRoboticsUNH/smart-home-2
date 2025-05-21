@@ -13,7 +13,6 @@
 )
 (:init
     ;; Initial person and robot locations
-    
     ;;(person_at t1 nathan living_room)
     ;;(robot_at home)
 
@@ -41,12 +40,8 @@
     (traversable living_room home)
     (traversable home kitchen)
     (traversable kitchen home)
-
-
     (traversable living_room kitchen)
     (traversable kitchen living_room)
-
- 
 
     ;; Define success states
     (message_given_success reminder_2_msg)
