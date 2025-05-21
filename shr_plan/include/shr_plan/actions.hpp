@@ -10,6 +10,7 @@
 #include "shr_msgs/action/docking_request.hpp"
 #include "shr_msgs/action/localize_request.hpp"
 #include "shr_msgs/action/waypoint_request.hpp"
+#include "shr_msgs/action/play_video_request.hpp"
 #include "shr_msgs/action/question_response_request.hpp"
 #include <shr_plan/world_state_converter.hpp>
 #include "shr_plan/helpers.hpp"
@@ -87,6 +88,14 @@ namespace pddl_lib {
 
         };
 
+        const std::unordered_map <InstantiatedParameter, std::unordered_map<std::string, std::string>> video_reminder_msgs = {
+                {{"coffee_reminder", "VideoReminderProtocol"}, {{"reminder_1_msg", "maggie_coffee.mp4"},
+                                                  }},
+                {{"microwave_reminder", "VideoReminderProtocol"}, {{"reminder_1_msg", "maggie_heating.mp4"},
+                                                  }},
+
+        };
+
         const std::unordered_map<InstantiatedParameter, std::unordered_map<std::string, std::vector<std::string>>> voice_msgs = {
                 {
                         {"coffee_reminder", "VideoReminderProtocol"},
@@ -111,6 +120,8 @@ namespace pddl_lib {
         rclcpp_action::Client<shr_msgs::action::PlayAudioRequest>::SharedPtr audio_action_client_ = {};
         rclcpp_action::Client<shr_msgs::action::CallRequest>::SharedPtr call_client_ = {};
         rclcpp_action::Client<shr_msgs::action::QuestionResponseRequest>::SharedPtr voice_action_client_ = {};
+        rclcpp_action::Client<shr_msgs::action::PlayVideoRequest>::SharedPtr play_video_client_ = {};
+
 
 
         void publish_person_intervened(int value) {
@@ -217,6 +228,45 @@ namespace pddl_lib {
         bool is_locked;
         
     };
+
+    
+    int send_goal_blocking(const shr_msgs::action::PlayVideoRequest::Goal &goal,
+                       const InstantiatedAction &action,
+                       ProtocolState &ps) {
+
+    	auto &kb = KnowledgeBase::getInstance();
+
+    	auto success = std::make_shared<std::atomic<int>>(-1);  // -1: waiting, 1: success, 0: failure
+
+    	// ✅ Set up SendGoalOptions with result callback
+    	auto send_goal_options = rclcpp_action::Client<shr_msgs::action::PlayVideoRequest>::SendGoalOptions();
+    	send_goal_options.result_callback =
+        	[success](const rclcpp_action::ClientGoalHandle<shr_msgs::action::PlayVideoRequest>::WrappedResult result) {
+            	if (result.code == rclcpp_action::ResultCode::SUCCEEDED) {
+                	RCLCPP_INFO(rclcpp::get_logger("PlayVideoClient"), "✅ Video result: %s", result.result->status.c_str());
+                	*success = 1;
+            	} else {
+                	RCLCPP_ERROR(rclcpp::get_logger("PlayVideoClient"), "❌ Video playback failed with code: %d", static_cast<int>(result.code));
+                	*success = 0;
+            	}
+        	};
+
+    	// ✅ Send goal asynchronously
+    	ps.play_video_client_->async_send_goal(goal, send_goal_options);
+
+    	auto tmp = ps.active_protocol;
+    	while (*success == -1) {
+        	// Check if protocol was switched mid-execution
+        	if (!(tmp == ps.active_protocol)) {
+            	ps.play_video_client_->async_cancel_all_goals();
+            	return 0;
+        	}
+        	rclcpp::sleep_for(std::chrono::seconds(1));
+    	}
+
+    	return *success;
+	}
+
 
     int send_goal_blocking(const shr_msgs::action::CallRequest::Goal &goal, const InstantiatedAction &action) {
         auto [ps, lock] = ProtocolState::getConcurrentInstance();
@@ -1360,6 +1410,14 @@ namespace pddl_lib {
                 script_name_str = std::string(read_goal_.script_name.begin(), read_goal_.script_name.end());
 
                 ret = send_goal_blocking(read_goal_, action, ps) ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
+            } else if (ps.video_reminder_msgs.count(ps.active_protocol) &&
+                    ps.video_reminder_msgs.at(ps.active_protocol).find(msg) !=
+                    ps.video_reminder_msgs.at(ps.active_protocol).end()){
+                std::cout << "video_reminder_msgs: "  << std::endl;
+                shr_msgs::action::PlayVideoRequest::Goal video_goal_;
+                video_goal_.file_name = ps.video_reminder_msgs.at(ps.active_protocol).at(msg);
+                script_name_str = std::string(video_goal_.file_name.begin(), video_goal_.file_name.end());
+                ret = send_goal_blocking(video_goal_, action, ps) ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
             } else {
                 std::cout << "recorded_reminder_msgs: "  << std::endl;
                 shr_msgs::action::PlayAudioRequest::Goal audio_goal_;
@@ -1368,6 +1426,7 @@ namespace pddl_lib {
 
                 ret = send_goal_blocking(audio_goal_, action, ps) ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
             }
+
             if (ret == BT::NodeStatus::SUCCESS) {
                 std::string currentDateTime = "";
                 std::string log_message =

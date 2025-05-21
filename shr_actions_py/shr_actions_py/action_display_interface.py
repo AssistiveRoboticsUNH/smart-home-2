@@ -4,6 +4,7 @@ from shr_actions_py.play_audio_action import PlayAudioActionServer
 from shr_actions_py.read_script_action import ReadScriptActionServer
 from convros_bot.question_test_action import SpeechRecognitionActionServer  # ✅ Import the updated class
 from smartthings_ros.display_node import DisplayStatusSubscriber
+from shr_actions_py.play_video_action_display import SimpleZmqSenderAction
 import os
 
 def main():
@@ -30,6 +31,7 @@ def main():
     read_script_action_server = ReadScriptActionServer(zmq_socket)
     question_response_action_server = SpeechRecognitionActionServer(zmq_socket)  # ✅ Added Question Response Server
     display_status_subscriber = DisplayStatusSubscriber(zmq_socket)
+    video_play = SimpleZmqSenderAction(zmq_socket)
 
   
     # Spin the action servers
@@ -38,3 +40,4 @@ def main():
         rclpy.spin_once(read_script_action_server, timeout_sec=0.1)
         rclpy.spin_once(question_response_action_server, timeout_sec=0.1)  # ✅ Added to the loop
         rclpy.spin_once(display_status_subscriber, timeout_sec=0.1)
+        rclpy.spin_once(video_play, timeout_sec=0.1)

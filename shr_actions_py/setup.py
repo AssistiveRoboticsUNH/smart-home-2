@@ -24,7 +24,7 @@ setup(
                             'make_call_action = shr_actions_py.make_call_action:main',
                             'send_text_action = shr_actions_py.send_text_action:main',
                             'play_audio_action = shr_actions_py.play_audio_action:main',
-                            'play_video_action = shr_actions_py.play_video_action:main',
+                            #'play_video_action = shr_actions_py.play_video_action:main',
                             'open_image_action = shr_actions_py.open_image_action:main',
                             'rotate_action = shr_actions_py.rotate_action:main',
                             'detect_person_action = shr_actions_py.detect_person_action:main',
@@ -39,7 +39,8 @@ setup(
                             'localize = shr_actions_py.localize:main',
                             'waypoint = shr_actions_py.waypoint_follower_action:main',
                             'cancel_docking = shr_actions_py.cancel_goal_client:main',
-                            'play_audio_text_action = shr_actions_py.combined:main',
+                            'play_audio_text_action = shr_actions_py.action_display_interface:main',
+			    'play_video_action = shr_actions_py.play_video_action_display:main'
                             ],
     },
 )

@@ -166,7 +166,7 @@ class Docking(Node):
         if (self.is_detect is True and self.bumped is False):
             current_error = float(self.translation.get("translation_y", 0.0))
             transition_x = float(self.translation.get("translation_x", 0.0))
-            error_x = (transition_x-0.025)
+            error_x = (transition_x-0.018)
             modified_error_x = error_x*0.2
             apriltag_logic = (error_x>0.00)
             # doing reverse logic for it. (if apriltag_logic or bump_sensor gives 0, it will be out of the first loop)

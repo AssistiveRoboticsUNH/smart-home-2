@@ -59,6 +59,7 @@ class DockingMainActionServer(Node):
         self.docking_ir.bumped = False
         self.failed_count = 0
         
+        docking_start_time = time.time() 
         while not (self.docking_camera.bumped or self.docking_ir.bumped):
             if goal_handle.is_cancel_requested:
                 self.get_logger().info('Goal cancelled')
@@ -94,9 +95,16 @@ class DockingMainActionServer(Node):
                 self.failed_count += self.docking_ir.move_to_docking_station()
                  
             if self.failed_count > 10:
-                self.get_logger().info(f'Docking aborted for no bump sensor data')
+                self.get_logger().info(f'Docking aborted for no sensor data')
                 break
                 
+            if time.time() - docking_start_time > 20: # 20 seconds timeout for docking
+                self.get_logger().info("weblog="+' Docking aborted for timeout')
+                self.docking_ir.move_robot(0.0, 0.0)
+                goal_handle.abort()                
+                result = DockingRequest.Result()
+                result.result = False
+                return result
 
         self.get_logger().info(f'Bumped from Camera: {self.docking_camera.bumped}')
         self.get_logger().info(f'Bumped from IR: {self.docking_ir.bumped}')
@@ -105,9 +113,9 @@ class DockingMainActionServer(Node):
             self.docking_ir.move_robot(0.0, 0.0)
             print(self.docking_camera.charger_status)
             
+            start_time_current_check = time.time()
             # wait for charger status
             while True:
-                start_time = time.time()
 
                 if self.docking_camera.charger_status ==1 or self.docking_ir.is_charging:
                     if self.docking_ir.bumped:
@@ -130,7 +138,7 @@ class DockingMainActionServer(Node):
                     time.sleep(1)
 
                 # if 15 seconds passed and no charger status, abort
-                if time.time() - start_time > 15:
+                if time.time() - start_time_current_check > 10:
                     goal_handle.abort()
                     result = DockingRequest.Result()
                     result.result = False
