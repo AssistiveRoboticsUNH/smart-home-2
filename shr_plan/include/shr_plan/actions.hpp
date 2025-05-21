@@ -77,10 +77,7 @@ namespace pddl_lib {
 
 
         const std::unordered_map <InstantiatedParameter, std::unordered_map<std::string, std::string>> recorded_reminder_msgs = {
-                {{"am_meds", "MedicineProtocol"}, {{"reminder_2_msg", "medicine_voice_reminder.mp4"},
-                                                  }},
-                {{"pm_meds", "MedicineProtocol"}, {{"reminder_2_msg", "medicine_voice_reminder.mp4"},
-                                                  }},
+
                 {{"coffee_reminder", "VideoReminderProtocol"}, {{"reminder_1_msg", "maggie_coffee.mp4"},
                                                   }},
                 {{"microwave_reminder", "VideoReminderProtocol"}, {{"reminder_1_msg", "maggie_heating.mp4"},
@@ -107,6 +104,18 @@ namespace pddl_lib {
                         {"microwave_reminder", "VideoReminderProtocol"},
                         {
                                 {"voice_msg", {"Dad, would you like to heat up your food please say Yes or No ?", "if_true_text.txt", "if_false_text.txt"}}
+                        }
+                },
+                {
+                        {"am_meds", "MedicineProtocol"},
+                        {
+                                {"voice_msg", {"Dad, Did you take your medication, please say Yes or No ?", "if_true_text.txt", "if_false_text.txt"}}
+                        }
+                },
+                {
+                        {"pm_meds", "MedicineProtocol"},
+                        {
+                                {"voice_msg", {"Dad, Did you take your medication, please say Yes or No ?", "if_true_text.txt", "if_false_text.txt"}}
                         }
                 },
         };

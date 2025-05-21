@@ -19,7 +19,8 @@
     ;; Enabled actions
     (DetectPerson_enabled)
     (GiveReminder_enabled)
-    
+    (GiveReminder_enabled)
+    (MakeVoice_enabled)
 
     ;; Time progression
     (current_time t1)
@@ -64,10 +65,6 @@
     (unknown (play_video))
 
     (DetectPlayVideo_enabled)
-
-    ;; Define success states
-    (GiveReminder_enabled)
-    (MakeVoice_enabled)
 
     (message_given_success reminder_1_msg)
 

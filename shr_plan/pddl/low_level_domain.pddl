@@ -66,6 +66,7 @@
     (reminder_blocks_reminder ?a1 ?a2 - ReminderAction)
     (voice_blocks_voice ?v1 ?v2 - VoiceAction)
     (voice_blocks_reminder ?a1 - VoiceAction ?r - ReminderAction)
+    (reminder_blocks_voice ?r - ReminderAction ?a1 - VoiceAction)
 
     (executed_reminder ?a - ReminderAction)
     (executed_call ?c - CallAction)
@@ -316,6 +317,10 @@
           ;; Ensure actions follow dependencies correctly
           (forall (?vi - VoiceAction)
             (not (and (voice_blocks_voice ?vi ?v) (not (executed_voice ?vi)) ) )
+          )
+
+          (forall (?r - ReminderAction)
+                       (not (and (reminder_blocks_voice ?r ?v) (not (executed_reminder ?r)) ))
           )
 
           (same_location_constraint)
