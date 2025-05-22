@@ -38,6 +38,11 @@ ament_target_dependencies(find_person_node_sim ${dependencies})
 add_executable(cancel_docking src/docking_client.cpp)
 ament_target_dependencies(cancel_docking ${dependencies})
 
+add_executable(play_video_client src/play_video_client.cpp)
+ament_target_dependencies(play_video_client rclcpp rclcpp_action shr_msgs)
+install(TARGETS play_video_client DESTINATION lib/${PROJECT_NAME})
+
+
 include_directories(
         include
 )

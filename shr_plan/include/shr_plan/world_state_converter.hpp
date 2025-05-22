@@ -91,7 +91,7 @@ public:
                     patient_x = msg->data[0];
                     patient_y = msg->data[1];
 
-                    RCLCPP_INFO(this->get_logger(), "Received position: x=%.2f, y=%.2f", patient_x, patient_y);
+                    // RCLCPP_INFO(this->get_logger(), "Received position: x=%.2f, y=%.2f", patient_x, patient_y);
                 } else {
                     RCLCPP_WARN(this->get_logger(), "Received array has fewer than 2 elements.");
                 }

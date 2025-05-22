@@ -385,6 +385,7 @@ int main(int argc, char **argv) {
 //        }
         ps.audio_action_client_ = rclcpp_action::create_client<shr_msgs::action::PlayAudioRequest>(
                 world_state_converter, "play_audio");
+                
 //        while (!ps.audio_action_client_->wait_for_action_server(std::chrono::seconds(5))) {
 //            RCLCPP_INFO(rclcpp::get_logger("play_audio"), "Waiting for /play_audio action server...");
 //        }
@@ -416,6 +417,9 @@ int main(int argc, char **argv) {
         // while (!ps.voice_action_client_->wait_for_action_server(std::chrono::seconds(5))) {
         //     RCLCPP_INFO(rclcpp::get_logger("voice"), "Waiting for /question_response_action server...");
         // }
+        ps.play_video_client_ = rclcpp_action::create_client<shr_msgs::action::PlayVideoRequest>(
+                world_state_converter, "play_video");
+
 
         lock.UnLock();
     }

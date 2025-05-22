@@ -1,1 +1,1 @@
-already_reminded_medicine pm_meds MedicineProtocol
+already_reminded_medicine am_meds MedicineProtocol

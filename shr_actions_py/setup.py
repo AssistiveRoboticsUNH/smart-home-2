@@ -39,7 +39,7 @@ setup(
                             'localize = shr_actions_py.localize:main',
                             'waypoint = shr_actions_py.waypoint_follower_action:main',
                             'cancel_docking = shr_actions_py.cancel_goal_client:main',
-                            'play_audio_text_action = shr_actions_py.action_display_interface:main',
+                            'action_display_interface = shr_actions_py.action_display_interface:main',
 			    'play_video_action = shr_actions_py.play_video_action_display:main'
                             ],
     },

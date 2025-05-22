@@ -72,7 +72,7 @@
 
     ;; Specify required action order
     (valid_voice_message voice_command voice_msg)
-    (voice_blocks_reminder voice_command first_reminder)
+    ;;(voice_blocks_reminder voice_command first_reminder)
 
     ;; Define valid messages for reminders
     (valid_reminder_message first_reminder reminder_1_msg)

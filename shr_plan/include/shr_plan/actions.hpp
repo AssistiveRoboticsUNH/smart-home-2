@@ -86,9 +86,9 @@ namespace pddl_lib {
         };
 
         const std::unordered_map <InstantiatedParameter, std::unordered_map<std::string, std::string>> video_reminder_msgs = {
-                {{"coffee_reminder", "VideoReminderProtocol"}, {{"reminder_1_msg", "maggie_coffee.mp4"},
+                {{"coffee_reminder", "VideoReminderProtocol"}, {{"reminder_1_msg", "file:///storage/emulated/0/Download/maggie_coffee.mp4"},
                                                   }},
-                {{"microwave_reminder", "VideoReminderProtocol"}, {{"reminder_1_msg", "maggie_heating.mp4"},
+                {{"microwave_reminder", "VideoReminderProtocol"}, {{"reminder_1_msg", "file:///storage/emulated/0/Download/maggie_heating.mp4"},
                                                   }},
 
         };
@@ -239,42 +239,37 @@ namespace pddl_lib {
     };
 
     
-    int send_goal_blocking(const shr_msgs::action::PlayVideoRequest::Goal &goal,
-                       const InstantiatedAction &action,
-                       ProtocolState &ps) {
+   int send_goal_blocking(const shr_msgs::action::PlayVideoRequest::Goal &goal,
+                        const InstantiatedAction &action,
+                        ProtocolState &ps) {
+        auto success = std::make_shared<std::atomic<int>>(-1);
 
-    	auto &kb = KnowledgeBase::getInstance();
+        rclcpp_action::Client<shr_msgs::action::PlayVideoRequest>::SendGoalOptions options;
+        options.result_callback =
+            [success](const rclcpp_action::ClientGoalHandle<shr_msgs::action::PlayVideoRequest>::WrappedResult &result) {
+                if (result.code == rclcpp_action::ResultCode::SUCCEEDED) {
+                    RCLCPP_INFO(rclcpp::get_logger("PlayVideoClient"), "✅ Video result: %s", result.result->status.c_str());
+                    *success = 1;
+                } else {
+                    RCLCPP_ERROR(rclcpp::get_logger("PlayVideoClient"), "❌ Video playback failed with code: %d", static_cast<int>(result.code));
+                    *success = 0;
+                }
+            };
 
-    	auto success = std::make_shared<std::atomic<int>>(-1);  // -1: waiting, 1: success, 0: failure
+        ps.play_video_client_->async_send_goal(goal, options);
 
-    	// ✅ Set up SendGoalOptions with result callback
-    	auto send_goal_options = rclcpp_action::Client<shr_msgs::action::PlayVideoRequest>::SendGoalOptions();
-    	send_goal_options.result_callback =
-        	[success](const rclcpp_action::ClientGoalHandle<shr_msgs::action::PlayVideoRequest>::WrappedResult result) {
-            	if (result.code == rclcpp_action::ResultCode::SUCCEEDED) {
-                	RCLCPP_INFO(rclcpp::get_logger("PlayVideoClient"), "✅ Video result: %s", result.result->status.c_str());
-                	*success = 1;
-            	} else {
-                	RCLCPP_ERROR(rclcpp::get_logger("PlayVideoClient"), "❌ Video playback failed with code: %d", static_cast<int>(result.code));
-                	*success = 0;
-            	}
-        	};
+        auto tmp = ps.active_protocol;
+        while (*success == -1) {
+            if (!(tmp == ps.active_protocol)) {
+                ps.play_video_client_->async_cancel_all_goals();
+                return 0;
+            }
+            rclcpp::sleep_for(std::chrono::seconds(1));
+        }
 
-    	// ✅ Send goal asynchronously
-    	ps.play_video_client_->async_send_goal(goal, send_goal_options);
+        return *success;
+    }
 
-    	auto tmp = ps.active_protocol;
-    	while (*success == -1) {
-        	// Check if protocol was switched mid-execution
-        	if (!(tmp == ps.active_protocol)) {
-            	ps.play_video_client_->async_cancel_all_goals();
-            	return 0;
-        	}
-        	rclcpp::sleep_for(std::chrono::seconds(1));
-    	}
-
-    	return *success;
-	}
 
 
     int send_goal_blocking(const shr_msgs::action::CallRequest::Goal &goal, const InstantiatedAction &action) {
@@ -1419,14 +1414,15 @@ namespace pddl_lib {
                 script_name_str = std::string(read_goal_.script_name.begin(), read_goal_.script_name.end());
 
                 ret = send_goal_blocking(read_goal_, action, ps) ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
-            } else if (ps.video_reminder_msgs.count(ps.active_protocol) &&
-                    ps.video_reminder_msgs.at(ps.active_protocol).find(msg) !=
-                    ps.video_reminder_msgs.at(ps.active_protocol).end()){
-                std::cout << "video_reminder_msgs: "  << std::endl;
-                shr_msgs::action::PlayVideoRequest::Goal video_goal_;
-                video_goal_.file_name = ps.video_reminder_msgs.at(ps.active_protocol).at(msg);
-                script_name_str = std::string(video_goal_.file_name.begin(), video_goal_.file_name.end());
-                ret = send_goal_blocking(video_goal_, action, ps) ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
+            } else if (ps.video_reminder_msgs.count(ps.active_protocol) && ps.video_reminder_msgs.at(ps.active_protocol).count(msg)) {
+
+                shr_msgs::action::PlayVideoRequest::Goal goal;
+                goal.file_name = ps.video_reminder_msgs.at(ps.active_protocol).at(msg);
+                script_name_str = std::string(goal.file_name.begin(), goal.file_name.end());
+
+                int result = send_goal_blocking(goal, action, ps);
+                ret = (result == 1) ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
+
             } else {
                 std::cout << "recorded_reminder_msgs: "  << std::endl;
                 shr_msgs::action::PlayAudioRequest::Goal audio_goal_;
@@ -1499,18 +1495,42 @@ namespace pddl_lib {
 
             // ✅ Send the goal using `send_goal_blocking`
             int response = send_goal_blocking(voice_goal_, action, ps);
-
-            // ✅ Prepare text reading action goal
+            bool script = false;
+            // todo change this to make a goal depending onwhat its going to play
+            
+            shr_msgs::action::PlayAudioRequest::Goal audio_goal_;
             shr_msgs::action::ReadScriptRequest::Goal read_goal_;
+            
+            if (if_true_text.size() >= 4 &&  if_true_text.compare(if_true_text.size() - 4, 4, ".txt") == 0){
+                script = true;
+            }
 
             if (response == 1) {
                 RCLCPP_INFO(rclcpp::get_logger("VoiceAction"), "User responded YES. Reading: %s", if_true_text.c_str());
-                kb.insert_predicate({"play_video", {}});
-                read_goal_.script_name = if_true_text;
+                
+                if (ps.active_protocol.type == "VideoReminderProtocol") {
+                    kb.insert_predicate({"play_video", {}});
+                }
+
+            
+                if (script) {
+                    read_goal_.script_name = if_true_text;
+                } else {
+                    audio_goal_.file_name = if_true_text;
+                }
+               
             } else if (response == 0) {
                 RCLCPP_INFO(rclcpp::get_logger("VoiceAction"), "User responded NO. Reading: %s", if_false_text.c_str());
-                kb.erase_predicate({"play_video", {}});
-                read_goal_.script_name = if_false_text;
+                if (ps.active_protocol.type == "VideoReminderProtocol") {
+                    kb.erase_predicate({"play_video", {}});
+                }
+
+                 if (script) {
+                    read_goal_.script_name = if_false_text;
+                    } else {
+                        audio_goal_.file_name = if_false_text;
+                    }
+                
             } else {
                 RCLCPP_ERROR(rclcpp::get_logger("VoiceAction"), "❌ Failed to get a valid response. Proceeding anyway.");
                 lock.UnLock();
@@ -1518,12 +1538,23 @@ namespace pddl_lib {
             }
 
             // ✅ Read the appropriate text file using ReadScriptRequest
-            int read_result = send_goal_blocking(read_goal_, action, ps);
-            if (read_result == -1) {
+             if (script) {
+                    int read_result = send_goal_blocking(read_goal_, action, ps);
+                    if (read_result == -1) {
                 RCLCPP_ERROR(rclcpp::get_logger("VoiceAction"), "❌ Failed to read text. Returning FAILURE.");
                 lock.UnLock();
                 return BT::NodeStatus::FAILURE;  // **Return FAILURE if reading action fails**
             }
+                    } else {
+                        int read_result = send_goal_blocking(audio_goal_, action, ps);
+                        if (read_result == -1) {
+                RCLCPP_ERROR(rclcpp::get_logger("VoiceAction"), "❌ Failed to read text. Returning FAILURE.");
+                lock.UnLock();
+                return BT::NodeStatus::FAILURE;  // **Return FAILURE if reading action fails**
+            }
+                    }
+
+
 
             // ✅ Sleep for additional wait time before exiting 3 sec
             rclcpp::sleep_for(std::chrono::seconds(3));
