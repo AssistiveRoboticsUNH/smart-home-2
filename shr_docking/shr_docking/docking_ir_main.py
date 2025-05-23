@@ -149,6 +149,10 @@ class Docking_IR(Node):
         if self.isLidarActive:
             # 3) if already bumped or charging → stop docking
             if self.bump or self.is_charging:
+                if not self.bump:
+                    self.move_robot(self.forward_speed_close*0.8, 0.0) # move a bit more if not bump by limit switch
+                    time.sleep(0.5)
+                    self.move_robot(0.0, 0.0)
                 self.bumped = True
                 # reset PID & orientation flag
                 self._pid_integral = 0.0

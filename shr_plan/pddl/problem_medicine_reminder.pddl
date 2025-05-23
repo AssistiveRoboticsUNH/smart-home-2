@@ -1,7 +1,7 @@
 (define (problem medicine_reminder)
 (:domain shr_domain)
 (:objects
-    living_room home outside - Landmark
+    living_room bedroom home outside - Landmark
 
     nathan - Person
     t1 t2 t3 t4 t5 - Time
@@ -30,19 +30,16 @@
     (next_time t4 t5)
 
     ;; Person can be at different locations at future times
-
-    (oneof (person_at t2 nathan living_room) (person_at t2 nathan outside) )
-    (oneof (person_at t3 nathan living_room) (person_at t3 nathan outside) )
-    (oneof (person_at t4 nathan living_room) (person_at t4 nathan outside) )
-    (oneof (person_at t5 nathan living_room) (person_at t5 nathan outside) )
+    (oneof (person_at t2 nathan living_room) (person_at t2 nathan bedroom) (person_at t2 nathan outside) )
+    (oneof (person_at t3 nathan living_room) (person_at t3 nathan bedroom) (person_at t3 nathan outside) )
+    (oneof (person_at t4 nathan living_room) (person_at t4 nathan bedroom) (person_at t4 nathan outside) )
+    (oneof (person_at t5 nathan living_room) (person_at t5 nathan bedroom) (person_at t5 nathan outside) )
 
     ;; Allow traversal between locations if needed
     (traversable home living_room)
     (traversable living_room home)
-
     ;;(traversable home bedroom)
     ;;(traversable bedroom home)
-
     ;;(traversable bedroom living_room)
     ;;(traversable living_room bedroom)
 
@@ -71,7 +68,17 @@
     (wait_not_person_location_constraint t4 nathan outside)
     (wait_not_person_location_constraint t5 nathan outside)
 
+    (wait_not_person_location_constraint t1 nathan bedroom)
+    (wait_not_person_location_constraint t2 nathan bedroom)
+    (wait_not_person_location_constraint t3 nathan bedroom)
+    (wait_not_person_location_constraint t4 nathan bedroom)
+    (wait_not_person_location_constraint t5 nathan bedroom)
+
     ;; If person is outside, enforce no action
+    (noaction_person_location_constraint na1 nathan bedroom)
+    (noaction_person_location_constraint na2 nathan bedroom)
+    (noaction_person_location_constraint na3 nathan bedroom)
+
     (noaction_person_location_constraint na1 nathan outside)
     (noaction_person_location_constraint na2 nathan outside)
     (noaction_person_location_constraint na3 nathan outside)

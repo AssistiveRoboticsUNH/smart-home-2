@@ -342,7 +342,7 @@
                   )
 
                   (current_time ?t)
-	              (not (executed_wait ?t))
+	                (not (executed_wait ?t))
                   (not (abort))
 
                   (forall (?lmp - Landmark)
@@ -393,8 +393,18 @@
 
 	              (not (no_action))
                   ;; this condition enforces that the person is at the location specified in person_location_constraint
-                  (forall (?loc - Landmark)
-                    (not (and (not (person_at ?t ?p ?loc)) (noaction_person_location_constraint ?na ?p ?loc) ) )
+                  ;;(forall (?loc - Landmark)
+                  ;;  (not (and (not (person_at ?t ?p ?loc)) (noaction_person_location_constraint ?na ?p ?loc) ) )
+                  ;;)
+
+                  (not
+                    (forall (?loc - Landmark)
+                      (not (and
+                            (noaction_person_location_constraint ?na ?p ?loc)
+                            (person_at ?t ?p ?loc)
+                          )
+                      )
+                    )
                   )
 
                   ;; this condition enforces that the robot is at the location specified in person_location_constraint

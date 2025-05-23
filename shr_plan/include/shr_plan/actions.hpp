@@ -109,13 +109,13 @@ namespace pddl_lib {
                 {
                         {"am_meds", "MedicineProtocol"},
                         {
-                                {"voice_msg", {"Dad, Did you take your medication, please say Yes or No ?", "if_true_text.txt", "if_false_text.txt"}}
+                                {"voice_msg", {"Dad, Did you take your medication, please say Yes or No ?", "am_med_reminder.mp3", "food_reminder.mp3"}}
                         }
                 },
                 {
                         {"pm_meds", "MedicineProtocol"},
                         {
-                                {"voice_msg", {"Dad, Did you take your medication, please say Yes or No ?", "if_true_text.txt", "if_false_text.txt"}}
+                                {"voice_msg", {"Dad, Did you take your medication, please say Yes or No ?", "pm_med_reminder.mp3", "medicine_reminder.mp3"}}
                         }
                 },
         };
@@ -979,19 +979,18 @@ namespace pddl_lib {
                     {"am_meds", "MedicineProtocol"},
                     {"pm_meds", "MedicineProtocol"},
                     {"gym_reminder", "GymReminderProtocol"},
-                    {"medicine_refill_reminder", "MedicineRefillReminderProtocol"},
-                    {"medicine_pharmacy_reminder", "MedicineRefillPharmacyReminderProtocol"},
-                    {"walking_reminder", "WalkingProtocol"}
+                    {"trash", "OneReminderProtocol"},
+                    {"coffee_reminder", "VideoReminderProtocol"},
+                    {"microwave_reminder", "VideoReminderProtocol"}
             };
 
             const std::unordered_map<std::string, std::vector<std::string>> keyword_protocol_ = {
                     {"already_took_medicine", {"am_meds", "pm_meds"}},
                     {"already_reminded_medicine", {"am_meds", "pm_meds"}},
                     {"already_called_about_medicine", {"am_meds", "pm_meds"}},
-                    {"already_reminded_gym",{"gym_reminder"}},
-                    {"already_reminded_medicine_refill",{"medicine_refill_reminder"}},
-                    {"already_reminded_medicine_pharmacy",{"medicine_pharmacy_reminder"}},
-                    {"already_reminded_walking",{"walking_reminder"}}
+                    {"already_showed_video",{"coffee_reminder", "microwave_reminder"}},
+                    {"already_gave_one_reminder", {"trash"}}
+                  
             };
 
             std::ifstream ifs(keywordsFile);
@@ -1313,6 +1312,26 @@ namespace pddl_lib {
 
             std::string log_message = std::string("weblog=") + "Move to landmark: " + location;
             
+            if (ps.active_protocol.type == "VideoReminderProtocol") {
+                std::cout << "Protocol type is VideoReminderProtocol\n";
+                if (location == "living_room") {
+                    std::cout << "Location is living_room\n";
+                    if (ps.active_protocol.name == "coffee_reminder") {
+                        std::cout << "Active protocol name is coffee_reminder, changing location to kitchen\n";
+                        location = "kitchen";
+                    } else if (ps.active_protocol.name == "microwave_reminder") {
+                        std::cout << "Active protocol name is microwave_reminder, changing location to kitchen\n";
+                        location = "kitchen";
+                    } else {
+                        std::cout << "Active protocol name is " << ps.active_protocol.name << ", no location change\n";
+                    }
+                } else {
+                    std::cout << "Location is " << location << ", no change\n";
+                }
+            } else {
+                std::cout << "Protocol type is " << ps.active_protocol.type << ", no changes made\n";
+            }
+
             lock.Lock();
                         
             RCLCPP_INFO(ps.world_state_converter->get_logger(), log_message.c_str());
@@ -1422,6 +1441,32 @@ namespace pddl_lib {
 
                 int result = send_goal_blocking(goal, action, ps);
                 ret = (result == 1) ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
+
+                if(ps.active_protocol.name == "coffee_reminder"){
+                    // get current time and add 30 minsutes to it 
+                    auto now = std::chrono::system_clock::now();
+
+                    auto start = now +  std::chrono::minutes(30);
+
+                    auto format_time = [](std::chrono::system_clock::time_point tp) {
+                        std::time_t t = std::chrono::system_clock::to_time_t(tp);
+                        std::tm tm = *std::localtime(&t);
+                        std::ostringstream oss;
+                        oss << std::put_time(&tm, "%H:%M");
+                        return oss.str();
+                    };
+                    
+                    std::string start_str = format_time(start);
+                    std::cout << "Start time: " << start_str << "\n";
+
+                    std::string params_cmd = "python3 /home/hello-robot/smarthome_ws/src/smart-home-robot/external/helper_script/parameter_change.py MedicineProtocols am_meds " + start_str + " 10";
+                    std::string build_cmd = "cd /home/hello-robot/smarthome_ws && colcon build --symlink-install --packages-select shr_parameters";
+
+
+                    std::system(params_cmd.c_str());
+                    std::system(build_cmd.c_str());
+                }
+
 
             } else {
                 std::cout << "recorded_reminder_msgs: "  << std::endl;

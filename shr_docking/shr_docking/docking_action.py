@@ -98,7 +98,7 @@ class DockingMainActionServer(Node):
                 self.get_logger().info(f'Docking aborted for no sensor data')
                 break
                 
-            if time.time() - docking_start_time > 20: # 20 seconds timeout for docking
+            if time.time() - docking_start_time > 40: # 40 seconds timeout for docking
                 self.get_logger().info("weblog="+' Docking aborted for timeout')
                 self.docking_ir.move_robot(0.0, 0.0)
                 goal_handle.abort()                

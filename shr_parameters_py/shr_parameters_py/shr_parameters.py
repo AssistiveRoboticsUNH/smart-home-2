@@ -29,7 +29,7 @@ class shr_parameters:
             instances = __Instances()
             class __Medicineprotocols:
                 instances = ["am_meds", "pm_meds"]
-                take_medication_times = ["Everyday 09h00m0s/10h00m0s", "Everyday 18h00m0s/19h00m0s"]
+                take_medication_times = ["Everyday 08h00m0s/10h00m0s", "Everyday 18h00m0s/19h00m0s"]
             MedicineProtocols = __Medicineprotocols()
             class __Videoreminderprotocols:
                 instances = ["coffee_reminder", "microwave_reminder"]
@@ -203,7 +203,7 @@ class shr_parameters:
                 self.node_.declare_parameter(self.prefix_ + "pddl.MedicineProtocols.take_medication_times", parameter, descriptor)
 
             if not self.node_.has_parameter(self.prefix_ + "pddl.VideoReminderProtocols.instances"):
-                descriptor = ParameterDescriptor(description="gym reminder protocols", read_only = False)
+                descriptor = ParameterDescriptor(description="video reminder protocols", read_only = False)
                 parameter = updated_params.pddl.VideoReminderProtocols.instances
                 self.node_.declare_parameter(self.prefix_ + "pddl.VideoReminderProtocols.instances", parameter, descriptor)
 
