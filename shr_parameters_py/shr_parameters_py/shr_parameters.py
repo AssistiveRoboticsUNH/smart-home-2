@@ -29,7 +29,7 @@ class shr_parameters:
             instances = __Instances()
             class __Medicineprotocols:
                 instances = ["am_meds", "pm_meds"]
-                take_medication_times = ["Everyday 08h00m0s/10h00m0s", "Everyday 18h00m0s/19h00m0s"]
+                take_medication_times = ["Everyday 09h00m0s/10h00m0s", "Everyday 18h00m0s/19h00m0s"]
             MedicineProtocols = __Medicineprotocols()
             class __Videoreminderprotocols:
                 instances = ["coffee_reminder", "microwave_reminder"]

@@ -150,7 +150,7 @@ public:
         if (auto index = get_inst_index(m, params)) {
             std::string time_range = params.pddl.MedicineProtocols.take_medication_times[index.value()];
             if (compare_time(time_range)) {
-                
+                std::cout << "time_to_take_medicine " << m << std::endl;
                 return TRUTH_VALUE::TRUE;
             }
          } 

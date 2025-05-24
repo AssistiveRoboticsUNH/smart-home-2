@@ -1447,6 +1447,7 @@ namespace pddl_lib {
                     auto now = std::chrono::system_clock::now();
 
                     auto start = now +  std::chrono::minutes(30);
+                    auto end = start +  std::chrono::minutes(60);
 
                     auto format_time = [](std::chrono::system_clock::time_point tp) {
                         std::time_t t = std::chrono::system_clock::to_time_t(tp);
@@ -1459,7 +1460,11 @@ namespace pddl_lib {
                     std::string start_str = format_time(start);
                     std::cout << "Start time: " << start_str << "\n";
 
-                    std::string params_cmd = "python3 /home/hello-robot/smarthome_ws/src/smart-home-robot/external/helper_script/parameter_change.py MedicineProtocols am_meds " + start_str + " 10";
+                    std::string end_str = format_time(end);
+                    std::cout << "end time: " << end_str << "\n";
+
+                    std::string params_cmd = "python3 /home/hello-robot/smarthome_ws/src/smart-home-robot/external/helper_script/parameter_change.py MedicineProtocols am_meds " + start_str + " " + end_str;
+                    std::cout << "params_cmd : " << params_cmd << "\n";
                     std::string build_cmd = "cd /home/hello-robot/smarthome_ws && colcon build --symlink-install --packages-select shr_parameters";
 
 

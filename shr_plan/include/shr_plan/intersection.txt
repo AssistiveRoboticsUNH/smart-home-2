@@ -1,3 +1,1 @@
-already_reminded_medicine am_meds MedicineProtocol
-already_showed_video microwave_reminder VideoReminderProtocol
-already_gave_one_reminder trash OneReminderProtocol
+

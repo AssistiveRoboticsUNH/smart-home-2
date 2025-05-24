@@ -28,6 +28,7 @@
   (person_currently_at ?p - Person ?lmp - Landmark)
 
   (visible_location ?lmp - Landmark)
+  (actiavte_video ?lmp - Landmark  ?vid - VideoReminderProtocol)
   (not_visible_location ?lmp - Landmark)
 
   (medicine_protocol_enabled ?med - MedicineProtocol)
@@ -179,7 +180,7 @@
       (time_for_video ?vid)
       (not (already_showed_video ?vid))
       (forall (?vid - VideoReminderProtocol) (not (video_reminder_enabled ?vid)) )
-
+      (activate_video ?vid ?dest)
       ;; person in visible area
       (person_currently_at ?p ?cur)
       (visible_location ?dest)

@@ -1,0 +1,99 @@
+shr_parameters:
+  pddl:
+    instances:
+      Persons: {
+        type: string_array,
+        default_value: [ "nathan" ],
+        description: "all people in protocols",
+      }
+    MedicineProtocols:
+      instances: {
+        type: string_array,
+        default_value: [ "am_meds" , "pm_meds" ],
+        description: "medicine protocols",
+      }
+      take_medication_times: {
+        type: string_array,
+        default_value: [ "Everyday 09h00m0s/10h00m0s", "Everyday 18h00m0s/19h00m0s"],
+        description: "time that each protocol is triggered",
+      }
+    VideoReminderProtocols:
+      instances: {
+        type: string_array,
+        default_value: [ "coffee_reminder", "microwave_reminder" ],
+        description: "gym reminder protocols",
+      }
+      video_reminder_times: {
+        type: string_array,
+        default_value: [ "Everyday 06h00m0s/07h00m0s", "Everyday 15h00m0s/17h00m0s"],
+        description: "time that each protocol is triggered",
+      }
+      video_reminder_topics: {
+        type: string_array,
+        default_value: [ "/coffee", "/heating_food" ],
+        description: "time that each protocol is triggered",
+      }    
+    OneReminderProtocols:
+      instances: {
+        type: string_array,
+        default_value: [ "trash" ],
+        description: "trash protocols",
+      }
+      one_reminder_times: {
+        type: string_array,
+        default_value: [ "Everyday 19h00m0s/20h00m0s" ],
+        description: "time that each protocol is triggered",
+      }
+  topics:
+    time: {
+      type: string,
+      default_value: "/protocol_time",
+      description: "topic for protocol clock time",
+    }
+    person_taking_medicine: {
+      type: string,
+      default_value: "/person_taking_medicine",
+      description: "topic for sensor that detect if medication is taken",
+    }
+    person_eating: {
+      type: string,
+      default_value: "/person_eating",
+      description: "topic for sensor that detect if patient is eating",
+    }
+    robot_charging: {
+      type: string,
+      default_value: "/charging",
+      description: "topic for smart plug that detect if robot is charging",
+    }
+    person_intervene: {
+      type: string,
+      default_value: "/person_intervene",
+      description: "topic for checking good weather",
+    }
+    display_ack: {
+      type: string,
+      default_value: "/screen_ack",
+      description: "topic for display ack",
+    }
+
+  person_tf: {
+    type: string,
+    default_value: "nathan",
+    description: "person tf frame id",
+  }
+  robot_tf: {
+    type: string,
+    default_value: "base_link",
+    description: "robot tf frame id",
+  }
+
+
+
+
+
+
+
+
+
+
+

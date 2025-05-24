@@ -1,7 +1,7 @@
 (define (problem video_reminder)
 (:domain shr_domain)
 (:objects
-    living_room bedroom home outside - Landmark
+    dinning kitchen bedroom home outside - Landmark
     ;;living_room bedroom kitchen dining home outside - Landmark
     nathan - Person
     t1 t2 t3 t4 t5 - Time
